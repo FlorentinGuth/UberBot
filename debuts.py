@@ -3,58 +3,6 @@ import random
 from matplotlib import *
 
 
-class Q:
-    def __init__(self):
-        self.content = dict()
-        self.inf = 1
-        self.actions = []
-        self.states = []
-
-    def set(self, key, value):
-        self.content[key] = value
-
-    def get(self, key):
-        try:
-            return self.content[key]
-        except KeyError:
-            return 0
-
-    def max_line(self, line):
-        return max(self.content[key] for key in self.content.keys() if key[0] == line)
-
-    def update_q_learning(self, r, w, alpha, si, a, sf):
-        self.set((si, a), (1 - alpha) * self.get((si, a)) + alpha * (r(si, a) + w * self.max_line(sf)))
-
-    def update_fix_point(self, r, w, p):
-        states = []
-        actions = []
-
-        for s in states:
-            for a in actions:
-                #La somme est en fait sur deux états seulement !
-                self.set((s, a), r(s, a) + w * sum(p(s, a, s2) * self.max_line(s2) for s2 in states))
-
-    def policy(self, s):
-        #Fonction Dstar
-
-        best_q = -self.inf
-        best_actions = []
-
-        for a in self.actions:
-            new_q = self.get((s, a))
-            if new_q > best_q:
-                best_q = new_q
-                best_actions = [a]
-
-            elif new_q == best_q:
-                best_actions.append(a)
-
-        if len(best_actions) == 0:
-            return None
-
-        return random.choice(best_actions)
-
-
 #A présent, appliquons le au cas particulier ici traité du botnet.
 class Qbis:
     def __init__(self, n, gamma, alpha=0., inf=1000):
@@ -119,7 +67,11 @@ class Qbis:
 
         if maxQ == -self.inf:
             #Cas où il ne reste aucune cible.
-            maxQ = 0
+            #Possibilite 1
+            # maxQ = 0
+
+            #Possibilité 2
+            maxQ = network.r(State((1 << network.size) - 1)) / (1 - self.gamma)
 
         res += self.gamma * proba_s_to_splusa * maxQ
         res /= (1 - self.gamma * (1 - proba_s_to_splusa))
@@ -174,8 +126,21 @@ class Qbis:
         if len(best_actions) == 0:
             return None
 
-        print("Expected best value : ", best_q)
+        #print("Expected best value : ", best_q)
         return random.choice(best_actions)
+
+    def static_infos(self, network, ex=False):
+        s = State()
+        t = 0
+        for _ in range(network.size):
+            if ex:
+                a = self.ex_policy(s, network)
+            else:
+                a = self.policy(s)
+
+            t += 1.0 / network.p(a, s)
+            s = s.add(a)
+        return t, self.max_line(State())
 
 
 class State:
@@ -252,3 +217,17 @@ class Network:
 
     def remaining(self):
         return self.size - sum(1 for node in range(self.size) if node in self.hijacked)
+
+
+def expected_reward(state, actions, network, gamma, i=0):
+    res = 0
+
+    if i == len(actions):
+        return network.r(state) / (1 - gamma)
+
+    a = actions[i]
+    p = network.p(a, state)
+    res += (network.R(state, a) + gamma * p * expected_reward(state.add(a), actions, network, gamma, i+1))
+    res /= (1 - gamma * (1 - p))
+
+    return res
