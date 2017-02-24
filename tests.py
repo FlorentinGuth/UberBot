@@ -5,7 +5,7 @@ import random
 #TODO Thompson Sampling
 #TODO Comprendre, modifier la fonction de Q learning (et son initialisation / exploration)
 #TODO Ranger un peu tout ça dans des fichiers différents et des fonctions propres
-
+print("oui")
 """
 #Test State
 s = State(0)
@@ -54,7 +54,7 @@ def known(nb, n, q, affichage=False):
         # exp_rew = expected_reward(State(), actions, n, q.gamma)
         # print(exp_rew, q.static_infos(n, True)[1])
 
-        rewards.append(n.reward / (i - 1))
+        rewards.append(n.reward)
         n.reset()
         invasions.append(actions)
         durees.append(i - 1)
@@ -68,6 +68,66 @@ def known(nb, n, q, affichage=False):
 
 def unknown(nb, n, q, r=0., alpha=0.01, affichage=False):
     #Approche ou rien n'est connu, avec nb attaques (avec mémoire).
+    #WARNING alpha est modifie donc ne sert a rien ci-dessus
+    q.alpha = alpha
+    invasions = []
+    durees = []
+    rewards = []
+
+    for j in range(nb):
+        #Essai de modif des alpha
+        q.alpha = 0.5 * (1 - (j / nb) ** 1) ** 2
+        if affichage:
+            print("Invasion N°", j)
+        i = 1
+        actions = []
+        while n.remaining() != 0:
+            si = n.hijacked
+
+            bound = r * (1 - (j / nb) ** 1)
+
+            if random.random() < bound:
+                action = random.choice([a for a in range(n.size) if not a in n.hijacked])
+
+            else:
+                action = q.policy(si)
+
+            if affichage:
+                print("Action ", i)
+                print("Remaining nodes = %s" % n.remaining())
+                print("Attack %s!" % action)
+
+            if n.take_action(action):
+                if affichage:
+                    print("Success")
+                    print("\n")
+                actions.append(action)
+            elif affichage:
+                print("Failure")
+                print("\n")
+
+            q.update_q_learning(n, si, action, n.hijacked)
+            # assert(n.hijacked.content == si.content)
+
+            i += 1
+        if affichage:
+            print(actions)
+
+        rewards.append(n.reward)
+        n.reset()
+        invasions.append(actions)
+        durees.append(i - 1)
+
+    #print(durees)
+    #print(q.content.items())
+    #print(invasions[-10:])
+
+    return rewards, sum(durees) / len(durees), invasions[-1]
+
+
+def unknown_thomson(nb, n, q, r=0., alpha=0.01, affichage=False):
+    #Approche ou rien n'est connu, avec nb attaques (avec mémoire).
+    #WARNING alpha est modifie donc ne sert a rien ci-dessus
     q.alpha = alpha
     invasions = []
     durees = []
@@ -122,8 +182,8 @@ def unknown(nb, n, q, r=0., alpha=0.01, affichage=False):
 
     return rewards, sum(durees) / len(durees), invasions[-1]
 
-#Test
-#Premier réseau
+# Test
+# Premier réseau
 """
 n = Network(1)
 n.add(2, 1, 1)
@@ -138,9 +198,10 @@ for i in range(k):
     n.add(i**1+1, i+1, i)
 q = Qbis(k, 0.9, alpha=0.05)
 
-"""
+
 nb = 1000
 y1 = known(nb, n, q)[0]
+print(y1)
 q.clear()
 y2 = unknown(nb, n, q, 1, 0.001)[0]
 plot(range(nb), y1)
@@ -151,7 +212,7 @@ plot(range(nb), y2)
 plot(range(nb), [moy1] * nb)
 plot(range(nb), [moy2] * nb)
 show()
-"""
+
 
 
 def avg_length_known(nb, gammas, n, q):
@@ -168,7 +229,7 @@ def avg_length_known(nb, gammas, n, q):
 
     print("Durees avec gamma :", res)
 
-#avg_length_known(200, [0.8 + 0.0025 * i for i in range(80)], n, q)
+# avg_length_known(200, [0.8 + 0.0025 * i for i in range(80)], n, q)
 
 
 def avg_length_mieux(gammas, n, q):
@@ -185,7 +246,7 @@ def avg_length_mieux(gammas, n, q):
     plot(gammas, V)
     show()
 
-#avg_length_mieux([0.8 + 0.0025 * i for i in range(80)], n, q)
+# avg_length_mieux([0.8 + 0.0025 * i for i in range(80)], n, q)
 
 
 def learning(nb, n, q, rs=None):
@@ -214,6 +275,7 @@ def learning(nb, n, q, rs=None):
 
     show()
 
-learning(1000, n, q, [0.1 * i for i in range(11)])
+# learning(1000, n, q, [0.1 * i for i in range(11)])
 
 # y1 = known(1, n, q)[0]
+# unknown(1000, n, q, True)
