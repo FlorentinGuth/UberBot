@@ -1,6 +1,3 @@
-Rapport : https://www.overleaf.com/7624693szgtfrwttfgk#/26651309/
-
-
 Biblio :
 https://en.wikipedia.org/wiki/Markov_decision_process
 
