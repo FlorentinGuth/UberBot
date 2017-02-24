@@ -71,4 +71,4 @@ class Thomson(Qbis):
             return None
 
         #print("Expected best value : ", best_q)
-        return random.choice(best_actions)
+        return choice(best_actions)

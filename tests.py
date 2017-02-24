@@ -1,6 +1,7 @@
 from debuts import Network, Qbis, State, expected_reward
 from matplotlib.pyplot import *
 import random
+from thomson_sampling import Thomson
 
 #TODO Thompson Sampling
 #TODO Comprendre, modifier la fonction de Q learning (et son initialisation / exploration)
@@ -149,16 +150,15 @@ def unknown_thomson(nb, n, q, r=0., alpha=0.01, affichage=False):
                 action = random.choice([a for a in range(n.size) if not a in n.hijacked])
 
             else:
-                action = q.policy(si)
+                action = q.thomson_policy(si)
 
             if affichage:
                 print("Action ", i)
                 print("Remaining nodes = %s" % n.remaining())
                 print("Attack %s!" % action)
 
-            q.update_q_learning(n, si, action, n.hijacked)
-
-            if n.take_action(action):
+            res_action = n.take_action(action)
+            if res_action:
                 if affichage:
                     print("Success")
                     print("\n")
@@ -166,6 +166,9 @@ def unknown_thomson(nb, n, q, r=0., alpha=0.01, affichage=False):
             elif affichage:
                 print("Failure")
                 print("\n")
+
+            #Update through Thomson Sampling method
+            q.add_trial(action, si, res_action, n.R(si, action))
 
             i += 1
         if affichage:
@@ -196,7 +199,7 @@ k = 12
 n = Network(1)
 for i in range(k):
     n.add(i**1+1, i+1, i)
-q = Qbis(k, 0.9, alpha=0.05)
+q = Thomson(k, 0.9, alpha=0.05)
 
 
 nb = 1000

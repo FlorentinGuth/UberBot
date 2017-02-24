@@ -189,9 +189,9 @@ class Network:
         return self.action_cost[action]
 
     def success(self, action, state):
-		r = self.resistance[action]
-		if r == 0:
-			return 1
+        r = self.resistance[action]
+        if r == 0:
+            return 1
 
         return min(1, 1.0 * self.r(state) / self.resistance[action])
 
