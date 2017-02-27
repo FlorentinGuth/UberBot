@@ -8,6 +8,7 @@ Created on Fri Feb 17 14:46:02 2017
 
 import debuts
 import tests
+import thomson_sampling as thom
 
 import tkinter as tk
 import math
@@ -31,6 +32,7 @@ class MainGUI(tk.Tk):
         
     def initialize(self):
         self.grid()
+        self.used = False
         
         m = math.floor(math.sqrt(self.n))
         
@@ -74,6 +76,12 @@ class MainGUI(tk.Tk):
 #        self.grid_rowconfigure(0,weight=1)
     
     def onButtonClick(self):
+        if self.used:
+            for i in range(self.n):
+                self.l[i].itemconfigure("1", fill="black")
+            for i in range(self.n):
+                self.resisted(i)
+        self.used = True
         self.exe()
         
     def attacked(self,n):
@@ -81,7 +89,6 @@ class MainGUI(tk.Tk):
         self.l[n].update()
     
     def resisted(self,n):
-        print(n)
         self.l[n].itemconfigure("1", fill="green")
         self.l[n].update()
     
@@ -108,9 +115,9 @@ class GUI(debuts.Network):
         debuts.Network.__init__(self, initial_power)
         self.GUI = None
     
-    def display(self):
+    def display(self,mode):
         def exe():
-            tests.unknown(1,self,q)        
+            mode(1,self,q)        
         
         self.GUI = MainGUI(self.size,exe)
         self.GUI.mainloop()
@@ -121,7 +128,6 @@ class GUI(debuts.Network):
             wait()
             success = debuts.Network.take_action(self,action)
             wait()
-            print(success)
             if success:
                 self.GUI.compromized(action)
             else:
@@ -146,8 +152,8 @@ n = GUI(1)
 k = 1024
 for i in range(k):
     n.add(i**1.8+1, i+1, i)
-q = debuts.Qbis(k, 0.9, alpha=0.05)
+q = thom.Thomson(k, 0.9, alpha=0.05)
 
 
-n.display()
+n.display(tests.unknown_thomson)
 
