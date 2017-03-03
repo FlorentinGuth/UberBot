@@ -52,7 +52,7 @@ class Qstar(Botnet):
             return self.get(state, action)
 
         # The result may be smaller than its real exact value if it isn't the maximum.
-        res = self.network.R(state, action)
+        res = self.network.immediate_reward(state, action)
 
         splusa = State.added(state, action)
         proba_s_to_splusa = self.network.success_probability(action, state)

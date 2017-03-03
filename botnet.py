@@ -19,21 +19,22 @@ class Botnet:
         self.gamma = 0.9      # To change?
 
     def immediate_reward(self, state, action):
-        if action in state:
-            return -self.network.cost(action)
-        return -self.network.cost(action) + self.network.current_power(state)
+        return self.network.immediate_reward(state, action)
 
     def take_action(self, action):
-        success = self.network.attempt_hijacking(action, self.power)
+        success = self.network.attempt_hijacking(action, self.state)
 
-        if success:
-            self.state.add(action)
-            self.power += self.network.get_proselytism(action)
-
-        # Reward takes into account the latest action
+        # Gets the immediate reward
         self.reward += self.time_factor * self.immediate_reward(self.state, action)
         self.time_factor *= self.gamma
         self.time += 1
+
+        if success:
+            # Modify the state of the botnet in case of success
+            self.state.add(action)
+            self.power += self.network.get_proselytism(action)
+
+        return success
 
     def reset(self):
         self.state = State(self.network.size)

@@ -1,6 +1,6 @@
 import random
 from qlearning import Qlearning
-
+from state import State
 
 class Thomson(Qlearning):
 
@@ -31,7 +31,7 @@ class Thomson(Qlearning):
         self.p[(action, state)] = success, trials
 
         p = success / trials
-        new_q = reward + self.gamma * p * self.max_line(state.add(action))  # Redundant computation ?
+        new_q = reward + self.gamma * p * self.max_line(State.added(state, action))  # Redundant computation ?
         new_q /= 1 - self.gamma * (1 - p)
         old_q = self.get(state, action)
 

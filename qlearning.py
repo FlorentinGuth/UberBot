@@ -36,6 +36,7 @@ class Qlearning(Botnet):
 
     def max_line(self, state):
         # TODO Save the maximum ?
+        print(self)
         return max(self.get(state, action) for action in self.actions)
 
     def update_q_learning(self, si, a, sf):
@@ -45,7 +46,7 @@ class Qlearning(Botnet):
 
     def random_action(self):
         # TODO Could be only written in some inherited class if not used otherwise
-        return random.choice(a for a in self.actions if a not in self.state)
+        return random.choice([a for a in self.actions if a not in self.state])
 
     def policy(self, state=None):
         # Computes the best action to take in this state according to the already computed Q.
