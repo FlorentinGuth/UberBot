@@ -1,12 +1,17 @@
-from debuts import Network, Qbis, State, expected_reward
+from state import State
+from botnet import Botnet
+from markov import Qstar
+from policy import Policy
+
 from matplotlib.pyplot import *
 import random
 from thompson_sampling import Thomson
 
-#TODO Thompson Sampling
-#TODO Comprendre, modifier la fonction de Q learning (et son initialisation / exploration)
-#TODO Ranger un peu tout ça dans des fichiers différents et des fonctions propres
-print("oui")
+# TODO Thompson Sampling
+# TODO Comprendre, modifier la fonction de Q learning (et son initialisation / exploration)
+# TODO Ranger un peu tout ça dans des fichiers différents et des fonctions propres
+# TODO Réécrire tous ces tests pour qu'ils soient fonctionnels ET corrects
+
 """
 #Test State
 s = State(0)
@@ -17,7 +22,7 @@ print(1 in s)
 
 
 def known(nb, n, q, affichage=False):
-    #Approche où tout est connu
+    # Approche où tout est connu
     invasions = []
     durees = []
     rewards = []
@@ -60,23 +65,23 @@ def known(nb, n, q, affichage=False):
         invasions.append(actions)
         durees.append(i - 1)
 
-    #print(durees)
-    #print(q.content.items())
-    #print(invasions[-10:])
+    # print(durees)
+    # print(q.content.items())
+    # print(invasions[-10:])
 
     return rewards, sum(durees) / len(durees), invasions[-1]
 
 
 def unknown(nb, n, q, r=0., alpha=0.01, affichage=False):
-    #Approche ou rien n'est connu, avec nb attaques (avec mémoire).
-    #WARNING alpha est modifie donc ne sert a rien ci-dessus
+    # Approche ou rien n'est connu, avec nb attaques (avec mémoire).
+    # WARNING alpha est modifie donc ne sert a rien ci-dessus
     q.alpha = alpha
     invasions = []
     durees = []
     rewards = []
 
     for j in range(nb):
-        #Essai de modif des alpha
+        # Essai de modif des alpha
         q.alpha = 0.5 * (1 - (j / nb) ** 1) ** 2
         if affichage:
             print("Invasion N°", j)
@@ -119,23 +124,23 @@ def unknown(nb, n, q, r=0., alpha=0.01, affichage=False):
         invasions.append(actions)
         durees.append(i - 1)
 
-    #print(durees)
-    #print(q.content.items())
-    #print(invasions[-10:])
+    # print(durees)
+    # print(q.content.items())
+    # print(invasions[-10:])
 
     return rewards, sum(durees) / len(durees), invasions[-1]
 
 
 def unknown_thomson(nb, n, q, r=0., alpha=0.01, affichage=False):
-    #Approche ou rien n'est connu, avec nb attaques (avec mémoire).
-    #WARNING alpha est modifie donc ne sert a rien ci-dessus
+    # Approche ou rien n'est connu, avec nb attaques (avec mémoire).
+    # WARNING alpha est modifie donc ne sert a rien ci-dessus
     q.alpha = alpha
     invasions = []
     durees = []
     rewards = []
 
     for j in range(nb):
-        #Essai de modif des alpha
+        # Essai de modif des alpha
         q.alpha = 0.5 * (1 - (j / nb) ** 1) ** 2
         if affichage:
             print("Invasion N°", j)
@@ -167,7 +172,7 @@ def unknown_thomson(nb, n, q, r=0., alpha=0.01, affichage=False):
                 print("Failure")
                 print("\n")
 
-            #Update through Thomson Sampling method
+            # Update through Thomson Sampling method
             q.add_trial(action, si, res_action, n.R(si, action))
 
             i += 1
@@ -179,9 +184,9 @@ def unknown_thomson(nb, n, q, r=0., alpha=0.01, affichage=False):
         invasions.append(actions)
         durees.append(i - 1)
 
-    #print(durees)
-    #print(q.content.items())
-    #print(invasions[-10:])
+    # print(durees)
+    # print(q.content.items())
+    # print(invasions[-10:])
 
     return rewards, sum(durees) / len(durees), invasions[-1]
 
@@ -194,7 +199,7 @@ n.add(20, 3, 1)
 q = Qbis(2, 0.9)
 """
 
-#Deuxieme réseau
+# Deuxieme réseau
 k = 12
 n = Network(1)
 for i in range(k):
@@ -215,7 +220,6 @@ plot(range(nb), y2)
 plot(range(nb), [moy1] * nb)
 plot(range(nb), [moy2] * nb)
 show()
-
 
 
 def avg_length_known(nb, gammas, n, q):
@@ -253,7 +257,7 @@ def avg_length_mieux(gammas, n, q):
 
 
 def learning(nb, n, q, rs=None):
-    #Est supposé mesurer la force de l'aléa sur l'apprentissage
+    # Est supposé mesurer la force de l'aléa sur l'apprentissage
     if rs is None:
         rs = [0.]
     res_t = []

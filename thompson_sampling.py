@@ -1,6 +1,7 @@
 from debuts import Qbis
 from random import *
 __author__ = 'Martin'
+# TODO Rewrite this file to fit the new format and be runnable
 
 
 class Thomson(Qbis):
@@ -31,7 +32,6 @@ class Thomson(Qbis):
 
         self.p[(action, state)] = success, trials
 
-
         p = success / trials
         new_q = reward + self.gamma * p * self.max_line(state.add(action)) # Again computation ?
         new_q /= 1 - self.gamma * (1 - p)
@@ -43,18 +43,18 @@ class Thomson(Qbis):
         return [i for i in self.actions if (not i in state) and random() < self.get_p(i, state)]
 
     def thomson_policy(self, state):
-        #Fonction Dstar based on Thomson sampling.
+        # Function Dstar based on Thomson sampling.
         possible_actions = self.simulate(state)
 
         if len(possible_actions) == 0:
-            #No positive simulated action. MODIFY ?
+            # No positive simulated action. MODIFY ?
             return self.policy(state)
 
         best_q = -self.inf
         best_actions = []
 
         for action in possible_actions:
-            #It follows the same strategy, only looking the positive simulated trials. TO MODIFY
+            # It follows the same strategy, only looking the positive simulated trials. TO MODIFY
             new_q = self.get(state, action)
 
             # Other possible way to do : just suppose the simulation was real.
@@ -70,5 +70,5 @@ class Thomson(Qbis):
         if len(best_actions) == 0:
             return None
 
-        #print("Expected best value : ", best_q)
+        # print("Expected best value : ", best_q)
         return choice(best_actions)

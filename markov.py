@@ -34,28 +34,31 @@ class Qstar(Botnet):
         return (state.content, action) in self.content
 
     def max_line(self, state):
+        # TODO Save the maxima ?
         return max(self.get(state, action) for action in self.actions)
 
     def update_q_learning(self, si, a, sf):
+        # TODO Nothing to do here if this botnet computes Qstar
         reward = self.immediate_reward(si, a)
         self.set(si, a, (1 - self.alpha) * self.get(si, a) + self.alpha * (reward + self.gamma * self.max_line(sf)))
 
     def update_fix_point(self):
-        #Pas du tout bien défini ce que ca devrait faire pour rester n**k (k = nombre itérations)
+        # TODO Delete this or try to understand what he meant with these fix point iterations
+        # Pas du tout bien défini ce que ca devrait faire pour rester n**k (k = nombre itérations)
         states = []
         actions = []
 
         for s in states:
             for a in actions:
-                #Il faut détailler la formule.
+                # Il faut détailler la formule.
                 self.set(s, a, self.network.R(s, a) + self.gamma * 0)
 
     def ex_value(self, state, action):
-        #On suppose que toutes les valeurs présentes ont été calculées avec ça aussi.
+        # Compute the exact value of Qstar.
         if self.exists(state, action):
             return self.get(state, action)
 
-        #On ne renvoie la bonne réponse que quand c'est l'action optimale, une minoration sinon.
+        # The result may be smaller than its real exact value if it isn't the maximum.
         res = self.network.R(state, action)
 
         splusa = State.added(state, action)
@@ -72,11 +75,11 @@ class Qstar(Botnet):
                 maxQ = newQ
 
         if maxQ == -self.inf:
-            #Cas où il ne reste aucune cible.
-            #Possibilite 1
+            # No more target left.
+            # Possibility 1
             # maxQ = 0
 
-            #Possibilité 2
+            # Possibility 2
             maxQ = self.network.total_power() / (1. - self.gamma)
 
         res += self.gamma * proba_s_to_splusa * maxQ
@@ -86,8 +89,8 @@ class Qstar(Botnet):
         return res
 
     def policy(self, state):
-        #Fonction Dstar (en supposant que Qstar a été calculée)
-
+        # Function Dstar (en supposant que Qstar a été calculée)
+        # TODO Same thing : no reason to be here (but in Q learning ?)
         best_q = -self.inf
         best_actions = []
 
@@ -107,11 +110,11 @@ class Qstar(Botnet):
         if len(best_actions) == 0:
             return None
 
-        #print("Expected best value : ", best_q)
+        # print("Expected best value : ", best_q)
         return random.choice(best_actions)
 
     def ex_policy(self, state):
-        #Fonction Dstar calculée avec le truc exact (exponentiel).
+        # Computes the best action to perform according to Qstar.
 
         best_q = -self.inf
         best_actions = []
@@ -132,7 +135,7 @@ class Qstar(Botnet):
         if len(best_actions) == 0:
             return None
 
-        #print("Expected best value : ", best_q)
+        # print("Expected best value : ", best_q)
         return random.choice(best_actions)
 
     def compute_policy(self):
@@ -148,6 +151,7 @@ class Qstar(Botnet):
         return Policy(self.network, actions)
 
     def static_info(self, ex=False):
+        # TODO Just computes the same thing as in Policy methods ?
         s = State(self.network.size)
         t = 0
         for _ in range(self.network.size):
@@ -158,4 +162,4 @@ class Qstar(Botnet):
 
             t += 1.0 / self.network.p(a, s)
             s.add(a)
-        return t, self.max_line(State())
+        return t, self.max_line(State(self.network.size))
