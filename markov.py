@@ -1,5 +1,4 @@
 import random
-from botnet import *
 from policy import *
 
 
@@ -12,6 +11,7 @@ class Qstar(Botnet):
         Botnet.__init__(self, network)
 
         self.content = dict()
+        self.best_actions = dict()
         self.actions = list(range(network.size))
         self.gamma = gamma
         self.inf = inf
@@ -22,29 +22,24 @@ class Qstar(Botnet):
     def set(self, state, action, value):
         self.content[(state.content, action)] = value
 
+        if value > self.max_line(state):
+            # Update of the best action for this state.
+            self.best_actions[state] = value
+
     def get(self, state, action):
         try:
             return self.content[(state.content, action)]
         except KeyError:
-            return 0
+            return 0.
 
     def exists(self, state, action):
         return (state.content, action) in self.content
 
     def max_line(self, state):
-        # TODO Save the maxima ?
-        return max(self.get(state, action) for action in self.actions)
-
-    def update_fix_point(self):
-        # TODO Delete this or try to understand what he meant with these fix point iterations
-        # Pas du tout bien défini ce que ca devrait faire pour rester n**k (k = nombre itérations)
-        states = []
-        actions = []
-
-        for s in states:
-            for a in actions:
-                # Il faut détailler la formule.
-                self.set(s, a, self.network.R(s, a) + self.gamma * 0)
+        try:
+            return self.best_actions[state]
+        except KeyError:
+            return 0.
 
     def ex_value(self, state, action):
         # Compute the exact value of Qstar.
@@ -57,25 +52,25 @@ class Qstar(Botnet):
         splusa = State.added(state, action)
         proba_s_to_splusa = self.network.success_probability(action, state)
 
-        maxQ = -self.inf
+        max_q = -self.inf
         for h in self.actions:
             if h in splusa:
                 continue
 
-            newQ = self.ex_value(splusa, h)
+            new_q = self.ex_value(splusa, h)
 
-            if newQ > maxQ:
-                maxQ = newQ
+            if new_q > max_q:
+                max_q = new_q
 
-        if maxQ == -self.inf:
+        if max_q == -self.inf:
             # No more target left.
             # Possibility 1
-            # maxQ = 0
+            # max_q = 0
 
             # Possibility 2
-            maxQ = self.network.total_power() / (1. - self.gamma)
+            max_q = self.network.total_power() / (1. - self.gamma)
 
-        res += self.gamma * proba_s_to_splusa * maxQ
+        res += self.gamma * proba_s_to_splusa * max_q
         res /= (1 - self.gamma * (1 - proba_s_to_splusa))
 
         self.set(state, action, res)

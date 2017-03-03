@@ -14,6 +14,7 @@ class Qlearning(Botnet):
         Botnet.__init__(self, network)
 
         self.content = dict()
+        self.best_actions = dict()
         self.actions = list(range(network.size))
         self.gamma = gamma
         self.alpha = alpha
@@ -25,6 +26,10 @@ class Qlearning(Botnet):
     def set(self, state, action, value):
         self.content[(state.content, action)] = value
 
+        if value > self.max_line(state):
+            # Update of the best action for this state.
+            self.best_actions[state] = value
+
     def get(self, state, action):
         try:
             return self.content[(state.content, action)]
@@ -35,16 +40,16 @@ class Qlearning(Botnet):
         return (state.content, action) in self.content
 
     def max_line(self, state):
-        # TODO Save the maximum ?
-        return max(self.get(state, action) for action in self.actions)
+        try:
+            return self.best_actions[state]
+        except KeyError:
+            return 0.
 
     def update_q_learning(self, si, a, sf):
-        # TODO Could be only written in some inherited class
         reward = self.immediate_reward(si, a)
         self.set(si, a, (1 - self.alpha) * self.get(si, a) + self.alpha * (reward + self.gamma * self.max_line(sf)))
 
     def random_action(self):
-        # TODO Could be only written in some inherited class if not used otherwise
         return random.choice([a for a in self.actions if a not in self.state])
 
     def policy(self, state=None):

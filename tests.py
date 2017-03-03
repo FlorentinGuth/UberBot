@@ -7,10 +7,7 @@ from qlearning import Qlearning
 from matplotlib.pyplot import *
 import random
 
-# TODO Thompson Sampling
 # TODO Comprendre, modifier la fonction de Q learning (et son initialisation / exploration)
-# TODO Ranger un peu tout ça dans des fichiers différents et des fonctions propres
-# TODO Réécrire tous ces tests pour qu'ils soient fonctionnels ET corrects
 
 """
 #Test State
@@ -151,7 +148,7 @@ def unknown_thomson(nb, q, r=0., alpha=0.01, affichage=False):
         i = 1
         actions = []
         while not q.state.is_full():
-            si = q.state.copy() # TODO Get a real copy or find a trick to Q learn directly.
+            si = q.state.copy()
 
             bound = r * (1 - (j / nb) ** 1)
 
@@ -313,6 +310,6 @@ def liozoub(nb, q, r=0., alpha=0.01, affichage=False):
 
     return q.network.size, res
 
-# print(liozoub(100, q1))
-# print(liozoub(100, q2))
-# print(liozoub(100, q3))
+print(liozoub(100, q1))
+print(liozoub(100, q2))
+print(liozoub(100, q3))
