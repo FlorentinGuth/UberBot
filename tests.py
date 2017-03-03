@@ -1,7 +1,7 @@
 from debuts import Network, Qbis, State, expected_reward
 from matplotlib.pyplot import *
 import random
-from thomson_sampling import Thomson
+from thompson_sampling import Thomson
 
 #TODO Thompson Sampling
 #TODO Comprendre, modifier la fonction de Q learning (et son initialisation / exploration)
@@ -53,7 +53,7 @@ def known(nb, n, q, affichage=False):
         # print(actions)
         #
         # exp_rew = expected_reward(State(), actions, n, q.gamma)
-        # print(exp_rew, q.static_infos(n, True)[1])
+        # print(exp_rew, q.static_info(n, True)[1])
 
         rewards.append(n.reward)
         n.reset()

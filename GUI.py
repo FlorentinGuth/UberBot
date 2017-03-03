@@ -8,7 +8,7 @@ Created on Fri Feb 17 14:46:02 2017
 
 import debuts
 import tests
-import thomson_sampling as thom
+import thompson_sampling as thom
 
 import tkinter as tk
 import math
