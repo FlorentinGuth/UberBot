@@ -5,7 +5,7 @@ from state import State
 
 class Thomson(Qlearning):
 
-    def __init__(self, network, gamma, alpha=0., inf=1000):
+    def __init__(self, network, gamma, alpha=0., inf=100000):
         Qlearning.__init__(self, network, gamma, alpha, inf)
 
         self.p = dict()  # Saves the internal estimates of the success probabilities
@@ -32,7 +32,7 @@ class Thomson(Qlearning):
         self.p[(action, state)] = success, trials
 
         p = success / trials
-        new_q = reward + self.gamma * p * self.max_line(State.added(state, action))  # Redundant computation ?
+        new_q = reward + self.gamma * p * self.max_line(State.added(state, action))
         new_q /= 1 - self.gamma * (1 - p)
         old_q = self.get(state, action)
 
@@ -54,10 +54,14 @@ class Thomson(Qlearning):
 
         for action in possible_actions:
             # It follows the same strategy, only looking the positive simulated trials (more likely to exploit).
-            new_q = self.get(state, action)
+            # new_q = self.get(state, action)
 
             # Other possible way to do : just suppose the simulation was real (more likely to explore).
             # new_q = self.max_line(state.add(action))
+
+            # Third possibility
+            beta = 1.
+            new_q = beta * self.get(state, action) + (1 - beta) * self.max_line(state.add(action))
 
             if new_q > best_q:
                 best_q = new_q

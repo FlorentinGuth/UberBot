@@ -65,7 +65,7 @@ def known(nb, q, affichage=False):
     # print(durees)
     # print(q.content.items())
     # print(invasions[-10:])
-
+    print("Opt ", q.compute_policy().expected_reward(State(q.network.size), q.gamma, 0))
     return rewards, sum(durees) / len(durees), invasions[-1]
 
 
@@ -128,7 +128,7 @@ def unknown(nb, q, r=0., alpha=0.01, affichage=False):
     # print(durees)
     # print(q.content.items())
     # print(invasions[-10:])
-
+    print("Q learn ", q.compute_policy().expected_reward(State(q.network.size), q.gamma, 0))
     return rewards, sum(durees) / len(durees), invasions[-1]
 
 
@@ -156,7 +156,10 @@ def unknown_thomson(nb, q, r=0., alpha=0.01, affichage=False):
                 action = q.random_action()
 
             else:
-                action = q.thomson_policy(si)
+                if j == nb - 1:
+                    action = q.policy(si)
+                else:
+                    action = q.thomson_policy(si)
 
             if affichage:
                 print("Action ", i)
@@ -190,6 +193,7 @@ def unknown_thomson(nb, q, r=0., alpha=0.01, affichage=False):
     # print(durees)
     # print(q.content.items())
     # print(invasions[-10:])
+    print("Thompson ", q.compute_policy().expected_reward(State(q.network.size), q.gamma, 0))
 
     return rewards, sum(durees) / len(durees), invasions[-1]
 
@@ -206,17 +210,19 @@ q = Qbis(2, 0.9)
 k = 12
 n = Network(1)
 for i in range(k):
-    n.add(i**1+1, i+1, i)
+    n.add(i**+1, i+1, i)
 
 q1 = Qstar(n, 0.9)
 q2 = Qlearning(n, 0.9, 0.1)
 q3 = Thomson(n, 0.9, 0.1)
-#
-# nb = 1000
+
+nb = 1000
+# print("1...")
 # y1 = known(nb, q1)[0]
 # # print(y1)
-#
-# y2 = unknown(nb, q2, 1, 0.001)[0]
+# print("2...")
+# y2 = unknown(nb, q2, 1, 0.01)[0]
+# print("3...")
 # y3 = unknown_thomson(nb, q3, 1, 0.01)[0]
 # plot(range(nb), y1)
 #
@@ -226,7 +232,7 @@ q3 = Thomson(n, 0.9, 0.1)
 # plot(range(nb), y2)
 # print(len(y3))
 # plot(range(nb), y3)
-
+#
 # plot(range(nb), [moy1] * nb)
 # plot(range(nb), [moy2] * nb)
 # show()
@@ -310,6 +316,6 @@ def liozoub(nb, q, r=0., alpha=0.01, affichage=False):
 
     return q.network.size, res
 
-print(liozoub(100, q1))
-print(liozoub(100, q2))
-print(liozoub(100, q3))
+# print(liozoub(100, q1))
+# print(liozoub(100, q2))
+# print(liozoub(100, q3))

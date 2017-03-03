@@ -34,6 +34,9 @@ class Botnet:
             self.state.add(action)
             self.power += self.network.get_proselytism(action)
 
+            if self.state.is_full():
+                self.reward += self.time_factor * self.network.total_power() / (1 - self.gamma)
+
         return success
 
     def reset(self):
