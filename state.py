@@ -10,7 +10,7 @@ class State:
     def __init__(self, size, nodes=None):
         self.content = 0
         self.size = size    # Keeps track of the size of the network, useful
-        self.nb_hikacked = 0
+        self.nb_hijacked = 0
 
         if nodes is not None:
             for node in nodes:
@@ -18,6 +18,15 @@ class State:
 
     def __contains__(self, item):
         return (self.content >> item) & 1
+
+    def __len__(self):
+        return self.cardinality()
+
+    def __eq__(self, other):
+        return self.content == other.content    # Should be sufficient
+
+    def __hash__(self):
+        return self.content
 
     def is_empty(self):
         return self.content == 0
@@ -37,10 +46,9 @@ class State:
         return l
 
     def cardinality(self):
-        return self.nb_hikacked
+        return self.nb_hijacked
 
     def nb_remaining(self):
-        # TODO Ca va pas plaire a Bodohautin
         return self.size - self.cardinality()
 
     def add(self, node):
@@ -49,7 +57,7 @@ class State:
 
         if node not in self:
             self.content += 1 << node
-            self.nb_hikacked += 1
+            self.nb_hijacked += 1
 
     @staticmethod
     def added(state, node):

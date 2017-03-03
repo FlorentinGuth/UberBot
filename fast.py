@@ -2,6 +2,7 @@ from botnet import *
 from policy import *
 
 
+# TODO: check dictionaries over mutable values
 class Fast(Botnet):
     """
     Botnet minimizing the average time needed to hijack the whole network (exponential complexity).
