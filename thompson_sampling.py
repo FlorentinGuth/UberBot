@@ -2,6 +2,7 @@ import random
 from qlearning import Qlearning
 from state import State
 
+
 class Thomson(Qlearning):
 
     def __init__(self, network, gamma, alpha=0., inf=1000):
