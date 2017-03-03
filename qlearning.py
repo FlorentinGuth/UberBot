@@ -36,7 +36,6 @@ class Qlearning(Botnet):
 
     def max_line(self, state):
         # TODO Save the maximum ?
-        print(self)
         return max(self.get(state, action) for action in self.actions)
 
     def update_q_learning(self, si, a, sf):

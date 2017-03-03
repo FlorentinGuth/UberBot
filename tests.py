@@ -220,6 +220,8 @@ moy1 = sum(y1) / nb
 moy2 = sum(y2) / nb
 
 plot(range(nb), y2)
+plot(range(nb), y3)
+
 plot(range(nb), [moy1] * nb)
 plot(range(nb), [moy2] * nb)
 show()
