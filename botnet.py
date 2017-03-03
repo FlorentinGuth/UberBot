@@ -46,3 +46,24 @@ class Botnet:
     @abc.abstractmethod
     def compute_policy(self):
         """ Returns a policy, must be implemented when inherited """
+
+
+def memoize(func):
+    """
+    Decorator whose type is (('a -> 'b) -> 'a -> 'b) -> ('a -> 'b), working with recursive functions.
+    Usage:
+    @memoize
+    def f(f_mem, x):
+        return f_mem(x-1) + 1
+    """
+    table = {}
+
+    def func_mem(*args, **kwargs):
+        if (args, kwargs) in table:
+            return table[args, kwargs]
+
+        res = func(func_mem, *args, **kwargs)
+        table[args, kwargs] = res
+        return res
+
+    return func_mem

@@ -1,3 +1,6 @@
+from botnet import *
+
+
 class Policy:
     """
     A policy is a sequence of actions (the order of the hijackings).
@@ -27,7 +30,8 @@ class Policy:
 
         a = self.actions[i]
         p = self.network.success_probability(a, state)
-        res += (self.network.R(state, a) + gamma * p * self.expected_reward(state.add(a), gamma, i + 1))
-        res /= (1 - gamma * (1 - p))
+        res += (Botnet(self.network).immediate_reward(state, a) +   # Are we sure it shouldn't be the new state here?
+                gamma * p * self.expected_reward(State.added(state, a), gamma, i + 1))
+        res /= float(1 - gamma * (1 - p))
 
         return res
