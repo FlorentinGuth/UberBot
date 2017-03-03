@@ -35,7 +35,7 @@ class MainGUI(tk.Tk):
     def initialize(self):
         self.grid()
         
-        self.todo = (0,False)
+        self.update = None
         
         self.currPos = 0
         
@@ -101,25 +101,26 @@ class MainGUI(tk.Tk):
         self.l[n].update()
     
     def act(self,action):
-        if self.todo[1]:
-            self.compromized(self.todo[0])
-        else:
-            self.unharmed(self.todo[0])
+        if self.update != None:
+            if self.update[1]:
+                self.compromized(self.update[0])
+            else:
+                self.unharmed(self.update[0])
         wait()
         if action[1]:
             self.attacked(action[0])
         else:
             self.resisted(action[0])
-        self.todo = action
+        self.update = action
         wait()
     
     def reboot(self):
-        self.todo = (0,0)
+        self.update = None
         for i in range(self.n):
             self.l[i].itemconfigure("1", fill="black")
         for i in range(self.n):
             self.unharmed(i)
-        self.used = False
+        self.currPos = 0
     
     def launch(self):
         if self.currPos == self.last:
@@ -137,8 +138,11 @@ class MainGUI(tk.Tk):
         self.currPos += 1
 
     def backward(self):
+        self.update = None
         if self.currPos == 0:
-            return
+            for i in range(self.n):
+                self.l[i].itemconfigure("1", fill="red")
+            self.currPos = self.last
         action = self.actions[self.currPos-1]
         self.attacked(action[0])
         wait()
@@ -204,7 +208,7 @@ class GUI(botnet.Botnet):
 k = 49
 n = network.Network(1)
 for i in range(k):
-    n.add(i**1.8, i+1, i)
+    n.add(i**1.5, i+1, i)
 
 q = thom.Thomson(n, 0.9, 0.1)
 
