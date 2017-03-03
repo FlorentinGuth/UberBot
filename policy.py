@@ -26,7 +26,7 @@ class Policy:
         res = 0
 
         if i == len(self.actions):
-            return self.network.immediate_reward(state) / (1 - gamma)
+            return self.network.total_power() / (1 - gamma)
 
         a = self.actions[i]
         p = self.network.success_probability(a, state)
