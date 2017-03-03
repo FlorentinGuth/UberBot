@@ -40,16 +40,16 @@ def known(nb, q, affichage=False):
                 print("Action ", i)
                 print("Remaining nodes = %s" % q.state.nb_remaining())
                 print("Attack %s!" % action)
+            res_action = q.take_action(action)
 
-            if q.take_action(action):
+            if res_action:
                 if affichage:
                     print("Success")
                     print("\n")
-                actions.append(action)
             elif affichage:
                 print("Failure")
                 print("\n")
-
+            actions.append((action, res_action))
             i += 1
 
         if affichage:
@@ -103,20 +103,23 @@ def unknown(nb, q, r=0., alpha=0.01, affichage=False):
                 print("Remaining nodes = %s" % q.remaining())
                 print("Attack %s!" % action)
 
-            if q.take_action(action):
+            res_action = q.take_action(action)
+
+            if res_action:
                 if affichage:
                     print("Success")
                     print("\n")
-                actions.append(action)
+
             elif affichage:
                 print("Failure")
                 print("\n")
 
-            # TODO Check that the two states are different ? (In fact, they are the same !)
+            actions.append((action, res_action))
+
             q.update_q_learning(si, action, q.state)
-            # assert(n.hijacked.content == si.content)
 
             i += 1
+
         if affichage:
             print(actions)
 
@@ -168,7 +171,7 @@ def unknown_thomson(nb, q, r=0., alpha=0.01, affichage=False):
                 if affichage:
                     print("Success")
                     print("\n")
-                actions.append(action)
+
             elif affichage:
                 print("Failure")
                 print("\n")
@@ -176,7 +179,9 @@ def unknown_thomson(nb, q, r=0., alpha=0.01, affichage=False):
             # Update through Thomson Sampling method
             q.add_trial(action, si, res_action, q.immediate_reward(si, action))
 
+            actions.append((action, res_action))
             i += 1
+
         if affichage:
             print(actions)
 
@@ -205,28 +210,29 @@ k = 12
 n = Network(1)
 for i in range(k):
     n.add(i**1+1, i+1, i)
+
 q1 = Qstar(n, 0.9)
 q2 = Qlearning(n, 0.9, 0.1)
 q3 = Thomson(n, 0.9, 0.1)
+#
+# nb = 1000
+# y1 = known(nb, q1)[0]
+# # print(y1)
+#
+# y2 = unknown(nb, q2, 1, 0.001)[0]
+# y3 = unknown_thomson(nb, q3, 1, 0.01)[0]
+# plot(range(nb), y1)
+#
+# moy1 = sum(y1) / nb
+# moy2 = sum(y2) / nb
+#
+# plot(range(nb), y2)
+# print(len(y3))
+# plot(range(nb), y3)
 
-nb = 1000
-y1 = known(nb, q1)[0]
-# print(y1)
-
-y2 = unknown(nb, q2, 1, 0.001)[0]
-y3 = unknown_thomson(nb, q3, 1, 0.01)[0]
-plot(range(nb), y1)
-
-moy1 = sum(y1) / nb
-moy2 = sum(y2) / nb
-
-plot(range(nb), y2)
-print(len(y3))
-plot(range(nb), y3)
-
-plot(range(nb), [moy1] * nb)
-plot(range(nb), [moy2] * nb)
-show()
+# plot(range(nb), [moy1] * nb)
+# plot(range(nb), [moy2] * nb)
+# show()
 
 
 def avg_length_known(nb, gammas, n, q):
@@ -294,3 +300,19 @@ def learning(nb, q, rs=None):
 
 # y1 = known(1, n, q)[0]
 # unknown(1000, n, q, True)
+
+
+def liozoub(nb, q, r=0., alpha=0.01, affichage=False):
+    res = None
+    if isinstance(q, Qstar):
+        res = known(nb, q)[-1]
+    if isinstance(q, Qlearning):
+        res = unknown(nb, q, r, alpha, affichage)[-1]
+    if isinstance(q, Thomson):
+        res = unknown_thomson(nb, q, r, alpha, affichage)[-1]
+
+    return q.network.size, res
+
+# print(liozoub(100, q1))
+# print(liozoub(100, q2))
+# print(liozoub(100, q3))
