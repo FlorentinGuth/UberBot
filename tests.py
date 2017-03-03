@@ -210,13 +210,13 @@ q = Qbis(2, 0.9)
 k = 12
 n = Network(1)
 for i in range(k):
-    n.add(i**+1, i+1, i)
+    n.add(i**1+1, i+1, i)
 
 q1 = Qstar(n, 0.9)
 q2 = Qlearning(n, 0.9, 0.1)
 q3 = Thomson(n, 0.9, 0.1)
 
-nb = 1000
+# nb = 1000
 # print("1...")
 # y1 = known(nb, q1)[0]
 # # print(y1)
@@ -307,12 +307,12 @@ def learning(nb, q, rs=None):
 
 def liozoub(nb, q, r=0., alpha=0.01, affichage=False):
     res = None
-    if isinstance(q, Qstar):
-        res = known(nb, q)[-1]
-    if isinstance(q, Qlearning):
-        res = unknown(nb, q, r, alpha, affichage)[-1]
     if isinstance(q, Thomson):
-        res = unknown_thomson(nb, q, r, alpha, affichage)[-1]
+        res = unknown_thomson(nb, q, r, 0.01, affichage)[-1]
+    elif isinstance(q, Qlearning):
+        res = unknown(nb, q, r, alpha, affichage)[-1]
+    elif isinstance(q, Qstar):
+        res = known(nb, q)[-1]
 
     return q.network.size, res
 
