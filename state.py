@@ -56,3 +56,6 @@ class State:
         new_state = copy.copy(state)
         new_state.add(node)
         return new_state
+
+    def copy(self):
+        return copy.copy(self)

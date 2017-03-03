@@ -33,7 +33,7 @@ def known(nb, q, affichage=False):
         i = 1
         actions = []
         while not (q.state.is_full()):
-            si = q.state
+            si = q.state.copy()
             action = q.ex_policy(si)
 
             if affichage:
@@ -88,7 +88,7 @@ def unknown(nb, q, r=0., alpha=0.01, affichage=False):
         i = 1
         actions = []
         while not q.state.is_full():
-            si = q.state
+            si = q.state.copy()
 
             bound = r * (1 - (j / nb) ** 1)
 
@@ -148,7 +148,7 @@ def unknown_thomson(nb, q, r=0., alpha=0.01, affichage=False):
         i = 1
         actions = []
         while not q.state.is_full():
-            si = q.state  # TODO Get a real copy or find a trick to Q learn directly.
+            si = q.state.copy() # TODO Get a real copy or find a trick to Q learn directly.
 
             bound = r * (1 - (j / nb) ** 1)
 
@@ -211,15 +211,17 @@ q3 = Thomson(n, 0.9, 0.1)
 
 nb = 1000
 y1 = known(nb, q1)[0]
-print(y1)
+# print(y1)
 
 y2 = unknown(nb, q2, 1, 0.001)[0]
-y3 = unknown_thomson(nb, q3, 1, 0.01)
+y3 = unknown_thomson(nb, q3, 1, 0.01)[0]
 plot(range(nb), y1)
+
 moy1 = sum(y1) / nb
 moy2 = sum(y2) / nb
 
 plot(range(nb), y2)
+print(len(y3))
 plot(range(nb), y3)
 
 plot(range(nb), [moy1] * nb)
