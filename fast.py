@@ -1,4 +1,3 @@
-from state import *
 from botnet import *
 from policy import *
 

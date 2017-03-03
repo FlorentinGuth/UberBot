@@ -10,6 +10,7 @@ class State:
     def __init__(self, size, nodes=None):
         self.content = 0
         self.size = size    # Keeps track of the size of the network, useful
+        self.nb_hikacked = 0
 
         if nodes is not None:
             for node in nodes:
@@ -36,16 +37,19 @@ class State:
         return l
 
     def cardinality(self):
-        # TODO Discuss the possibility of always knowing his actual size
-        return len(self.to_list())
+        return self.nb_hikacked
+
+    def nb_remaining(self):
+        # TODO Ca va pas plaire a Bodohautin
+        return self.size - self.cardinality()
 
     def add(self, node):
         if not (0 <= node < self.size):
-            # TODO Discuss this error
-            raise ValueError
+            raise ValueError("Node %d out of bounds" % node)
 
         if node not in self:
             self.content += 1 << node
+            self.nb_hikacked += 1
 
     @staticmethod
     def added(state, node):

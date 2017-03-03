@@ -1,15 +1,13 @@
-from debuts import Qbis
-from random import *
-__author__ = 'Martin'
-# TODO Rewrite this file to fit the new format and be runnable
+import random
+from qlearning import Qlearning
 
 
-class Thomson(Qbis):
+class Thomson(Qlearning):
 
-    def __init__(self, n, gamma, alpha=0., inf=1000):
-        Qbis.__init__(self, n, gamma, alpha, inf)
+    def __init__(self, network, gamma, alpha=0., inf=1000):
+        Qlearning.__init__(self, network, gamma, alpha, inf)
 
-        self.p = dict()
+        self.p = dict()  # Saves the internal estimates of the success probabilities
 
     def get_p(self, action, state):
         try:
@@ -33,17 +31,17 @@ class Thomson(Qbis):
         self.p[(action, state)] = success, trials
 
         p = success / trials
-        new_q = reward + self.gamma * p * self.max_line(state.add(action)) # Again computation ?
+        new_q = reward + self.gamma * p * self.max_line(state.add(action))  # Redundant computation ?
         new_q /= 1 - self.gamma * (1 - p)
         old_q = self.get(state, action)
 
         self.set(state, action, (1 - self.alpha) * old_q + self.alpha * new_q)
 
     def simulate(self, state):
-        return [i for i in self.actions if (not i in state) and random() < self.get_p(i, state)]
+        return [i for i in self.actions if (i not in state) and random.random() < self.get_p(i, state)]
 
     def thomson_policy(self, state):
-        # Function Dstar based on Thomson sampling.
+        # Computes best action to perform in this state according Thomson Sampling.
         possible_actions = self.simulate(state)
 
         if len(possible_actions) == 0:
@@ -54,10 +52,10 @@ class Thomson(Qbis):
         best_actions = []
 
         for action in possible_actions:
-            # It follows the same strategy, only looking the positive simulated trials. TO MODIFY
+            # It follows the same strategy, only looking the positive simulated trials (more likely to exploit).
             new_q = self.get(state, action)
 
-            # Other possible way to do : just suppose the simulation was real.
+            # Other possible way to do : just suppose the simulation was real (more likely to explore).
             # new_q = self.max_line(state.add(action))
 
             if new_q > best_q:
@@ -71,4 +69,4 @@ class Thomson(Qbis):
             return None
 
         # print("Expected best value : ", best_q)
-        return choice(best_actions)
+        return random.choice(best_actions)

@@ -1,5 +1,4 @@
 import random
-from state import *
 from botnet import *
 from policy import *
 
@@ -9,13 +8,12 @@ class Qstar(Botnet):
     This class performs the computation of the Q* function.
     """
 
-    def __init__(self, network, gamma, alpha=0., inf=1000):
+    def __init__(self, network, gamma, inf=1000):
         Botnet.__init__(self, network)
 
         self.content = dict()
         self.actions = list(range(network.size))
         self.gamma = gamma
-        self.alpha = alpha
         self.inf = inf
 
     def clear(self):
@@ -36,11 +34,6 @@ class Qstar(Botnet):
     def max_line(self, state):
         # TODO Save the maxima ?
         return max(self.get(state, action) for action in self.actions)
-
-    def update_q_learning(self, si, a, sf):
-        # TODO Nothing to do here if this botnet computes Qstar
-        reward = self.immediate_reward(si, a)
-        self.set(si, a, (1 - self.alpha) * self.get(si, a) + self.alpha * (reward + self.gamma * self.max_line(sf)))
 
     def update_fix_point(self):
         # TODO Delete this or try to understand what he meant with these fix point iterations
@@ -88,31 +81,6 @@ class Qstar(Botnet):
         self.set(state, action, res)
         return res
 
-    def policy(self, state):
-        # Function Dstar (en supposant que Qstar a été calculée)
-        # TODO Same thing : no reason to be here (but in Q learning ?)
-        best_q = -self.inf
-        best_actions = []
-
-        for action in self.actions:
-            if action in state:
-                continue
-
-            new_q = self.get(state, action)
-
-            if new_q > best_q:
-                best_q = new_q
-                best_actions = [action]
-
-            elif new_q == best_q:
-                best_actions.append(action)
-
-        if len(best_actions) == 0:
-            return None
-
-        # print("Expected best value : ", best_q)
-        return random.choice(best_actions)
-
     def ex_policy(self, state):
         # Computes the best action to perform according to Qstar.
 
@@ -149,17 +117,3 @@ class Qstar(Botnet):
             state.add(a)
 
         return Policy(self.network, actions)
-
-    def static_info(self, ex=False):
-        # TODO Just computes the same thing as in Policy methods ?
-        s = State(self.network.size)
-        t = 0
-        for _ in range(self.network.size):
-            if ex:
-                a = self.ex_policy(s)
-            else:
-                a = self.policy(s)
-
-            t += 1.0 / self.network.p(a, s)
-            s.add(a)
-        return t, self.max_line(State(self.network.size))
