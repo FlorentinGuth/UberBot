@@ -6,7 +6,8 @@ Created on Fri Feb 17 14:46:02 2017
 
 #!/usr/bin/env python
 
-import debuts
+import botnet
+import network
 import tests
 import thompson_sampling as thom
 
@@ -23,18 +24,22 @@ def wait():
 
 class MainGUI(tk.Tk):
     
-    def __init__(self, n, exe, master=None):
+    def __init__(self, res, master=None):
         tk.Tk.__init__(self,master)
         self.master = master
-        self.n = n # number of devices in the network
+        self.n = res[0] # number of devices in the network
         self.initialize()
-        self.exe = exe
+        self.actions = res[1]
+        self.last = len(self.actions)
         
     def initialize(self):
         self.grid()
-        self.used = False
         
-        m = math.floor(math.sqrt(self.n))
+        self.todo = (0,False)
+        
+        self.currPos = 0
+        
+        m = max(math.floor(math.sqrt(self.n)),3)
         
         index = []
         for k in range(self.n):
@@ -61,40 +66,86 @@ class MainGUI(tk.Tk):
         
         self.l = l
         
-        self.button = tk.Button(self, text="Animate", command=self.onButtonClick)
-        self.button.grid(column=0,row=index[-1][0]+1, columnspan=m)
+        button_pos = max(m//7,1)
+
+        self.b_backward = tk.Button(self, text="Previous", command=self.backward)
+        self.b_backward.grid(column=0,row=index[-1][0]+1, columnspan=button_pos)
+                
+        self.b_launch = tk.Button(self, text="Launch", command=self.launch)
+        self.b_launch.grid(column=button_pos,row=index[-1][0]+1, columnspan = m-2*button_pos)
         
+        self.b_forward = tk.Button(self, text="Next", command=self.forward)
+        self.b_forward.grid(column=m-button_pos,row=index[-1][0]+1, columnspan=button_pos)
         
-#        self.entry = tk.Entry(self)
-#        self.entry.grid(column=0,row=0,sticky = 'NS')
-#        
-#        
-#        self.label = tk.Label(self, anchor = 'w', fg="white", bg = "blue")
-#        self.label.grid(column=1, row=1, columnspan=2, sticky='WE')
-#        
-#        self.grid_columnconfigure(1,weight=1)
-#        self.grid_rowconfigure(0,weight=1)
+        self.bind('<Right>',lambda x:self.forward())
+        self.bind('<Return>',lambda x:self.forward())
+        self.bind('<Left>',lambda x:self.backward())
+        self.bind('<BackSpace>',lambda x:self.backward())
+        self.bind('<space>',lambda x:self.launch())
+        
     
-    def onButtonClick(self):
-        if self.used:
-            for i in range(self.n):
-                self.l[i].itemconfigure("1", fill="black")
-            for i in range(self.n):
-                self.resisted(i)
-        self.used = True
-        self.exe()
-        
     def attacked(self,n):
-        self.l[n].itemconfigure("1", fill="blue")
+        self.l[n].itemconfigure("1", fill="orange")
         self.l[n].update()
     
     def resisted(self,n):
+        self.l[n].itemconfigure("1", fill="blue")
+        self.l[n].update()
+    
+    def unharmed(self,n):
         self.l[n].itemconfigure("1", fill="green")
         self.l[n].update()
     
     def compromized(self,n):
         self.l[n].itemconfigure("1", fill="red")
         self.l[n].update()
+    
+    def act(self,action):
+        if self.todo[1]:
+            self.compromized(self.todo[0])
+        else:
+            self.unharmed(self.todo[0])
+        wait()
+        if action[1]:
+            self.attacked(action[0])
+        else:
+            self.resisted(action[0])
+        self.todo = action
+        wait()
+    
+    def reboot(self):
+        self.todo = (0,0)
+        for i in range(self.n):
+            self.l[i].itemconfigure("1", fill="black")
+        for i in range(self.n):
+            self.unharmed(i)
+        self.used = False
+    
+    def launch(self):
+        if self.currPos == self.last:
+            self.reboot()
+        for i in range(self.currPos,self.last):
+            self.act(self.actions[i])
+        self.currPos = self.last
+    
+    def forward(self):
+        if self.currPos == self.last:
+            self.reboot()
+            self.currPos = 0
+            return
+        self.act(self.actions[self.currPos])
+        self.currPos += 1
+
+    def backward(self):
+        if self.currPos == 0:
+            return
+        action = self.actions[self.currPos-1]
+        self.attacked(action[0])
+        wait()
+        self.unharmed(action[0])
+        wait()
+        self.currPos -=1
+        
 
     def animate(self):
         available = [i for i in range(self.n)]
@@ -107,53 +158,56 @@ class MainGUI(tk.Tk):
                 self.compromized(x)
                 available.remove(x)
             else:
-                self.resisted(x)
+                self.unharmed(x)
 
-class GUI(debuts.Network):
+
+class GUI(botnet.Botnet):
     
     def __init__(self,initial_power):
-        debuts.Network.__init__(self, initial_power)
+        net = network.Network(initial_power)
+        botnet.Botnet.__init__(self, net)
         self.GUI = None
     
     def display(self,mode):
         def exe():
-            mode(1,self,q)        
+            mode(10,self)
         
-        self.GUI = MainGUI(self.size,exe)
+        self.GUI = MainGUI(self.network.size,exe)
         self.GUI.mainloop()
     
     def take_action(self,action):
         if self.GUI != None:
             self.GUI.attacked(action)
             wait()
-            success = debuts.Network.take_action(self,action)
+            success = botnet.Botnet.take_action(self,action)
             wait()
             if success:
                 self.GUI.compromized(action)
             else:
-                self.GUI.resisted(action)
+                self.GUI.unharmed(action)
             wait()
             return success
         else:
-            return debuts.Network.take_action(self,action)
+            return botnet.Botnet.take_action(self,action)
 
+
+#n = GUI(1)
 #
-#if __name__ == "__main__":
-#    app = MainGUI(256)
-#    app.title("TestMain")
-#    app.after(1,app.animate)
-#    app.mainloop()
-#    
-#    del app
+#k = 16
+#for i in range(k):
+#    n.network.add(i**1.8+1, i+1, i)
+#q = thom.Thomson(n.network, 0.9)
+#
+#
+#n.display(tests.unknown_thomson,q)
 
-
-n = GUI(1)
-
-k = 1024
+k = 49
+n = network.Network(1)
 for i in range(k):
-    n.add(i**1.8+1, i+1, i)
-q = thom.Thomson(k, 0.9, alpha=0.05)
+    n.add(i**1.8, i+1, i)
 
+q = thom.Thomson(n, 0.9, 0.1)
 
-n.display(tests.unknown_thomson)
+n = MainGUI(tests.liozoub(500,q))
+n.mainloop()
 
