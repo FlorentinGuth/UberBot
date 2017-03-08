@@ -34,6 +34,7 @@ class Qlearning(Botnet):
         try:
             return self.content[(state.content, action)]
         except KeyError:
+            # return self.immediate_reward(state, action) / (1 - self.gamma)
             return 0
 
     def exists(self, state, action):

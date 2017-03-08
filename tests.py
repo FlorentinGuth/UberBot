@@ -87,8 +87,8 @@ def unknown(nb, q, r=0., alpha=0.01, affichage=False):
         while not q.state.is_full():
             si = q.state.copy()
 
-            bound = r * (1 - (j / nb) ** 1)
-
+            bound = r * (1 - (j / nb) ** 2)
+            # bound = 1
             if random.random() < bound:
                 action = q.random_action()
 
@@ -141,7 +141,7 @@ def unknown_thomson(nb, q, r=0., alpha=0.01, affichage=False):
 
     for j in range(nb):
         # Essai de modif des alpha.. WARNING alpha est modifie donc ne sert a rien ci-dessus
-        # q.alpha = 0.5 * (1 - (j / nb) ** 1) ** 2
+        # q.alpha = 0.5 * (1 - (j / nb) ** 2) ** 1
 
         if affichage:
             print("Invasion N°", j)
@@ -151,10 +151,10 @@ def unknown_thomson(nb, q, r=0., alpha=0.01, affichage=False):
             si = q.state.copy()
 
             bound = r * (1 - (j / nb) ** 1)
-
-            if random.random() < bound:
+            #WARING MODIF TODO
+            if random.random() < bound or r == 1:
                 action = q.random_action()
-
+                # action = q.be_curious(si)
             else:
                 if j == nb - 1:
                     action = q.policy(si)
@@ -210,7 +210,7 @@ q = Qbis(2, 0.9)
 k = 12
 n = Network(1)
 for i in range(k):
-    n.add(i**1+1, i+1, i)
+    n.add(i**2.+1, i+1, i)
 
 q1 = Qstar(n, 0.9)
 q2 = Qlearning(n, 0.9, 0.1)
@@ -234,7 +234,7 @@ q3 = Thomson(n, 0.9, 0.1)
 # plot(range(nb), y3)
 #
 # plot(range(nb), [moy1] * nb)
-# plot(range(nb), [moy2] * nb)
+# # plot(range(nb), [moy2] * nb)
 # show()
 
 
@@ -305,7 +305,7 @@ def learning(nb, q, rs=None):
 # unknown(1000, n, q, True)
 
 
-def liozoub(nb, q, r=0., alpha=0.01, affichage=False):
+def liozoub(nb, q, r=1., alpha=0.01, affichage=False):
     res = None
     if isinstance(q, Thomson):
         res = unknown_thomson(nb, q, r, 0.01, affichage)[-1]
@@ -316,6 +316,47 @@ def liozoub(nb, q, r=0., alpha=0.01, affichage=False):
 
     return q.network.size, res
 
+
+def results(nb, q, r=1., alpha=0.01, affichage=False):
+    res = None
+    if isinstance(q, Thomson):
+        res = unknown_thomson(nb, q, r, 0.01, affichage)[0]
+    elif isinstance(q, Qlearning):
+        res = unknown(nb, q, r, alpha, affichage)[0]
+    elif isinstance(q, Qstar):
+        res = known(nb, q)[0]
+
+    return res
+
+
+def soft(points, window_size):
+    n = len(points)
+    soft_points = []
+    cur_sum = 0
+    for i in range(window_size):
+        cur_sum += points[i]
+        soft_points.append(cur_sum / (i + 1))
+
+    for i in range(window_size, n):
+        cur_sum += points[i] - points[i-window_size]
+        soft_points.append(cur_sum / window_size)
+
+    return soft_points
+
+
+def plot_perf(points, window_size=1):
+    soft_points = soft(points, window_size)
+    plot(range(len(points)), soft_points)
+
 # print(liozoub(100, q1))
 # print(liozoub(100, q2))
-# print(liozoub(100, q3))
+print(liozoub(1000, q3))
+
+r1 = results(1000, q1, 1, 0.01)
+r3 = results(1000, q3, 0.9, 0.01)
+print(r3)
+plot_perf(results(1000, q2, 0.99, 0.01), 50)
+plot_perf(r3, 50)
+plot_perf(r1, 1000)
+print([x for x in q3.content.items() if x[0][0] == 0])
+show()

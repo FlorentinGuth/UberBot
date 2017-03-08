@@ -212,6 +212,6 @@ for i in range(k):
 
 q = thom.Thomson(n, 0.9, 0.1)
 
-n = MainGUI(tests.liozoub(500,q))
+n = MainGUI(tests.liozoub(500, q))
 n.mainloop()
 
