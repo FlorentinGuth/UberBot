@@ -16,7 +16,7 @@ class Policy:
         power = self.network.initial_power
 
         for node in self.actions:
-            t += 1. / self.network.success_probability(node, power)
+            t += 1. / self.network.success_probability_power(node, power)
             power += self.network.get_proselytism(node)
 
         return t

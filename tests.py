@@ -350,13 +350,36 @@ def plot_perf(points, window_size=1):
 
 # print(liozoub(100, q1))
 # print(liozoub(100, q2))
-print(liozoub(1000, q3))
+# print(liozoub(1000, q3))
+#
+# r1 = results(1000, q1, 1, 0.01)
+# r3 = results(1000, q3, 0.9, 0.01)
+# print(r3)
+# plot_perf(results(1000, q2, 0.99, 0.01), 50)
+# plot_perf(r3, 50)
+# plot_perf(r1, 1000)
+# print([x for x in q3.content.items() if x[0][0] == 0])
+# show()
 
-r1 = results(1000, q1, 1, 0.01)
-r3 = results(1000, q3, 0.9, 0.01)
-print(r3)
-plot_perf(results(1000, q2, 0.99, 0.01), 50)
-plot_perf(r3, 50)
-plot_perf(r1, 1000)
-print([x for x in q3.content.items() if x[0][0] == 0])
+import fast
+import fast_tentative
+import sys
+sys.setrecursionlimit(999999)
+
+network = Network(1)
+size = []
+f_time = []
+ft_time = []
+for n in range(1, 11):
+    print(n)
+    network.add(n, n**2, 0)
+    size.append(n)
+
+    pf = fast.Fast(network).compute_policy()
+    f_time.append(pf.expected_time())
+
+    pft = fast_tentative.Fast(network).compute_policy()
+    ft_time.append(pft.expected_time())
+plot(size, f_time, color="blue")
+plot(size, ft_time, color="red")
 show()

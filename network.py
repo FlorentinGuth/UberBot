@@ -35,12 +35,14 @@ class Network:
     def get_proselytism(self, node):
         return self.proselytism[node]
 
-    def success_probability(self, action, state):
-        power = self.current_power(state)
-
+    def success_probability_power(self, action, power):
         if self.resistance[action] == 0:
             return 1.
         return min(1., float(power) / self.resistance[action])
+
+    def success_probability(self, action, state):
+        power = self.current_power(state)
+        return self.success_probability_power(action, power)
 
     def attempt_hijacking(self, action, state):
         rnd = random.random()
