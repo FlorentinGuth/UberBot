@@ -3,11 +3,16 @@ from markov import Qstar
 from thompson_sampling import Thomson
 from network import Network
 from qlearning import Qlearning
+import fast
+import fast_tentative
+import sys
 
 from matplotlib.pyplot import *
 import random
 
 # TODO Comprendre, modifier la fonction de Q learning (et son initialisation / exploration)
+# TODO Recoder une fonction d'invasion uniquement à partir de la méthode choose_action
+# TODO Réorganiser pour n'avoir que des trucs propres, et pareil pour l'affichage
 
 """
 #Test State
@@ -87,13 +92,15 @@ def unknown(nb, q, r=0., alpha=0.01, affichage=False):
         while not q.state.is_full():
             si = q.state.copy()
 
-            bound = r * (1 - (j / nb) ** 2)
+            # bound = r * (1 - (j / nb) ** 2)
             # bound = 1
-            if random.random() < bound:
-                action = q.random_action()
+            # if random.random() < bound:
+            #     action = q.random_action()
+            #
+            # else:
+            #     action = q.policy(q.state)
 
-            else:
-                action = q.policy(q.state)
+            action = q.choose_action(nb, j)
 
             if affichage:
                 print("Action ", i)
@@ -113,7 +120,7 @@ def unknown(nb, q, r=0., alpha=0.01, affichage=False):
 
             actions.append((action, res_action))
 
-            q.update_q_learning(si, action, q.state)
+            # q.update_q_learning(si, action, q.state)
 
             i += 1
 
@@ -150,16 +157,17 @@ def unknown_thomson(nb, q, r=0., alpha=0.01, affichage=False):
         while not q.state.is_full():
             si = q.state.copy()
 
-            bound = r * (1 - (j / nb) ** 1)
-            #WARING MODIF TODO
-            if random.random() < bound or r == 1:
-                action = q.random_action()
+            # bound = r * (1 - (j / nb) ** 1)
+            # WARNING MODIF TODO
+            # if random.random() < bound or r == 1:
+            #     action = q.random_action()
                 # action = q.be_curious(si)
-            else:
-                if j == nb - 1:
-                    action = q.policy(si)
-                else:
-                    action = q.thomson_policy(si)
+            # else:
+            #     if j == nb - 1:
+            #         action = q.policy(si)
+            #     else:
+            #         action = q.thomson_policy(si)
+            action = q.choose_action(nb, j)
 
             if affichage:
                 print("Action ", i)
@@ -177,7 +185,7 @@ def unknown_thomson(nb, q, r=0., alpha=0.01, affichage=False):
                 print("\n")
 
             # Update through Thomson Sampling method
-            q.add_trial(action, si, res_action, q.immediate_reward(si, action))
+            # q.add_trial(action, si, res_action, q.immediate_reward(si, action))
 
             actions.append((action, res_action))
             i += 1
@@ -210,7 +218,7 @@ q = Qbis(2, 0.9)
 k = 12
 n = Network(1)
 for i in range(k):
-    n.add(i**2.+1, i+1, i)
+    n.add(i**1.+1, i+1, i)
 
 q1 = Qstar(n, 0.9)
 q2 = Qlearning(n, 0.9, 0.1)
@@ -348,6 +356,29 @@ def plot_perf(points, window_size=1):
     soft_points = soft(points, window_size)
     plot(range(len(points)), soft_points)
 
+
+def test_fast():
+    sys.setrecursionlimit(999999)
+
+    network = Network(1)
+    size = []
+    f_time = []
+    ft_time = []
+    for n in range(1, 11):
+        print(n)
+        network.add(n, n**2, 0)
+        size.append(n)
+
+        pf = fast.Fast(network).compute_policy()
+        f_time.append(pf.expected_time())
+
+        pft = fast_tentative.Fast(network).compute_policy()
+        ft_time.append(pft.expected_time())
+    plot(size, f_time, color="blue")
+    plot(size, ft_time, color="red")
+    show()
+
+
 # print(liozoub(100, q1))
 # print(liozoub(100, q2))
 # print(liozoub(1000, q3))
@@ -360,26 +391,3 @@ def plot_perf(points, window_size=1):
 # plot_perf(r1, 1000)
 # print([x for x in q3.content.items() if x[0][0] == 0])
 # show()
-
-import fast
-import fast_tentative
-import sys
-sys.setrecursionlimit(999999)
-
-network = Network(1)
-size = []
-f_time = []
-ft_time = []
-for n in range(1, 11):
-    print(n)
-    network.add(n, n**2, 0)
-    size.append(n)
-
-    pf = fast.Fast(network).compute_policy()
-    f_time.append(pf.expected_time())
-
-    pft = fast_tentative.Fast(network).compute_policy()
-    ft_time.append(pft.expected_time())
-plot(size, f_time, color="blue")
-plot(size, ft_time, color="red")
-show()

@@ -3,6 +3,10 @@ from botnet import Botnet
 import random
 from policy import Policy
 # TODO Group the methods using Q function in a intermediate class ?
+# TODO Décider ensemble de comment envelopper une "strategie" de manière propre et efficace
+# TODO Coder dans un fichier séparé l'ensemble des stratégies envisagées, de la plus simple à la plus raffinée.
+# TODO Surcharger la methode immediate reward en ajoutant un potentiel de reward shaping
+# TODO Detecter les blocages lors de l'apprentissage
 
 
 class Qlearning(Botnet):
@@ -50,6 +54,14 @@ class Qlearning(Botnet):
         reward = self.immediate_reward(si, a)
         self.set(si, a, (1 - self.alpha) * self.get(si, a) + self.alpha * (reward + self.gamma * self.max_line(sf)))
 
+    def take_action(self, action):
+        si = self.state.copy()
+        res = Botnet.take_action(self, action)
+
+        self.update_q_learning(si, action, self.state)
+
+        return res
+
     def random_action(self):
         return random.choice([a for a in self.actions if a not in self.state])
 
@@ -92,3 +104,25 @@ class Qlearning(Botnet):
             state.add(a)
 
         return Policy(self.network, actions)
+
+    def choose_action(self, tot_nb_invasions, cur_nb):
+        """
+        :param tot_nb_invasions: total number of invasions
+        :param cur_nb: current number of invasions
+        :return: chooses an action to perform in current state, according to a variable strategy
+        """
+        # TODO In progress
+        # Exploration
+        #   Curious
+        #   Random
+        #   Progress
+        #
+        # Exploitation
+        #   Best_action
+        #   ...
+
+        # Typical strategy
+        if random.random() > float(cur_nb) / tot_nb_invasions:
+            return random.choice([a for a in self.actions if a not in self.state])
+
+        return self.policy(self.state)

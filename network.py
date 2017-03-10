@@ -16,12 +16,26 @@ class Network:
         self.resistance = []
         self.proselytism = []
         self.action_cost = []
+        self.graph = []
 
     def add(self, resistance, proselytism, cost):
         self.action_cost.append(cost)
         self.proselytism.append(proselytism)
         self.resistance.append(resistance)
         self.size += 1
+        self.graph.append([])
+
+    def add_link(self, node1, node2):
+        """
+        :param node1:
+        :param node2:
+        :return: adds the edge node1-node2 to the graph of the network
+        """
+        # TODO Décider si c'est orienté, et propager ces modifications dans le reste, par exemple en ajoutant
+        # un attribut accessibles (ensemble des noeuds accesibles depuis l'etat courant)
+        # Possibilité de modifier le graphe en des ensembles ?
+        # Ajouter une methode get_actions(self, state) ou qqch comme ca
+        self.graph[node1].append(node2)
 
     def current_power(self, state):
         return self.initial_power + sum(self.proselytism[i] for i in range(self.size) if i in state)

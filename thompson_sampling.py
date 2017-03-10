@@ -1,7 +1,9 @@
 import random
 from qlearning import Qlearning
 from state import State
+from botnet import Botnet
 
+# TODO Ajouter de l'auto-évaluation des stratégies adoptées, s'en servir pour les retenir, et détecter des blocages.
 
 class Thomson(Qlearning):
 
@@ -40,14 +42,22 @@ class Thomson(Qlearning):
         self.p[(action, state)] = success, trials
 
         p = success / trials
-        new_q = reward + self.gamma * p * self.max_line(State.added(state, action))
-        new_q /= 1 - self.gamma * (1 - p)
-        # new_q = reward + self.gamma * self.max_line(State.added(state, action))
+        # new_q = reward + self.gamma * p * self.max_line(State.added(state, action))
+        # new_q /= 1 - self.gamma * (1 - p)
+        new_q = reward + self.gamma * self.max_line(State.added(state, action))
         old_q = self.get(state, action)
 
         self.set(state, action, (1 - self.alpha) * old_q + self.alpha * new_q)
 
         # print("Old : ", old_q, " new : ", new_q)
+
+    def take_action(self, action):
+        si = self.state.copy()
+        res = Botnet.take_action(self, action)
+
+        self.add_trial(action, si, res, self.immediate_reward(si, action))
+
+        return res
 
     def simulate(self, state):
         return [i for i in self.actions if (i not in state) and random.random() < self.get_p(i, state)]
@@ -103,3 +113,29 @@ class Thomson(Qlearning):
                     best_a.append(a)
 
         return int(random.choice(best_a))
+
+    def choose_action(self, tot_nb_invasions, cur_nb):
+        """
+        :param tot_nb_invasions: total number of invasions
+        :param cur_nb: current number of invasions
+        :return: chooses an action to perform in current state, according to a variable strategy
+        """
+        # TODO In progress
+        # Exploration
+        #   Curious
+        #   Random
+        #   Progress
+        #
+        # Exploitation
+        #   Best_action
+        #   Thomson sampling
+        #   ...
+
+        # Typical strategy
+        if cur_nb == tot_nb_invasions - 1:
+            return self.policy(self.state)
+
+        if random.random() > float(cur_nb) / tot_nb_invasions:
+            return random.choice([a for a in self.actions if a not in self.state])
+
+        return self.thomson_policy(self.state)

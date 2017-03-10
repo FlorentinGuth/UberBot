@@ -1,5 +1,6 @@
 import random
 from policy import *
+# TODO Implémenter l'exploration online à profondeur fixée, par calcul exact
 
 
 class Qstar(Botnet):
@@ -112,3 +113,6 @@ class Qstar(Botnet):
             state.add(a)
 
         return Policy(self.network, actions)
+
+    def choose_action(self, tot_nb_invasions=1, cur_nb_invasions=1):
+        return self.ex_policy(self.state)
