@@ -13,7 +13,7 @@ class Qstar(Botnet):
 
         self.content = dict()
         self.best_actions = dict()
-        self.actions = list(range(network.size))
+        self.actions = list(range(network.size))  # May not be used, use network.get_actions instead.
         self.gamma = gamma
         self.inf = inf
 
@@ -54,9 +54,9 @@ class Qstar(Botnet):
         proba_s_to_splusa = self.network.success_probability(action, state)
 
         max_q = -self.inf
-        for h in self.actions:
+        for h in self.network.get_actions(splusa):
             if h in splusa:
-                continue
+                assert False
 
             new_q = self.ex_value(splusa, h)
 
@@ -83,9 +83,9 @@ class Qstar(Botnet):
         best_q = -self.inf
         best_actions = []
 
-        for action in self.actions:
+        for action in self.network.get_actions(state):
             if action in state:
-                continue
+                assert False
 
             new_q = self.ex_value(state, action)
 

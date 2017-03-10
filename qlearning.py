@@ -19,7 +19,7 @@ class Qlearning(Botnet):
 
         self.content = dict()
         self.best_actions = dict()
-        self.actions = list(range(network.size))
+        self.actions = list(range(network.size))  # May not be used, use network.get_actions instead.
         self.gamma = gamma
         self.alpha = alpha
         self.inf = inf
@@ -63,7 +63,7 @@ class Qlearning(Botnet):
         return res
 
     def random_action(self):
-        return random.choice([a for a in self.actions if a not in self.state])
+        return random.choice(list(self.network.get_actions(self.state)))
 
     def policy(self, state=None):
         # Computes the best action to take in this state according to the already computed Q.
@@ -74,9 +74,9 @@ class Qlearning(Botnet):
         best_q = -self.inf
         best_actions = []
 
-        for action in self.actions:
+        for action in self.network.get_actions(state):
             if action in state:
-                continue
+                assert False
 
             new_q = self.get(state, action)
 
@@ -123,6 +123,6 @@ class Qlearning(Botnet):
 
         # Typical strategy
         if random.random() > float(cur_nb) / tot_nb_invasions:
-            return random.choice([a for a in self.actions if a not in self.state])
+            return self.random_action()
 
         return self.policy(self.state)

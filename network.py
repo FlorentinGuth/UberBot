@@ -23,7 +23,7 @@ class Network:
         self.proselytism.append(proselytism)
         self.resistance.append(resistance)
         self.size += 1
-        self.graph.append([])
+        self.graph.append(set())
 
     def add_link(self, node1, node2):
         """
@@ -31,11 +31,31 @@ class Network:
         :param node2:
         :return: adds the edge node1-node2 to the graph of the network
         """
-        # TODO Décider si c'est orienté, et propager ces modifications dans le reste, par exemple en ajoutant
         # un attribut accessibles (ensemble des noeuds accesibles depuis l'etat courant)
         # Possibilité de modifier le graphe en des ensembles ?
         # Ajouter une methode get_actions(self, state) ou qqch comme ca
-        self.graph[node1].append(node2)
+        self.graph[node1].add(node2)
+
+    def set_complete_network(self):
+        tot = set(range(self.size))
+        for i in range(self.size):
+            self.graph[i] = tot
+
+    def clear_graph(self):
+        for i in range(self.size):
+            self.graph[i] = set()
+
+    def get_actions(self, state):
+        if state.is_empty():
+            return set(range(self.size))
+
+        res = set()
+        state = state.to_list()
+        for i in state:
+            res.update(self.graph[i])
+        for i in state:
+            res.discard(i)
+        return res
 
     def current_power(self, state):
         return self.initial_power + sum(self.proselytism[i] for i in range(self.size) if i in state)
@@ -48,6 +68,9 @@ class Network:
 
     def get_proselytism(self, node):
         return self.proselytism[node]
+
+    def get_resistance(self, node):
+        return self.resistance[node]
 
     def success_probability_power(self, action, power):
         if self.resistance[action] == 0:
