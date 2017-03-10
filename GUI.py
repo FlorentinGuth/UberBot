@@ -10,6 +10,8 @@ import botnet
 import network
 import tests
 import thompson_sampling as thom
+import markov
+import qlearning
 
 import tkinter as tk
 import math
@@ -23,172 +25,187 @@ def wait():
         pass
 
 class MainGUI(tk.Tk):
-    
-    def __init__(self, res, master=None):
+
+    def __init__(self, n, sims, master=None):
         tk.Tk.__init__(self,master)
         self.master = master
-        self.n = res[0] # number of devices in the network
+        self.n = n # number of devices in the network
+        self.nbs = len(sims)
         self.initialize()
-        self.actions = res[1]
-        self.last = len(self.actions)
-        
+        self.sims = sims
+        self.last = max(map(len, self.sims))
+
     def initialize(self):
         self.grid()
-        
-        self.update = None
-        
+
+        self.update = [None] * self.nbs
+
         self.currPos = 0
-        
+
         m = max(math.floor(math.sqrt(self.n)),3)
-        
+
         index = []
         for k in range(self.n):
             index.append((m+k//m,k%m))
         self.index=index
-        
+
         refSize = 200//m
-        if m<6:        
+        if m<6:
             refSize -= refSize//4
         if m<3:
             refSize -= refSize//4
         width = 5*refSize
         height = 3*refSize
-        
-        l = []     
+
+        l = []
         count = 0
         for (i,j) in index:
             c = tk.Canvas(self,width=width,height=height)
-            c.create_rectangle(0,0,width,height,tags=str(count),fill='green')
-            c.create_text(width//2,height-10,text=str(count))
+            c.create_rectangle(0,0,width,20,tags=str(count),fill='#6c71c4')
+            for k in range(self.nbs):
+                c.create_rectangle(k*width/self.nbs,20,(k+1)*width/self.nbs,height,tags=str(count),fill='#93a1a1')
+            c.create_text(width//2,10,text=str(count))
             l.append(c)
             c.grid(column=j, row=i)
             count+=1
-        
+
         self.l = l
-        
+
         button_pos = max(m//7,1)
 
         self.b_backward = tk.Button(self, text="Previous", command=self.backward)
         self.b_backward.grid(column=0,row=index[-1][0]+1, columnspan=button_pos)
-                
+
         self.b_launch = tk.Button(self, text="Launch", command=self.launch)
         self.b_launch.grid(column=button_pos,row=index[-1][0]+1, columnspan = m-2*button_pos)
-        
+
         self.b_forward = tk.Button(self, text="Next", command=self.forward)
         self.b_forward.grid(column=m-button_pos,row=index[-1][0]+1, columnspan=button_pos)
-        
+
         self.bind('<Right>',lambda x:self.forward())
         self.bind('<Return>',lambda x:self.forward())
         self.bind('<Left>',lambda x:self.backward())
         self.bind('<BackSpace>',lambda x:self.backward())
         self.bind('<space>',lambda x:self.launch())
-        
-    
-    def attacked(self,n):
-        self.l[n].itemconfigure("1", fill="orange")
+
+
+    def attacked(self,n,i):
+        self.l[n].itemconfigure(str(i+2), fill="#ff9400")
         self.l[n].update()
-    
-    def resisted(self,n):
-        self.l[n].itemconfigure("1", fill="blue")
+
+    def resisted(self,n,i):
+        self.l[n].itemconfigure(str(i+2), fill="blue")
         self.l[n].update()
-    
-    def unharmed(self,n):
-        self.l[n].itemconfigure("1", fill="green")
+
+    def unharmed(self,n,i):
+        self.l[n].itemconfigure(str(i+2), fill="#93a1a1")
         self.l[n].update()
-    
-    def compromized(self,n):
-        self.l[n].itemconfigure("1", fill="red")
+
+    def compromized(self,n,i):
+        self.l[n].itemconfigure(str(i+2), fill="#cc2222")
         self.l[n].update()
-    
-    def act(self,action):
-        if self.update != None:
-            if self.update[1]:
-                self.compromized(self.update[0])
-            else:
-                self.unharmed(self.update[0])
+
+    def act(self,iAct):
+        for i, sim in enumerate(self.sims):
+            if iAct < len(sim):
+                action = sim[iAct]
+                if self.update[i] != None:
+                    if self.update[i][1]:
+                        self.compromized(self.update[i][0], i)
+                    else:
+                        self.unharmed(self.update[i][0], i)
+                if action[1]:
+                    self.attacked(action[0], i)
+                else:
+                    self.resisted(action[0], i)
+                self.update[i] = action
         wait()
-        if action[1]:
-            self.attacked(action[0])
-        else:
-            self.resisted(action[0])
-        self.update = action
-        wait()
-    
+
     def reboot(self):
-        self.update = None
+        self.update = [None] * self.nbs
+        #for i in range(self.n):
+        #    self.l[i].itemconfigure("1", fill="black")
         for i in range(self.n):
-            self.l[i].itemconfigure("1", fill="black")
-        for i in range(self.n):
-            self.unharmed(i)
+            for j in range(self.nbs):
+                self.unharmed(i, j)
         self.currPos = 0
-    
+
     def launch(self):
         if self.currPos == self.last:
             self.reboot()
         for i in range(self.currPos,self.last):
-            self.act(self.actions[i])
+            stop = False
+            for sim in self.sims:
+                if i == len(sim):
+                    stop = True
+                    break
+            if stop:
+                break
+            self.act(i)
         self.currPos = self.last
-    
+
     def forward(self):
         if self.currPos == self.last:
             self.reboot()
             self.currPos = 0
             return
-        self.act(self.actions[self.currPos])
+        self.act(self.currPos)
         self.currPos += 1
 
     def backward(self):
-        self.update = None
+        self.update = [None] * self.nbs
         if self.currPos == 0:
             for i in range(self.n):
-                self.l[i].itemconfigure("1", fill="red")
+                for j in range(self.nbs):
+                    self.l[i].itemconfigure(str(j+2), fill="#cc2222")
             self.currPos = self.last
-        action = self.actions[self.currPos-1]
-        self.attacked(action[0])
-        wait()
-        self.unharmed(action[0])
-        wait()
         self.currPos -=1
-        
+        for i in range(self.nbs):
+            if self.currPos < len(self.sims[i]):
+                action = self.sims[i][self.currPos]
+                self.attacked(action[0], i)
+                self.unharmed(action[0], i)
+        wait()
 
-    def animate(self):
-        available = [i for i in range(self.n)]
-        while available!=[]:
-            x = select(available)
-            self.attacked(x)
-            wait()
-            att = rd.random()
-            if att > 0.7:
-                self.compromized(x)
-                available.remove(x)
-            else:
-                self.unharmed(x)
+
+    #def animate(self):
+    #    available = [i for i in range(self.n)]
+    #    while available!=[]:
+    #        x = select(available)
+    #        self.attacked(x, 0)
+    #        wait()
+    #        att = rd.random()
+    #        if att > 0.7:
+    #            self.compromized(x, 0)
+    #            available.remove(x)
+    #        else:
+    #            self.unharmed(x, 0)
 
 
 class GUI(botnet.Botnet):
-    
+
     def __init__(self,initial_power):
         net = network.Network(initial_power)
         botnet.Botnet.__init__(self, net)
         self.GUI = None
-    
+
     def display(self,mode):
         def exe():
             mode(10,self)
-        
+
         self.GUI = MainGUI(self.network.size,exe)
         self.GUI.mainloop()
-    
+
     def take_action(self,action):
         if self.GUI != None:
-            self.GUI.attacked(action)
+            self.GUI.attacked(action, 0)
             wait()
             success = botnet.Botnet.take_action(self,action)
             wait()
             if success:
-                self.GUI.compromized(action)
+                self.GUI.compromized(action, 0)
             else:
-                self.GUI.unharmed(action)
+                self.GUI.unharmed(action, 0)
             wait()
             return success
         else:
@@ -208,10 +225,16 @@ class GUI(botnet.Botnet):
 k = 49
 n = network.Network(1)
 for i in range(k):
-    n.add(i**1.5, i+1, i)
+    n.add(i**2, i+1, i)
 
-q = thom.Thomson(n, 0.9, 0.1)
+gamma = 0.9
+q1 = thom.Thomson(n, gamma, 0.1)
+q2 = thom.Thomson(n, gamma, 0.1)
+qs = markov.Qstar(n, gamma)
+ql = qlearning.Qlearning(n, gamma, 0.1)
 
-n = MainGUI(tests.liozoub(500, q))
+nbt = 500
+s = [tests.liozoub(10, q1)[1], tests.liozoub(nbt, q2)[1], tests.liozoub(nbt, ql)[1]]
+n = MainGUI(k, s)
 n.mainloop()
 
