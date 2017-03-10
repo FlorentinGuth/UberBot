@@ -5,7 +5,6 @@ from network import Network
 from qlearning import Qlearning
 import fast
 import fast_tentative
-import fast_incr
 import sys
 
 from matplotlib.pyplot import *
@@ -218,9 +217,10 @@ q = Qbis(2, 0.9)
 # Deuxieme réseau
 k = 12
 n = Network(1)
+
 for i in range(k):
     n.add(i**1.+1, i+1, i)
-
+n.set_complete_network()
 q1 = Qstar(n, 0.9)
 q2 = Qlearning(n, 0.9, 0.1)
 q3 = Thomson(n, 0.9, 0.1)
@@ -326,6 +326,22 @@ def liozoub(nb, q, r=1., alpha=0.01, affichage=False):
     return q.network.size, res
 
 
+def test_incr(trials, size):
+    for _ in range(trials):
+        nw = Network(1)
+        for _ in range(size):
+            nw.add(random.randint(0, size**2), random.randint(0, size), 0)
+        p_opti = fast.Fast(nw).compute_policy()
+        t_opti = p_opti.expected_time()
+        p_incr = fast_incr.Fast(nw).compute_policy()
+        t_incr = p_incr.expected_time()
+        if t_opti != t_incr:
+            print(nw.resistance, nw.proselytism)
+            print(p_opti.actions, t_opti)
+            print(p_incr.actions, t_incr)
+            return
+
+
 def results(nb, q, r=1., alpha=0.01, affichage=False):
     res = None
     if isinstance(q, Thomson):
@@ -365,49 +381,25 @@ def test_fast():
     size = []
     f_time = []
     ft_time = []
-    fi_time = []
     for n in range(1, 11):
         print(n)
-        network.add(n**7, n, 0)
+        network.add(n, n**2, 0)
         size.append(n)
 
         pf = fast.Fast(network).compute_policy()
-        print(pf.actions)
         f_time.append(pf.expected_time())
 
         pft = fast_tentative.Fast(network).compute_policy()
         ft_time.append(pft.expected_time())
-
-        pfi = fast_incr.Fast(network).compute_policy()
-        fi_time.append(pfi.expected_time())
-    plot(size, f_time, color="green")
-    plot(size, ft_time, color="blue")
-    plot(size, fi_time, color="red")
+    plot(size, f_time, color="blue")
+    plot(size, ft_time, color="red")
     show()
-
-def test_incr(trials, size):
-    for _ in range(trials):
-        nw = Network(1)
-        for _ in range(size):
-            nw.add(random.randint(0, size**2), random.randint(0, size), 0)
-        p_opti = fast.Fast(nw).compute_policy()
-        t_opti = p_opti.expected_time()
-        p_incr = fast_incr.Fast(nw).compute_policy()
-        t_incr = p_incr.expected_time()
-        if t_opti != t_incr:
-            print(nw.resistance, nw.proselytism)
-            print(p_opti.actions, t_opti)
-            print(p_incr.actions, t_incr)
-            return
-
-
-test_incr(200, 10)
 
 
 # print(liozoub(100, q1))
 # print(liozoub(100, q2))
 # print(liozoub(1000, q3))
-#
+
 # r1 = results(1000, q1, 1, 0.01)
 # r3 = results(1000, q3, 0.9, 0.01)
 # print(r3)

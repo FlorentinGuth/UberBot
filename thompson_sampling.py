@@ -60,7 +60,7 @@ class Thomson(Qlearning):
         return res
 
     def simulate(self, state):
-        return [i for i in self.actions if (i not in state) and random.random() < self.get_p(i, state)]
+        return [i for i in self.network.get_actions(state) if random.random() < self.get_p(i, state)]
 
     def thomson_policy(self, state):
         # Computes best action to perform in this state according Thomson Sampling.
@@ -103,7 +103,7 @@ class Thomson(Qlearning):
         min_cur = self.inf
         best_a = []
 
-        for a in self.actions:
+        for a in self.network.get_actions(state):
             if a not in state:
                 x = self.get_p(a, state)
                 if x < min_cur:
@@ -136,6 +136,6 @@ class Thomson(Qlearning):
             return self.policy(self.state)
 
         if random.random() > float(cur_nb) / tot_nb_invasions:
-            return random.choice([a for a in self.actions if a not in self.state])
+            return self.random_action()
 
         return self.thomson_policy(self.state)
