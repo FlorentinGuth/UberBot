@@ -5,6 +5,7 @@ from network import Network
 from qlearning import Qlearning
 import fast
 import fast_tentative
+import fast_incr
 import sys
 
 from matplotlib.pyplot import *
@@ -364,19 +365,43 @@ def test_fast():
     size = []
     f_time = []
     ft_time = []
+    fi_time = []
     for n in range(1, 11):
         print(n)
-        network.add(n, n**2, 0)
+        network.add(n**7, n, 0)
         size.append(n)
 
         pf = fast.Fast(network).compute_policy()
+        print(pf.actions)
         f_time.append(pf.expected_time())
 
         pft = fast_tentative.Fast(network).compute_policy()
         ft_time.append(pft.expected_time())
-    plot(size, f_time, color="blue")
-    plot(size, ft_time, color="red")
+
+        pfi = fast_incr.Fast(network).compute_policy()
+        fi_time.append(pfi.expected_time())
+    plot(size, f_time, color="green")
+    plot(size, ft_time, color="blue")
+    plot(size, fi_time, color="red")
     show()
+
+def test_incr(trials, size):
+    for _ in range(trials):
+        nw = Network(1)
+        for _ in range(size):
+            nw.add(random.randint(0, size**2), random.randint(0, size), 0)
+        p_opti = fast.Fast(nw).compute_policy()
+        t_opti = p_opti.expected_time()
+        p_incr = fast_incr.Fast(nw).compute_policy()
+        t_incr = p_incr.expected_time()
+        if t_opti != t_incr:
+            print(nw.resistance, nw.proselytism)
+            print(p_opti.actions, t_opti)
+            print(p_incr.actions, t_incr)
+            return
+
+
+test_incr(200, 10)
 
 
 # print(liozoub(100, q1))

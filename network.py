@@ -49,6 +49,9 @@ class Network:
     def get_proselytism(self, node):
         return self.proselytism[node]
 
+    def get_resistance(self, node):
+        return self.resistance[node]
+
     def success_probability_power(self, action, power):
         if self.resistance[action] == 0:
             return 1.
