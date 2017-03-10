@@ -3,7 +3,6 @@ from botnet import Botnet
 import random
 from policy import Policy
 # TODO Group the methods using Q function in a intermediate class ?
-# TODO Décider ensemble de comment envelopper une "strategie" de manière propre et efficace
 # TODO Coder dans un fichier séparé l'ensemble des stratégies envisagées, de la plus simple à la plus raffinée.
 # TODO Surcharger la methode immediate reward en ajoutant un potentiel de reward shaping
 # TODO Detecter les blocages lors de l'apprentissage
@@ -14,7 +13,7 @@ class Qlearning(Botnet):
     This class computes an approximation of the exact Qstar, by learning it incrementally.
     """
 
-    def __init__(self, network, gamma, alpha=0., inf=1000):
+    def __init__(self, network, gamma, alpha=0., strat=None, inf=1000):
         Botnet.__init__(self, network)
 
         self.content = dict()
@@ -23,6 +22,8 @@ class Qlearning(Botnet):
         self.gamma = gamma
         self.alpha = alpha
         self.inf = inf
+        self.strat = strat
+        self.type = "Qlearning"
 
     def clear(self):
         self.content = dict()
@@ -121,8 +122,7 @@ class Qlearning(Botnet):
         #   Best_action
         #   ...
 
-        # Typical strategy
-        if random.random() > float(cur_nb) / tot_nb_invasions:
-            return self.random_action()
+        if self.strat is None:
+            return self.policy(self.state)
 
-        return self.policy(self.state)
+        return self.strat(self, tot_nb_invasions, cur_nb)

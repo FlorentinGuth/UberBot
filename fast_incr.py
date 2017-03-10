@@ -10,6 +10,7 @@ class Fast(Botnet):
 
     def __init__(self, network):
         Botnet.__init__(self, network)
+        self.type = "Fast_incr"
 
     def compute_policy(self):
         n = self.network.size

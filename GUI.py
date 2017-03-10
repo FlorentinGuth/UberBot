@@ -12,6 +12,7 @@ import tests
 import thompson_sampling as thom
 import markov
 import qlearning
+import strategy
 
 import tkinter as tk
 import math
@@ -109,7 +110,7 @@ class MainGUI(tk.Tk):
         for i, sim in enumerate(self.sims):
             if iAct < len(sim):
                 action = sim[iAct]
-                if self.update[i] != None:
+                if self.update[i] is not None:
                     if self.update[i][1]:
                         self.compromized(self.update[i][0], i)
                     else:
@@ -217,24 +218,24 @@ class GUI(botnet.Botnet):
 #k = 16
 #for i in range(k):
 #    n.network.add(i**1.8+1, i+1, i)
-#q = thom.Thomson(n.network, 0.9)
+#q = thom.Thompson(n.network, 0.9)
 #
 #
-#n.display(tests.unknown_thomson,q)
+#n.display(tests.unknown_thompson,q)
 
 k = 49
 n = network.Network(1)
 for i in range(k):
     n.add(i**2, i+1, i)
-
+n.set_complete_network()
 gamma = 0.9
-q1 = thom.Thomson(n, gamma, 0.1)
-q2 = thom.Thomson(n, gamma, 0.1)
+q1 = thom.Thompson(n, gamma, 0.1, strat=strategy.thompson_standard)
+q2 = thom.Thompson(n, gamma, 0.1, strat=strategy.thompson_standard)
 qs = markov.Qstar(n, gamma)
-ql = qlearning.Qlearning(n, gamma, 0.1)
+ql = qlearning.Qlearning(n, gamma, 0.1, strat=strategy.full_random)
 
 nbt = 500
-s = [tests.liozoub(10, q1)[1], tests.liozoub(nbt, q2)[1], tests.liozoub(nbt, ql)[1]]
+s = [tests.get_last_invasion(10, q1), tests.get_last_invasion(nbt, q2), tests.get_last_invasion(nbt, ql)]
 n = MainGUI(k, s)
 n.mainloop()
 

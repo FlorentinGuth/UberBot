@@ -35,3 +35,6 @@ class Policy:
         res /= float(1 - gamma * (1 - p))
 
         return res
+
+    def value(self, gamma):
+        return self.expected_reward(State(len(self.actions)), gamma, 0)

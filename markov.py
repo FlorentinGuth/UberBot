@@ -16,6 +16,7 @@ class Qstar(Botnet):
         self.actions = list(range(network.size))  # May not be used, use network.get_actions instead.
         self.gamma = gamma
         self.inf = inf
+        self.type = "Qstar"
 
     def clear(self):
         self.content = dict()

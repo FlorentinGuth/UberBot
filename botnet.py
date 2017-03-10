@@ -12,6 +12,7 @@ class Botnet:
         self.network = network
         self.state = State(network.size)
         self.power = network.initial_power
+        self.type = None
 
         self.reward = 0
         self.time = 0

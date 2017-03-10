@@ -12,6 +12,7 @@ class Fast(Botnet):
 
         self.time = {}      # time[(state, action)] is the time to finish the job from state doing action
         self.min_time = {}  # min_time[state] is the min over all actions of time[(state, action)]
+        self.type = "Fast_optimal"
 
     def compute_time(self, state, action):
         """ Returns time[(state, action)] and computes it if needed """
