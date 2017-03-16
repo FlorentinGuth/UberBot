@@ -26,7 +26,7 @@ def thompson_standard(q, nb_tot, i):
      Uses random at the beginning and then uses more and more Thompson policy.
     """
 
-    phi = lambda x: x  # Controls the decrease of random use : phi = 1 means no random, 0 means full random.
+    phi = lambda x: 1*x  # Controls the decrease of random use : phi = 1 means no random, 0 means full random.
 
     if i == nb_tot - 1:
         return q.policy(q.state)

@@ -2,10 +2,11 @@ from state import State
 from botnet import Botnet
 import random
 from policy import Policy
-# TODO Group the methods using Q function in a intermediate class ?
-# TODO Coder dans un fichier séparé l'ensemble des stratégies envisagées, de la plus simple à la plus raffinée.
 # TODO Surcharger la methode immediate reward en ajoutant un potentiel de reward shaping
+# TODO Comprendre l'initialisation des valeurs de Q learning
 # TODO Detecter les blocages lors de l'apprentissage
+# TODO Tester les blocages, essayer d'en déterminer l'origine
+# TODO Sparse sampling algorithm ? / variant d'exploration à profondeur fixée ?
 
 
 class Qlearning(Botnet):
@@ -103,7 +104,7 @@ class Qlearning(Botnet):
             a = self.policy(state)
             actions.append(a)
             state.add(a)
-
+        self.reset()
         return Policy(self.network, actions)
 
     def choose_action(self, tot_nb_invasions, cur_nb):

@@ -1,8 +1,10 @@
 import random
 from qlearning import Qlearning
 from botnet import Botnet
+from state import State
 
 # TODO Ajouter de l'auto-évaluation des stratégies adoptées, s'en servir pour les retenir, et détecter des blocages.
+# TODO Essayer la mise à jour utilisant le modèle 'model based', de façon bottom-up.
 
 
 class Thompson(Qlearning):
@@ -19,7 +21,7 @@ class Thompson(Qlearning):
             return success / trials
 
         except KeyError:
-            return 1.0
+            return 1  # TODO
 
     def get_trials(self, action, state):
         try:
@@ -34,6 +36,7 @@ class Thompson(Qlearning):
             success, trials = self.p[(action, state)]
         except KeyError:
             success, trials = 1, 1
+            # success, trials = 0, 0 TODO
 
         trials += 1
 
@@ -58,24 +61,24 @@ class Thompson(Qlearning):
         # Computes best action to perform in this state according Thompson Sampling.
         possible_actions = self.simulate(state)
 
-        # if len(possible_actions) == 0:
-        if True:
+        if len(possible_actions) == 0:
             # No positive simulated action.
-            return self.policy(state)
+            # return self.policy(state) TODO
+            return self.random_action()
 
         best_q = -self.inf
         best_actions = []
 
         for action in possible_actions:
             # It follows the same strategy, only looking the positive simulated trials (more likely to exploit).
-            # new_q = self.get(state, action)
+            # new_q = self.get(State.added(state, action))
 
             # Other possible way to do : just suppose the simulation was real (more likely to explore).
-            # new_q = self.max_line(state.add(action))
+            # new_q = self.max_line(State.added(state, action))
 
             # Third possibility
             beta = 1.
-            new_q = beta * self.get(state, action) + (1 - beta) * self.max_line(state.add(action))
+            new_q = beta * self.get(state, action) + (1 - beta) * self.max_line(State.added(state, action))
 
             if new_q > best_q:
                 best_q = new_q
@@ -83,9 +86,6 @@ class Thompson(Qlearning):
 
             elif new_q == best_q:
                 best_actions.append(action)
-
-        if len(best_actions) == 0:
-            return None
 
         # print("Expected best value : ", best_q)
         return random.choice(best_actions)
@@ -105,3 +105,65 @@ class Thompson(Qlearning):
                     best_a.append(a)
 
         return int(random.choice(best_a))
+
+
+class ModelBasedThompson(Thompson):
+
+    def __init__(self, network, gamma, alpha=0., strat=None, inf=100000):
+        Thompson.__init__(self, network, gamma, alpha, strat, inf)
+        self.memory = []
+        self.history = []
+
+    def add_trial(self, action, state, result):
+        try:
+            success, trials = self.p[(action, state)]
+        except KeyError:
+            success, trials = 1, 1
+
+        trials += 1
+
+        if result:
+            success += 1
+
+        self.p[(action, state)] = success, trials
+
+        # Uses model-based update rule, but in a bottom-up way.
+
+        if not self.state.is_full():
+            self.memory.append((state, action, self.immediate_reward(state, action)))
+        else:
+            # The botnet reached the end of the invasion.
+            # It is now time to apply updates from the bottom of the tree.
+            # It is also going to evaluate the realized policy.
+            policy = []
+            previous_state = self.state
+            expected_value = self.network.total_power() / (1 - self.gamma)  # Some constant ? TODO
+
+            for (state, action, reward) in reversed(self.memory):
+                p = self.get_p(action, state)
+
+                # Basic update rule
+                # new_value = (1 - p) * self.max_line(state) + p * self.max_line(State.added(state, action))
+                # new_value = reward + self.gamma * new_value
+
+                # Tricky update rule --> A lot better !!
+                new_value = reward + self.gamma * p * self.max_line(State.added(state, action))
+                new_value /= 1 - self.gamma * (1 - p)
+
+                self.set(state, action, new_value)
+
+                if previous_state != state:
+                    # It is a new action !
+                    # Update the expected reward
+                    expected_value = (reward + self.gamma * p * expected_value) / (1 - self.gamma * (1 - p))
+
+                    # Saves the action in the policy
+                    policy.append(action)
+                    previous_state = state
+
+            # Clears the memory of the botnet
+            self.memory = []
+
+            # Could also try to evaluate this policy ?
+            policy.reverse()
+            self.history.append((policy, expected_value))

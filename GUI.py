@@ -8,7 +8,7 @@ Created on Fri Feb 17 14:46:02 2017
 
 import botnet
 import network
-import tests
+import examples
 import thompson_sampling as thom
 import markov
 import qlearning

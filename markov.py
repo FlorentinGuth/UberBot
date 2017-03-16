@@ -113,6 +113,7 @@ class Qstar(Botnet):
             actions.append(a)
             state.add(a)
 
+        self.reset()
         return Policy(self.network, actions)
 
     def choose_action(self, tot_nb_invasions=1, cur_nb_invasions=1):

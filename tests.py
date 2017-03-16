@@ -1,20 +1,15 @@
 from state import State
-from markov import Qstar
-from thompson_sampling import Thompson
 from network import Network
-from qlearning import Qlearning
-from strategy import *
 import fast
 import fast_incr
 import fast_tentative
-import sys
+# import sys
 
 from matplotlib.pyplot import *
 import random
 
-# TODO Comprendre, modifier la fonction de Q learning (et son initialisation / exploration)
-# TODO Recoder une fonction d'invasion uniquement à partir de la méthode choose_action
-# TODO Réorganiser pour n'avoir que des trucs propres, et pareil pour l'affichage
+# TODO Fonction de génération de graphes aléatoires
+# TODO Fonction de génération d'ordinateurs aléatoires
 
 
 def try_invasions(nb, q, printing=False):
@@ -40,7 +35,7 @@ def try_invasions(nb, q, printing=False):
 
             if printing:
                 print("Action ", i)
-                print("Remaining nodes = %s" % q.state.remaining())
+                print("Remaining nodes = %s" % q.state.nb_remaining())
                 print("Attack %s!" % action)
 
             res_action = q.take_action(action)
@@ -68,28 +63,6 @@ def try_invasions(nb, q, printing=False):
     print(q.type, q.compute_policy().value(q.gamma))
 
     return rewards, sum(durations) / len(durations), invasions[-1]
-
-# Test
-# Premier réseau
-"""
-n = Network(1)
-n.set_complete_network()
-n.add(2, 1, 1)
-n.add(20, 3, 1)
-q = Qbis(2, 0.9)
-"""
-
-# Deuxieme réseau
-k = 12
-n = Network(1)
-
-for i in range(k):
-    n.add(i**1.4+1, i+1, i)
-n.set_complete_network()
-
-q1 = Qstar(n, 0.9)
-q2 = Qlearning(n, 0.9, 0.01, strat=full_random)
-q3 = Thompson(n, 0.9, 0.01, strat=thompson_standard)
 
 
 def gamma_influence(gammas, nb, q):
@@ -149,10 +122,30 @@ def alpha_influence(alphas, nb, q):
 
 
 def get_last_invasion(nb, q):
+    """
+    :param nb: number of invasions to lead
+    :param q: botnet to train
+    :return: actions of the botnet according to its final policy
+    """
     return try_invasions(nb, q, printing=False)[-1]
 
 
+def get_rewards(nb, q, printing=False):
+    """
+    :param nb: number of invasions to lead
+    :param q: botnet to train
+    :param printing: enables information printing
+    :return: successive rewards obtained at the end of each invasion
+    """
+    return try_invasions(nb, q, printing)[0]
+
+
 def test_incr(trials, size):
+    """
+    :param trials: ??????
+    :param size: ????????
+    :return: ????????????
+    """
     for _ in range(trials):
         nw = Network(1)
         for __ in range(size):
@@ -168,11 +161,12 @@ def test_incr(trials, size):
             return
 
 
-def results(nb, q, printing=False):
-    return try_invasions(nb, q, printing)[0]
-
-
 def soft(points, window_size):
+    """
+    :param points: signal
+    :param window_size: width of the window used to compute the mean
+    :return: list of points of the local mean of the input signal
+    """
     n = len(points)
     soft_points = []
     cur_sum = 0
@@ -188,12 +182,17 @@ def soft(points, window_size):
 
 
 def plot_perf(points, window_size=1):
+    """
+    :param points: signal to plot
+    :param window_size: size of the window used to call soft function
+    :return: plots the obtained local mean
+    """
     soft_points = soft(points, window_size)
     plot(range(len(points)), soft_points)
 
 
 def test_fast():
-    sys.setrecursionlimit(999999)
+    # sys.setrecursionlimit(999999)
 
     network = Network(1)
     size = []
@@ -212,18 +211,3 @@ def test_fast():
     plot(size, f_time, color="blue")
     plot(size, ft_time, color="red")
     show()
-
-
-# print(liozoub(100, q1))
-# print(liozoub(100, q2))
-# print(liozoub(1000, q3))
-
-# r1 = results(1000, q1)
-# r2 = results(1000, q2)
-# r3 = results(1000, q3)
-#
-# plot_perf(r1, 1000)
-# plot_perf(r2, 50)
-# plot_perf(r3, 50)
-#
-# show()
