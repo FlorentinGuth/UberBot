@@ -9,8 +9,8 @@ from state import State
 
 class Thompson(Qlearning):
 
-    def __init__(self, network, gamma, alpha=0.01, strat=None, inf=float("inf")):
-        Qlearning.__init__(self, network, gamma, alpha, strat, inf)
+    def __init__(self, network, gamma, alpha=0.01, strat=None):
+        Qlearning.__init__(self, network, gamma, alpha, strat)
 
         self.p = dict()  # Saves the internal estimates of the success probabilities
         self.type = "Thompson Sampling"
@@ -47,7 +47,7 @@ class Thompson(Qlearning):
 
     def add_trial(self, action, state, result):
         self.update_p(action, state, result)
-        self.update_q_learning(state, action, self.state)
+        self.update_q_learning(state, action, self.state, result)
 
     def take_action(self, action):
         si = self.state.copy()
@@ -112,8 +112,9 @@ class Thompson(Qlearning):
 
 class ModelBasedThompson(Thompson):
 
-    def __init__(self, network, gamma, alpha=0.01, strat=None, inf=float("inf")):
-        Thompson.__init__(self, network, gamma, alpha, strat, inf)
+    def __init__(self, network, gamma, alpha=0.01, strat=None):
+        Thompson.__init__(self, network, gamma, alpha, strat)
+        self.type = "ModelBasedThompson"
         self.memory = []
         self.history = []
 
@@ -164,8 +165,9 @@ class ModelBasedThompson(Thompson):
 
 class FullModelBasedThompson(ModelBasedThompson):
 
-    def __init__(self, network, gamma, alpha=0.01, strat=None, inf=float("inf")):
-        ModelBasedThompson.__init__(self, network, gamma, alpha, strat, inf)
+    def __init__(self, network, gamma, alpha=0.01, strat=None):
+        ModelBasedThompson.__init__(self, network, gamma, alpha, strat)
+        self.type = "FullModelBasedThompson"
 
     def update_p(self, action, state, result):
         try:

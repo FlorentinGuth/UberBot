@@ -14,7 +14,7 @@ class Qlearning(Botnet):
     This class computes an approximation of the exact Qstar, by learning it incrementally.
     """
 
-    def __init__(self, network, gamma, alpha=0.01, strat=None, inf=1000, shape=False):
+    def __init__(self, network, gamma, alpha=0.01, strat=None, shape=False):
         Botnet.__init__(self, network)
 
         self.content = dict()
@@ -22,7 +22,7 @@ class Qlearning(Botnet):
         self.actions = list(range(network.size))  # May not be used, use network.get_actions instead.
         self.gamma = gamma
         self.alpha = alpha
-        self.inf = float("inf")
+
         self.strat = strat
         self.type = "Qlearning"
         self.shape = shape
@@ -61,8 +61,6 @@ class Qlearning(Botnet):
     def take_action(self, action):
         si = self.state.copy()
         res = Botnet.take_action(self, action)
-        if res:
-            print("!")
 
         self.update_q_learning(si, action, self.state, success=res)
 
@@ -95,7 +93,6 @@ class Qlearning(Botnet):
 
         if len(best_actions) == 0:
             assert False
-            return None
 
         # print("Expected best value : ", best_q)
         return random.choice(best_actions)
@@ -133,11 +130,11 @@ class Qlearning(Botnet):
 
         return self.strat(self, tot_nb_invasions, cur_nb)
     
-    def immediate_reward(self, state, action, success=False):
+    def immediate_reward(self, state, action, success):
         if not self.shape:
             return self.network.immediate_reward(state, action)
         if success:
-            return self.gamma/(1-self.gamma)*self.network.get_proselytism(action) - self.network.get_cost(action)
+            return self.gamma / (1 - self.gamma) * self.network.get_proselytism(action) - self.network.get_cost(action)
         return -self.network.get_cost(action)
         
 #        if success:

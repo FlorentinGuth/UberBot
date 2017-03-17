@@ -151,7 +151,7 @@ def random_network(size, difficulty, big_nodes):
 
     How the network is computed:
      - For each node, we test at random if it will be a big one
-     - Big nodes have a proselytism uniformly between 0 and size ** difficulty, small ones between 0 and difficulty
+     - Big nodes have a proselytism uniformly between 0 and size ** difficulty, small ones between 0 and size
      - The resistance is between a half and the double of the proselytism ** difficulty
      - The cost is a random fraction of the resistance
      - The edges are computed from Network.generate_random_connected()

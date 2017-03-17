@@ -141,7 +141,7 @@ def get_rewards(nb, q, printing=False):
     """
     if isinstance(q, Qlearning):
         return try_invasions(nb, q, printing)[0]
-    return [q.compute_policy().value(q.gamma)]*nb
+    return [q.compute_policy().value(q.gamma)] * nb
 
 
 def soft(points, window_size):
