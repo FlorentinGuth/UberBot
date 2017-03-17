@@ -4,6 +4,7 @@ from botnet import Botnet
 from state import State
 
 # TODO Ajouter de l'auto-évaluation des stratégies adoptées, s'en servir pour les retenir, et détecter des blocages.
+# TODO remplacer inf par float("inf") partout
 
 
 class Thompson(Qlearning):

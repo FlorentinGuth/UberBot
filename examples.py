@@ -25,6 +25,7 @@ for i in range(k):
 n.generate_random_connected()
 # n.set_complete_network()
 
+qs =
 q1 = Qstar(n, 0.9)
 q2 = Qlearning(n, 0.9, 0.01, strat=full_random)
 q3 = Thompson(n, 0.9, 0.01, strat=thompson_standard)
