@@ -1,0 +1,24 @@
+botnet.py
+    # TODO OVERLEAF !!!
+fast_tentative.py
+    # TODO: infinite loop if there is nodes with a proselytism of 0...
+markov.py
+    # TODO Implémenter l'exploration online à profondeur fixée, par calcul exact
+network.py
+    # TODO Remplacer par une notion de cout agréable
+qlearning.py
+    # TODO Surcharger la methode immediate_reward en ajoutant un potentiel de reward shaping
+    # TODO Comprendre l'initialisation des valeurs de Q learning
+    # TODO Detecter les blocages lors de l'apprentissage
+    # TODO Tester les blocages, essayer d'en déterminer l'origine
+    # TODO Sparse sampling algorithm ? / variante d'exploration à profondeur fixée ?
+    # TODO In progress
+GUI.py
+    # TODO: update, integrate in network/botnet?)
+tests.py
+    # TODO Fonction de génération de graphes aléatoires
+    # TODO Fonction de génération d'ordinateurs aléatoires
+    # TODO Reprendre les algorithmes, les structures de données, les optimiser !
+thompson_sampling.py
+    # TODO inheritate from botnet, or create botnet_learning that doesn't have access to attributes
+    # TODO Ajouter de l'auto-évaluation des stratégies adoptées, s'en servir pour les retenir, et détecter des blocages.
