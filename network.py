@@ -154,6 +154,7 @@ def random_network(size, difficulty, big_nodes):
      - Big nodes have a proselytism uniformly between 0 and size ** difficulty, small ones between 0 and difficulty
      - The resistance is between a half and the double of the proselytism ** difficulty
      - The cost is a random fraction of the resistance
+     - The edges are computed from Network.generate_random_connected()
     """
     network = Network(1)
 
@@ -170,4 +171,5 @@ def random_network(size, difficulty, big_nodes):
 
         network.add(resistance, proselytism, cost)
 
+    network.generate_random_connected()
     return network
