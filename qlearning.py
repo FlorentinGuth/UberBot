@@ -14,7 +14,7 @@ class Qlearning(Botnet):
     This class computes an approximation of the exact Qstar, by learning it incrementally.
     """
 
-    def __init__(self, network, gamma, alpha=0., strat=None, inf=1000):
+    def __init__(self, network, gamma, alpha=0.01, strat=None, shape=False):
         Botnet.__init__(self, network)
 
         self.content = dict()
@@ -22,9 +22,11 @@ class Qlearning(Botnet):
         self.actions = list(range(network.size))  # May not be used, use network.get_actions instead.
         self.gamma = gamma
         self.alpha = alpha
-        self.inf = inf
+
         self.strat = strat
         self.type = "Qlearning"
+        self.shape = shape
+        self.reward_shaping = 0
 
     def clear(self):
         self.content = dict()
@@ -52,15 +54,15 @@ class Qlearning(Botnet):
         except KeyError:
             return 0.
 
-    def update_q_learning(self, si, a, sf):
-        reward = self.immediate_reward(si, a)
+    def update_q_learning(self, si, a, sf, success):
+        reward = self.immediate_reward(si, a, success)
         self.set(si, a, (1 - self.alpha) * self.get(si, a) + self.alpha * (reward + self.gamma * self.max_line(sf)))
 
     def take_action(self, action):
         si = self.state.copy()
         res = Botnet.take_action(self, action)
 
-        self.update_q_learning(si, action, self.state)
+        self.update_q_learning(si, action, self.state, success=res)
 
         return res
 
@@ -90,7 +92,7 @@ class Qlearning(Botnet):
                 best_actions.append(action)
 
         if len(best_actions) == 0:
-            return None
+            assert False
 
         # print("Expected best value : ", best_q)
         return random.choice(best_actions)
@@ -127,3 +129,18 @@ class Qlearning(Botnet):
             return self.policy(self.state)
 
         return self.strat(self, tot_nb_invasions, cur_nb)
+    
+    def immediate_reward(self, state, action, success):
+        if not self.shape:
+            return self.network.immediate_reward(state, action)
+
+        if success:
+            return self.gamma / (1 - self.gamma) * self.network.get_proselytism(action) - self.network.get_cost(action)
+        return -self.network.get_cost(action)
+        
+#        if success:
+#            bonus = self.network.get_proselytism(action)
+#            self.reward_shaping += bonus 
+#        else:
+#            bonus = 0
+#        return rew - (self.reward_shaping*self.gamma - (self.reward_shaping - bonus))/(1-self.gamma)

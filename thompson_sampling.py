@@ -4,12 +4,13 @@ from botnet import Botnet
 from state import State
 
 # TODO Ajouter de l'auto-évaluation des stratégies adoptées, s'en servir pour les retenir, et détecter des blocages.
+# TODO remplacer inf par float("inf") partout
 
 
 class Thompson(Qlearning):
 
-    def __init__(self, network, gamma, alpha=0., strat=None, inf=100000):
-        Qlearning.__init__(self, network, gamma, alpha, strat, inf)
+    def __init__(self, network, gamma, alpha=0.01, strat=None):
+        Qlearning.__init__(self, network, gamma, alpha, strat)
 
         self.p = dict()  # Saves the internal estimates of the success probabilities
         self.type = "Thompson Sampling"
@@ -46,7 +47,7 @@ class Thompson(Qlearning):
 
     def add_trial(self, action, state, result):
         self.update_p(action, state, result)
-        self.update_q_learning(state, action, self.state)
+        self.update_q_learning(state, action, self.state, result)
 
     def take_action(self, action):
         si = self.state.copy()
@@ -111,8 +112,9 @@ class Thompson(Qlearning):
 
 class ModelBasedThompson(Thompson):
 
-    def __init__(self, network, gamma, alpha=0., strat=None, inf=100000):
-        Thompson.__init__(self, network, gamma, alpha, strat, inf)
+    def __init__(self, network, gamma, alpha=0.01, strat=None):
+        Thompson.__init__(self, network, gamma, alpha, strat)
+        self.type = "ModelBasedThompson"
         self.memory = []
         self.history = []
 
@@ -122,7 +124,7 @@ class ModelBasedThompson(Thompson):
         # Uses model-based update rule, but in a bottom-up way.
 
         if not self.state.is_full():
-            self.memory.append((state, action, self.immediate_reward(state, action)))
+            self.memory.append((state, action, self.immediate_reward(state, action, result)))
         else:
             # The botnet reached the end of the invasion.
             # It is now time to apply updates from the bottom of the tree.
@@ -163,8 +165,9 @@ class ModelBasedThompson(Thompson):
 
 class FullModelBasedThompson(ModelBasedThompson):
 
-    def __init__(self, network, gamma, alpha=0., strat=None, inf=100000):
-        ModelBasedThompson.__init__(self, network, gamma, alpha, strat, inf)
+    def __init__(self, network, gamma, alpha=0.01, strat=None):
+        ModelBasedThompson.__init__(self, network, gamma, alpha, strat)
+        self.type = "FullModelBasedThompson"
 
     def update_p(self, action, state, result):
         try:

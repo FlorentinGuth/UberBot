@@ -3,6 +3,7 @@ from network import Network
 import fast
 import fast_incr
 import fast_tentative
+from qlearning import Qlearning
 # import sys
 
 from matplotlib.pyplot import *
@@ -138,28 +139,9 @@ def get_rewards(nb, q, printing=False):
     :param printing: enables information printing
     :return: successive rewards obtained at the end of each invasion
     """
-    return try_invasions(nb, q, printing)[0]
-
-
-def test_incr(trials, size):
-    """
-    :param trials: ??????
-    :param size: ????????
-    :return: ????????????
-    """
-    for _ in range(trials):
-        nw = Network(1)
-        for __ in range(size):
-            nw.add(random.randint(0, size**2), random.randint(0, size), 0)
-        p_optimal = fast.Fast(nw).compute_policy()
-        t_optimal = p_optimal.expected_time()
-        p_incr = fast_incr.Fast(nw).compute_policy()
-        t_incr = p_incr.expected_time()
-        if t_optimal != t_incr:
-            print(nw.resistance, nw.proselytism)
-            print(p_optimal.actions, t_optimal)
-            print(p_incr.actions, t_incr)
-            return
+    if isinstance(q, Qlearning):
+        return try_invasions(nb, q, printing)[0]
+    return [q.compute_policy().value(q.gamma)] * nb
 
 
 def soft(points, window_size):
@@ -182,33 +164,11 @@ def soft(points, window_size):
     return soft_points
 
 
-def plot_perf(points, window_size=1):
+def plot_perf(points, window_size=1, name=None):
     """
     :param points: signal to plot
     :param window_size: size of the window used to call soft function
     :return: plots the obtained local mean
     """
     soft_points = soft(points, window_size)
-    plot(range(len(points)), soft_points)
-
-
-def test_fast():
-    # sys.setrecursionlimit(999999)
-
-    network = Network(1)
-    size = []
-    f_time = []
-    ft_time = []
-    for n in range(1, 11):
-        print(n)
-        network.add(n, n**2, 0)
-        size.append(n)
-
-        pf = fast.Fast(network).compute_policy()
-        f_time.append(pf.expected_time())
-
-        pft = fast_tentative.Fast(network).compute_policy()
-        ft_time.append(pft.expected_time())
-    plot(size, f_time, color="blue")
-    plot(size, ft_time, color="red")
-    show()
+    plot(range(len(points)), soft_points, label=name)

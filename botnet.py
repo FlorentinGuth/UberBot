@@ -14,11 +14,11 @@ class Botnet:
         self.state = State(network.size)
         self.power = network.initial_power
         self.type = None
-
+        self.inf = float("inf")
         self.reward = 0
         self.time = 0
         self.time_factor = 1  # holds gamma ** T
-        self.gamma = 0.9      # To change?
+        self.gamma = 0.9      # TODO To change?
 
     def immediate_reward(self, state, action):
         return self.network.immediate_reward(state, action)
@@ -27,7 +27,7 @@ class Botnet:
         success = self.network.attempt_hijacking(action, self.state)
 
         # Gets the immediate reward
-        self.reward += self.time_factor * self.immediate_reward(self.state, action)
+        self.reward += self.time_factor * Botnet.immediate_reward(self, self.state, action)
         self.time_factor *= self.gamma
         self.time += 1
 

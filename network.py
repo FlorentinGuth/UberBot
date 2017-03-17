@@ -141,3 +141,35 @@ class Network:
                         cur = prov[cur]
             count += 1
         return perc
+
+
+def random_network(size, difficulty, big_nodes):
+    """
+    Returns a random network with given size.
+    For each node, we can expect the resistance to be approximately equivalent to its proselytism ** difficulty.
+    Big_nodes is the ratio (between 0 and 1) of hard-to-hijack nodes.
+
+    How the network is computed:
+     - For each node, we test at random if it will be a big one
+     - Big nodes have a proselytism uniformly between 0 and size ** difficulty, small ones between 0 and size
+     - The resistance is between a half and the double of the proselytism ** difficulty
+     - The cost is a random fraction of the resistance
+     - The edges are computed from Network.generate_random_connected()
+    """
+    network = Network(1)
+
+    for _ in range(size):
+        big = random.random() < big_nodes
+
+        if big:
+            proselytism = random.randint(0, int(size ** difficulty))
+        else:
+            proselytism = random.randint(0, size)
+
+        resistance = int((3*random.random()+1)/2 * (proselytism ** difficulty))
+        cost = int(random.random() * resistance)
+
+        network.add(resistance, proselytism, cost)
+
+    network.generate_random_connected()
+    return network

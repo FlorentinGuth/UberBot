@@ -61,3 +61,6 @@ class Fast(Botnet):
             state.add(a)
 
         return Policy(self.network, actions)
+
+    def choose_action(self, state):
+        return self.best_action(state)

@@ -8,7 +8,8 @@ class Qstar(Botnet):
     This class performs the computation of the Q* function.
     """
 
-    def __init__(self, network, gamma, inf=1000):
+    def __init__(self, network, gamma, inf=float("inf")):
+
         Botnet.__init__(self, network)
 
         self.content = dict()

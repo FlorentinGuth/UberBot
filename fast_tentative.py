@@ -16,7 +16,7 @@ class Fast(Botnet):
         self.time = {}      # time[(power, action)] is an estimation of the time to finish the job doing action
         self.min_time = {}  # min_time[power] is the min over all actions of time[(power, action)]
         self.total_power = network.total_power()
-        self.type = "Fast_power"
+        self.type = "Fast_tentative"
 
     def compute_time(self, power, action):
         """ Returns time[(power, action)] and computes it if needed """
@@ -66,3 +66,6 @@ class Fast(Botnet):
             power += self.network.get_proselytism(a)
 
         return Policy(self.network, actions)
+
+    def choose_action(self, state):
+        return self.best_action(state)

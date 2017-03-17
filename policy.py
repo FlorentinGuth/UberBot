@@ -24,7 +24,7 @@ class Policy:
     def expected_reward(self, state, gamma, i):
         """ Updated version with the term accounting for infinite horizon """
         res = 0
-
+        # TODO Recoder ça en bottom-up
         if i == len(self.actions):
             return self.network.total_power() / (1 - gamma)
 
