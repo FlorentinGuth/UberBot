@@ -137,7 +137,7 @@ class Qlearning(Botnet):
         if not self.shape:
             return self.network.immediate_reward(state, action)
         if success:
-            return self.network.get_resistance(action)*self.network.immediate_reward(state, action) - self.network.get_cost(action)
+            return self.gamma/(1-self.gamma)*self.network.get_proselytism(action) - self.network.get_cost(action)
         return -self.network.get_cost(action)
         
 #        if success:
