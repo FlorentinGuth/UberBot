@@ -1,8 +1,10 @@
 from botnet import *
 from policy import *
 
+import sys
 
-# TODO: infinite loop if there is nodes with a proselytism of 0...
+sys.setrecursionlimit(10000)
+
 class Fast(Botnet):
     """
     Botnet maybe minimizing the average time needed to hijack the whole network (O(n^2)).
@@ -35,7 +37,9 @@ class Fast(Botnet):
         if power in self.min_time:
             return self.min_time[power]
 
-        res = min([self.compute_time(power, action) for action in range(self.network.size)])
+        res = min([self.compute_time(power, action) \
+                if self.network.get_proselytism(action) != 0 else 0 \
+                for action in range(self.network.size)])
 
         self.min_time[power] = res
         return res
