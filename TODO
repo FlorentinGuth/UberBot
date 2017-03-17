@@ -1,7 +1,5 @@
 botnet.py
     # TODO OVERLEAF !!!
-fast_tentative.py
-    # TODO: infinite loop if there is nodes with a proselytism of 0...
 markov.py
     # TODO Implémenter l'exploration online à profondeur fixée, par calcul exact
 network.py
@@ -13,10 +11,7 @@ qlearning.py
     # TODO Tester les blocages, essayer d'en déterminer l'origine
     # TODO Sparse sampling algorithm ? / variante d'exploration à profondeur fixée ?
     # TODO In progress
-GUI.py
-    # TODO: update, integrate in network/botnet?)
 tests.py
-    # TODO Fonction de génération de graphes aléatoires
     # TODO Fonction de génération d'ordinateurs aléatoires
     # TODO Reprendre les algorithmes, les structures de données, les optimiser !
 thompson_sampling.py
