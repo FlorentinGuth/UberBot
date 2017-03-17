@@ -27,7 +27,7 @@ class Botnet:
         success = self.network.attempt_hijacking(action, self.state)
 
         # Gets the immediate reward
-        self.reward += self.time_factor * self.immediate_reward(self.state, action)
+        self.reward += self.time_factor * Botnet.immediate_reward(self, self.state, action)
         self.time_factor *= self.gamma
         self.time += 1
 

@@ -124,7 +124,7 @@ class ModelBasedThompson(Thompson):
         # Uses model-based update rule, but in a bottom-up way.
 
         if not self.state.is_full():
-            self.memory.append((state, action, self.immediate_reward(state, action)))
+            self.memory.append((state, action, self.immediate_reward(state, action, result)))
         else:
             # The botnet reached the end of the invasion.
             # It is now time to apply updates from the bottom of the tree.
