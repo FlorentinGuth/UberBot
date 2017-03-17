@@ -5,7 +5,7 @@ from policy import *
 # TODO: infinite loop if there is nodes with a proselytism of 0...
 class Fast(Botnet):
     """
-    Botnet maybe minimizing the average time needed to hijack the whole network (O(n^2).
+    Botnet maybe minimizing the average time needed to hijack the whole network (O(n^2)).
     """
 
     def __init__(self, network):
