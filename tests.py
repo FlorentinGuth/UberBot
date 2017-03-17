@@ -10,6 +10,7 @@ import random
 
 # TODO Fonction de génération de graphes aléatoires
 # TODO Fonction de génération d'ordinateurs aléatoires
+# TODO Reprendre les algorithmes, les structures de données, les optimiser !
 
 
 def try_invasions(nb, q, printing=False):

@@ -2,11 +2,11 @@ from state import State
 from botnet import Botnet
 import random
 from policy import Policy
-# TODO Surcharger la methode immediate reward en ajoutant un potentiel de reward shaping
+# TODO Surcharger la methode immediate_reward en ajoutant un potentiel de reward shaping
 # TODO Comprendre l'initialisation des valeurs de Q learning
 # TODO Detecter les blocages lors de l'apprentissage
 # TODO Tester les blocages, essayer d'en déterminer l'origine
-# TODO Sparse sampling algorithm ? / variant d'exploration à profondeur fixée ?
+# TODO Sparse sampling algorithm ? / variante d'exploration à profondeur fixée ?
 
 
 class Qlearning(Botnet):

@@ -87,50 +87,54 @@ class Network:
         return rnd < probability
 
     def immediate_reward(self, state, action):
+        # TODO Remplacer par une notion de cout agréable
         if action in state:
             return -self.get_cost(action)
         return -self.get_cost(action) + self.current_power(state)
 
-    def generate_random_connex(self):
+    def generate_random_connected(self):
         rep = [i for i in range(self.size)]
 
         def find(n):
             if rep[n] != n:
                 rep[n] = find(rep[n])
             return rep[n]
+
         def union(a, b):
             A = find(a)
             B = find(b)
             rep[B] = A
             self.add_link(a, b)
             self.add_link(b, a)
-            return A == B
+            return A != B
 
         n = self.size
         while n > 1:
             a = random.randint(0, self.size-1)
             b = random.randint(0, self.size-1)
-            if union(a, b):
+            if a != b and union(a, b):
                 n -= 1
 
     def compute_percolation(self):
         perc = [0] * self.size
-        dejaVu = [0] * self.size
+        visited = [0] * self.size
         prov = [0] * self.size
         count = 1
         for i in range(self.size):
             for j in range(self.size):
                 prov[j] = -1
+
             queue = [(i, -1)]
             while len(queue) > 0:
                 cur, last = queue.pop()
-                if dejaVu[cur] < count:
-                    dejaVu[cur] = count
+                if visited[cur] < count:
+                    visited[cur] = count
                     prov[cur] = last
                     for v in self.graph[cur]:
                         queue.append((v, cur))
+
             for j in range(self.size):
-                if i != j and dejaVu[j] == count:
+                if i != j and visited[j] == count:
                     cur = j
                     while cur != -1:
                         perc[cur] += 1

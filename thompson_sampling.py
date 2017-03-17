@@ -4,7 +4,6 @@ from botnet import Botnet
 from state import State
 
 # TODO Ajouter de l'auto-évaluation des stratégies adoptées, s'en servir pour les retenir, et détecter des blocages.
-# TODO Essayer la mise à jour utilisant le modèle 'model based', de façon bottom-up.
 
 
 class Thompson(Qlearning):
@@ -14,6 +13,20 @@ class Thompson(Qlearning):
 
         self.p = dict()  # Saves the internal estimates of the success probabilities
         self.type = "Thompson Sampling"
+
+    def update_p(self, action, state, result):
+        try:
+            success, trials = self.p[(action, state)]
+        except KeyError:
+            success, trials = 1, 1
+            # success, trials = 0, 0 TODO
+
+        trials += 1
+
+        if result:
+            success += 1
+
+        self.p[(action, state)] = success, trials
 
     def get_p(self, action, state):
         try:
@@ -32,18 +45,7 @@ class Thompson(Qlearning):
             return 0
 
     def add_trial(self, action, state, result):
-        try:
-            success, trials = self.p[(action, state)]
-        except KeyError:
-            success, trials = 1, 1
-            # success, trials = 0, 0 TODO
-
-        trials += 1
-
-        if result:
-            success += 1
-
-        self.p[(action, state)] = success, trials
+        self.update_p(action, state, result)
         self.update_q_learning(state, action, self.state)
 
     def take_action(self, action):
@@ -115,17 +117,7 @@ class ModelBasedThompson(Thompson):
         self.history = []
 
     def add_trial(self, action, state, result):
-        try:
-            success, trials = self.p[(action, state)]
-        except KeyError:
-            success, trials = 1, 1
-
-        trials += 1
-
-        if result:
-            success += 1
-
-        self.p[(action, state)] = success, trials
+        self.update_p(action, state, result)
 
         # Uses model-based update rule, but in a bottom-up way.
 
@@ -167,3 +159,37 @@ class ModelBasedThompson(Thompson):
             # Could also try to evaluate this policy ?
             policy.reverse()
             self.history.append((policy, expected_value))
+
+
+class FullModelBasedThompson(ModelBasedThompson):
+
+    def __init__(self, network, gamma, alpha=0., strat=None, inf=100000):
+        ModelBasedThompson.__init__(self, network, gamma, alpha, strat, inf)
+
+    def update_p(self, action, state, result):
+        try:
+            p, trials = self.p[(action, state)]
+        except KeyError:
+            p, trials = 1, 0
+            # success, trials = 0, 0 TODO
+
+        trials += 1
+        p += self.alpha * (result - p)
+
+        self.p[(action, state)] = p, trials
+
+    def get_p(self, action, state):
+        try:
+            p, _ = self.p[(action, state)]
+            return p
+
+        except KeyError:
+            return 1  # TODO
+
+    def get_trials(self, action, state):
+        try:
+            _, trials = self.p[(action, state)]
+            return trials
+
+        except KeyError:
+            return 0
