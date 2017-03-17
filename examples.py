@@ -3,50 +3,42 @@ from thompson_sampling import Thompson, ModelBasedThompson, FullModelBasedThomps
 from qlearning import Qlearning
 from strategy import *
 from tests import *
+import fast
+import fast_incr
+import fast_tentative
+from math import *
+from network import *
 
-# Bleu Vert Rouge BleuCiel
 
-# Premier réseau
-"""
-n = Network(1)
-n.set_complete_network()
-n.add(2, 1, 1)
-n.add(20, 3, 1)
-q = Qbis(2, 0.9)
-"""
+# Parameters
+nb_trials = 10
+window = nb_trials // 10
+size = 12
+difficulty = 2
+big_ratio = log(size) / size
 
-# Deuxieme réseau
-k = 12
-n = Network(1)
-delta = 1.
+n = random_network(size, difficulty, big_ratio)
 
-for i in range(k):
-    n.add(i**delta+1, i+1, i**delta)
-n.generate_random_connected()
-# n.set_complete_network()
+qs = [fast.Fast(n),
+      fast_incr.Fast(n),
+      fast_tentative.Fast(n),
+      Qstar(n, 0.9),
+      Qlearning(n, 0.9, 0.01, strat=full_random),
+      Thompson(n, 0.9, 0.01, strat=thompson_standard),
+      ModelBasedThompson(n, 0.9, 0.01, strat=thompson_standard),
+      FullModelBasedThompson(n, 0.9, 0.1, strat=thompson_standard)]
 
-qs =
-q1 = Qstar(n, 0.9)
-q2 = Qlearning(n, 0.9, 0.01, strat=full_random)
-q3 = Thompson(n, 0.9, 0.01, strat=thompson_standard)
-q4 = ModelBasedThompson(n, 0.9, 0.01, strat=thompson_standard)
-q5 = FullModelBasedThompson(n, 0.9, 0.1, strat=thompson_standard)
+for q in qs:
+    print(q.type)
+    if isinstance(q, Qlearning):
+        nb = nb_trials
+        wd = window
+    else:
+        nb = 1
+        wd = 1
+    r = get_rewards(nb, q)
+    plot_perf(r, wd, q.type)
 
-# nb = 100
-# r1 = get_rewards(nb, q1)
-# r2 = get_rewards(nb, q2)
-# r3 = get_rewards(nb, q3)
-# r4 = get_rewards(nb, q4)
-# r5 = get_rewards(nb, q5)
-#
-# window = nb // 10
-# plot_perf(r1, nb)
-# plot_perf(r2, window)
-# plot_perf(r3, window)
-# plot_perf(r4, window)
-# plot_perf(r5, window)
-#
-# estimated_rewards = [x[1] for x in q5.history]
-# plot_perf(estimated_rewards, window)
-# show()
+legend()
+show()
 

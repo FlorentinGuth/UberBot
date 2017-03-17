@@ -66,3 +66,6 @@ class Fast(Botnet):
             power += self.network.get_proselytism(a)
 
         return Policy(self.network, actions)
+
+    def choose_action(self, state):
+        return self.best_action(state)
