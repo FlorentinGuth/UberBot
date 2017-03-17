@@ -13,10 +13,12 @@ import thompson_sampling as thom
 import markov
 import qlearning
 import strategy
+import tests
 
 import tkinter as tk
 import math
 import random as rd
+import time
 
 def select(l):
     return l[rd.randint(0,len(l)-1)]
@@ -42,6 +44,7 @@ class MainGUI(tk.Tk):
         self.update = [None] * self.nbs
 
         self.currPos = 0
+        self.running = False
 
         m = max(math.floor(math.sqrt(self.n)),3)
 
@@ -132,18 +135,22 @@ class MainGUI(tk.Tk):
         self.currPos = 0
 
     def launch(self):
-        if self.currPos == self.last:
-            self.reboot()
-        for i in range(self.currPos,self.last):
-            stop = False
-            for sim in self.sims:
-                if i == len(sim):
-                    stop = True
+        if not self.running:
+            self.running = True
+            if self.currPos == self.last:
+                self.reboot()
+            cur = 0
+            sims = [sim for sim in self.sims]
+            sims.sort(key=len)
+            while self.currPos >= len(sims[cur]):
+                cur += 1
+            for i in range(self.currPos,self.last):
+                if i == len(sims[cur]):
                     break
-            if stop:
-                break
-            self.act(i)
-        self.currPos = self.last
+                self.act(i)
+                time.sleep(.1)
+                self.currPos += 1
+            self.running = False
 
     def forward(self):
         if self.currPos == self.last:
@@ -183,34 +190,34 @@ class MainGUI(tk.Tk):
     #            self.unharmed(x, 0)
 
 
-class GUI(botnet.Botnet):
-
-    def __init__(self,initial_power):
-        net = network.Network(initial_power)
-        botnet.Botnet.__init__(self, net)
-        self.GUI = None
-
-    def display(self,mode):
-        def exe():
-            mode(10,self)
-
-        self.GUI = MainGUI(self.network.size,exe)
-        self.GUI.mainloop()
-
-    def take_action(self,action):
-        if self.GUI != None:
-            self.GUI.attacked(action, 0)
-            wait()
-            success = botnet.Botnet.take_action(self,action)
-            wait()
-            if success:
-                self.GUI.compromized(action, 0)
-            else:
-                self.GUI.unharmed(action, 0)
-            wait()
-            return success
-        else:
-            return botnet.Botnet.take_action(self,action)
+# class GUI(botnet.Botnet):
+# 
+#     def __init__(self,initial_power):
+#         net = network.Network(initial_power)
+#         botnet.Botnet.__init__(self, net)
+#         self.GUI = None
+# 
+#     def display(self,mode):
+#         def exe():
+#             mode(10,self)
+# 
+#         self.GUI = MainGUI(self.network.size,exe)
+#         self.GUI.mainloop()
+# 
+#     def take_action(self,action):
+#         if self.GUI != None:
+#             self.GUI.attacked(action, 0)
+#             wait()
+#             success = botnet.Botnet.take_action(self,action)
+#             wait()
+#             if success:
+#                 self.GUI.compromized(action, 0)
+#             else:
+#                 self.GUI.unharmed(action, 0)
+#             wait()
+#             return success
+#         else:
+#             return botnet.Botnet.take_action(self,action)
 
 
 #n = GUI(1)
