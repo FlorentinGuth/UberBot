@@ -14,7 +14,7 @@ class Qlearning(Botnet):
     This class computes an approximation of the exact Qstar, by learning it incrementally.
     """
 
-    def __init__(self, network, gamma, alpha=0., strat=None, inf=1000, shape=False):
+    def __init__(self, network, gamma, alpha=0.01, strat=None, inf=1000, shape=False):
         Botnet.__init__(self, network)
 
         self.content = dict()

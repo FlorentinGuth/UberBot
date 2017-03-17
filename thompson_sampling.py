@@ -9,7 +9,7 @@ from state import State
 
 class Thompson(Qlearning):
 
-    def __init__(self, network, gamma, alpha=0., strat=None, inf=100000):
+    def __init__(self, network, gamma, alpha=0.01, strat=None, inf=float("inf")):
         Qlearning.__init__(self, network, gamma, alpha, strat, inf)
 
         self.p = dict()  # Saves the internal estimates of the success probabilities
@@ -112,7 +112,7 @@ class Thompson(Qlearning):
 
 class ModelBasedThompson(Thompson):
 
-    def __init__(self, network, gamma, alpha=0., strat=None, inf=100000):
+    def __init__(self, network, gamma, alpha=0.01, strat=None, inf=float("inf")):
         Thompson.__init__(self, network, gamma, alpha, strat, inf)
         self.memory = []
         self.history = []
@@ -164,7 +164,7 @@ class ModelBasedThompson(Thompson):
 
 class FullModelBasedThompson(ModelBasedThompson):
 
-    def __init__(self, network, gamma, alpha=0., strat=None, inf=100000):
+    def __init__(self, network, gamma, alpha=0.01, strat=None, inf=float("inf")):
         ModelBasedThompson.__init__(self, network, gamma, alpha, strat, inf)
 
     def update_p(self, action, state, result):
