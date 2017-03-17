@@ -6,9 +6,7 @@ Created on Fri Feb 17 14:46:02 2017
 
 #!/usr/bin/env python
 
-import botnet
 import network
-import examples
 import thompson_sampling as thom
 import markov
 import qlearning
@@ -27,8 +25,8 @@ def wait():
     for i in range(100000):
         pass
 
-policies = [("Thompson", thom.Thompson, strategy.thompson_standard), \
-            ("Qstar", markov.Qstar, None), \
+policies = [("Thompson", thom.Thompson, strategy.thompson_standard),
+            ("Qstar", markov.Qstar, None),
             ("Qlearning", qlearning.Qlearning, strategy.full_random)]
 
 class MainGUI(tk.Frame):

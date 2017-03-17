@@ -35,17 +35,17 @@ qs = [fast.Fast(n),
       ModelBasedThompson(n, 0.9, 0.01, strat=thompson_standard),
       FullModelBasedThompson(n, 0.9, 0.1, strat=thompson_standard)]
 
-for q in qs:
-
-    if isinstance(q, Qlearning):
-        r = get_rewards(nb_trials, q)
-
-    else:
-        r = q.compute_policy().value(q.gamma)
-        print(q.type, r)
-        r = [r] * nb_trials
-    plot_perf(r, window, q.type)
-
-legend(loc="lower right")
-show()
+# for q in qs:
+#
+#     if isinstance(q, Qlearning):
+#         r = get_rewards(nb_trials, q)
+#
+#     else:
+#         r = q.compute_policy().value(q.gamma)
+#         print(q.type, r)
+#         r = [r] * nb_trials
+#     plot_perf(r, window, q.type)
+#
+# legend(loc="lower right")
+# show()
 
