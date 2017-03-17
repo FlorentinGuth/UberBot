@@ -167,9 +167,10 @@ def random_network(size, difficulty, big_nodes):
             proselytism = random.randint(0, size)
 
         resistance = int((3*random.random()+1)/2 * (proselytism ** difficulty))
-        cost = int(random.random() * resistance)
+        cost = int(random.random() * proselytism)
 
         network.add(resistance, proselytism, cost)
 
-    network.generate_random_connected()
+    # network.generate_random_connected()
+    network.set_complete_network()
     return network

@@ -26,7 +26,6 @@ class Qlearning(Botnet):
         self.strat = strat
         self.type = "Qlearning"
         self.shape = shape
-        self.reward_shaping = 0
 
     def clear(self):
         self.content = dict()
