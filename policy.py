@@ -37,4 +37,4 @@ class Policy:
         return res
 
     def value(self, gamma):
-        return self.expected_reward(State(len(self.actions)), gamma, 0)
+        return self.expected_reward(State(1 + max(self.actions)), gamma, 0) # max instead of len to allow partial policies
