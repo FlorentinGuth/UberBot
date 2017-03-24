@@ -100,19 +100,19 @@ class MainGUI(tk.Frame):
         c = tk.Canvas(self, width=self.width, height=self.height)
         c.create_rectangle(0, 0, self.width, self.height, tags=str(len(self.l)))
         c.create_text(self.width//2, self.height//2, text="Policy n°"+str(len(self.l)+1))
-        c.grid(row=6+3*len(self.l), column=0, columnspan=2)
+        c.grid(row=7+3*len(self.l), column=0, columnspan=2)
         v = tk.StringVar(self)
         v.set(policies[0][0])
         l = tk.OptionMenu(self, v, *[a for a,_,_ in policies])
-        l.grid(row=7+3*len(self.l), column=0, columnspan=2,sticky=tk.N+tk.S+tk.E+tk.W)
+        l.grid(row=8+3*len(self.l), column=0, columnspan=2,sticky=tk.N+tk.S+tk.E+tk.W)
 
         el = tk.Label(self, text="Train #")
-        el.grid(row=8+3*len(self.l), sticky=tk.W)
+        el.grid(row=9+3*len(self.l), sticky=tk.W)
 
         e = tk.Entry(self, width=15)
         e.insert(tk.END, "100")
 
-        e.grid(row=8+3*len(self.l), column=0, columnspan=2, sticky=tk.E)
+        e.grid(row=9+3*len(self.l), column=0, columnspan=2, sticky=tk.E)
 
         self.l.append((c, l, el, v, e))
         self.winfo_toplevel().wm_geometry("")
@@ -157,7 +157,7 @@ class MainGUI(tk.Frame):
                 if pc == None:
                     q = pb(net, gamma)
                 else:
-                    q = pb(net, gamma, 0.1, strat=pc)
+                    q = pb(net, gamma, 0.01, strat=pc)
                 s.append((self.l[i][3].get(), tests.get_last_invasion(int(self.l[i][4].get()), q)))
 
             n = GUI(int(self.enodes.get()), s)
