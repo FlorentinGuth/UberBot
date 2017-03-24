@@ -152,7 +152,7 @@ class Network:
         return perc
 
 
-def random_network(size, difficulty, big_nodes):
+def random_network(size, difficulty, big_nodes, complete=True):
     """
     Returns a random network with given size.
     For each node, we can expect the resistance to be approximately equivalent to its proselytism ** difficulty.
@@ -180,6 +180,8 @@ def random_network(size, difficulty, big_nodes):
 
         network.add(resistance, proselytism, cost)
 
-    # network.generate_random_connected()
-    network.set_complete_network()
+    if complete:
+        network.set_complete_network()
+    else:
+        network.generate_random_connected()
     return network
