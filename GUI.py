@@ -1,10 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Feb 17 14:46:02 2017
-@author: liozou
-"""
-
-#!/usr/bin/env python
 
 import network
 import thompson_sampling as thom
@@ -17,13 +11,6 @@ import tkinter as tk
 import math
 import random as rd
 import time
-
-def select(l):
-    return l[rd.randint(0,len(l)-1)]
-
-def wait():
-    for i in range(100000):
-        pass
 
 policies = [("Thompson", thom.Thompson, strategy.thompson_standard),
             ("Qstar", markov.Qstar, None),
@@ -102,21 +89,6 @@ class MainGUI(tk.Frame):
         self.start.grid(row=index[-1][0],column=index[-1][1],sticky=tk.N+tk.S+tk.E+tk.W, columnspan=2)
 
         self.index = index
-
-        #self.grid()
-        #index = []
-
-        #width = 100
-        #height = 20
-
-        #for (a, b, c) in policies:
-        #    index.append((0, len(index)))
-        #    c = tk.Canvas(self, width=width, height=height)
-        #    c.create_rectangle(0, 0, width, height, tags=str(len(index)))
-        #    c.create_text(width//2,height//2,text=a)
-        #    c.grid(column=0, row=len(index)-1)
-        #
-        #self.index = index
 
     def add_policy(self):
         c = tk.Canvas(self, width=self.width, height=self.height)
@@ -319,7 +291,6 @@ class GUI(tk.Tk):
                 else:
                     self.resisted(action[0], i)
                 self.update[i] = action
-        wait()
 
     def reboot(self):
         if self.running:
@@ -327,8 +298,6 @@ class GUI(tk.Tk):
             self.stop = True
         else:
             self.update = [None] * self.nbs
-            #for i in range(self.n):
-            #    self.l[i].itemconfigure("1", fill="black")
             for i in range(self.n):
                 for j in range(self.nbs):
                     self.unharmed(i, j)
@@ -379,78 +348,6 @@ class GUI(tk.Tk):
                 action = self.sims[i][self.currPos]
                 self.attacked(action[0], i)
                 self.unharmed(action[0], i)
-        wait()
-
-
-    #def animate(self):
-    #    available = [i for i in range(self.n)]
-    #    while available!=[]:
-    #        x = select(available)
-    #        self.attacked(x, 0)
-    #        wait()
-    #        att = rd.random()
-    #        if att > 0.7:
-    #            self.compromized(x, 0)
-    #            available.remove(x)
-    #        else:
-    #            self.unharmed(x, 0)
-
-
-# class GUI(botnet.Botnet):
-# 
-#     def __init__(self,initial_power):
-#         net = network.Network(initial_power)
-#         botnet.Botnet.__init__(self, net)
-#         self.GUI = None
-# 
-#     def display(self,mode):
-#         def exe():
-#             mode(10,self)
-# 
-#         self.GUI = MainGUI(self.network.size,exe)
-#         self.GUI.mainloop()
-# 
-#     def take_action(self,action):
-#         if self.GUI != None:
-#             self.GUI.attacked(action, 0)
-#             wait()
-#             success = botnet.Botnet.take_action(self,action)
-#             wait()
-#             if success:
-#                 self.GUI.compromized(action, 0)
-#             else:
-#                 self.GUI.unharmed(action, 0)
-#             wait()
-#             return success
-#         else:
-#             return botnet.Botnet.take_action(self,action)
-
-
-#n = GUI(1)
-#
-#k = 16
-#for i in range(k):
-#    n.network.add(i**1.8+1, i+1, i)
-#q = thom.Thompson(n.network, 0.9)
-#
-#
-#n.display(tests.unknown_thompson,q)
-
-#k = 12
-#n = network.Network(1)
-#for i in range(k):
-#    n.add(i**2, i+1, i)
-#n.set_complete_network()
-#gamma = 0.9
-#q1 = thom.Thompson(n, gamma, 0.1, strat=strategy.thompson_standard)
-#q2 = thom.Thompson(n, gamma, 0.1, strat=strategy.thompson_standard)
-#qs = markov.Qstar(n, gamma)
-#ql = qlearning.Qlearning(n, gamma, 0.1, strat=strategy.full_random)
-#
-#nbt = 500
-#s = [tests.get_last_invasion(1, qs), tests.get_last_invasion(nbt, q2), tests.get_last_invasion(nbt, ql)]
-#n = MainGUI(k, s)
-#n.mainloop()
 
 
 root = tk.Tk()
