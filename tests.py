@@ -62,7 +62,8 @@ def try_invasions(nb, q, printing=False):
         invasions.append(actions)
         durations.append(i - 1)
 
-    print(q.type, q.compute_policy().value(q.gamma))
+    pol = q.compute_policy()
+    print(q.type, pol.value(q.gamma), pol.actions)
 
     return rewards, sum(durations) / len(durations), invasions[-1]
 

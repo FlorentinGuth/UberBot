@@ -10,6 +10,7 @@ from reward_incr import *
 from math import *
 from network import *
 
+
 # Martin's pet network (that's cute)
 size = 13
 delta = 2
@@ -40,14 +41,17 @@ def botnets(network):
     return qs
 botnet_names = [q.type for q in botnets(Network(0))]
 
+
 def learning_botnets(network):
     return filter(lambda q: isinstance(q, Qlearning), botnets(network))
+
 learning_botnet_names = [q.type for q in learning_botnets(Network(0))]
+
 
 def non_learning_botnets(network):
     return filter(lambda q: not isinstance(q, Qlearning), botnets(network))
-non_learning_botnet_names = [q.type for q in non_learning_botnets(Network(0))]
 
+non_learning_botnet_names = [q.type for q in non_learning_botnets(Network(0))]
 
 
 def plot_learning(nb_trials, window, network):
@@ -65,13 +69,22 @@ def plot_learning(nb_trials, window, network):
             r = get_rewards(nb_trials, q)
 
         else:
-            r = q.compute_policy().value(q.gamma)
-            print(q.type, r)
+            pol = q.compute_policy()
+            r = pol.value(q.gamma)
+
+            print(q.type, r, pol.actions)
             r = [r] * nb_trials
+
         plot_perf(r, window, q.type)
+
+        if isinstance(q, FullModelBasedThompson):
+            # Plots the internal estimates of this botnet
+            estimates = [x[1] for x in q.history]
+            plot_perf(estimates, window, "Estimates of FullModelBasedThompson")
 
     legend(loc="lower right")
     show()
+
 
 def plot_immediate(max_size, nb_trials, difficulty):
     """
@@ -89,7 +102,7 @@ def plot_immediate(max_size, nb_trials, difficulty):
 
         trials = []
         for _ in range(nb_trials):
-            network = random_network(size, difficulty, big_nodes = log(size) / float(size))
+            network = random_network(size, difficulty, big_nodes=log(size) / float(size))
             network.set_complete_network()
 
             perf = []
@@ -108,6 +121,7 @@ def plot_immediate(max_size, nb_trials, difficulty):
 
     legend(loc="lower right")
     show()
+
 
 #plot_immediate(10, 20, 2)
 plot_learning(100, 10, n_martin)
