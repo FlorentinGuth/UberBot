@@ -2,7 +2,7 @@ from botnet import *
 from policy import *
 
 
-class Reward_incr(Botnet):
+class RewardIncr(Botnet):
     """
     Botnet trying to maximize the average time, by inserting nodes one after the other (sub-optimal, O(n^3)).
     Different orders are possible: sort the nodes by decreasing power or increasing resistance.
