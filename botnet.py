@@ -13,13 +13,12 @@ class Botnet:
         self.state = State(network.size)
         self.power = network.initial_power
         self.type = None
-        self.inf = float("inf")
         self.reward = 0
         self.time = 0
         self.time_factor = 1  # holds gamma ** T
         self.gamma = 0.9      # TODO To change?
 
-    def immediate_reward(self, state, action):
+    def immediate_reward(self, state, action, success=None):
         return self.network.immediate_reward(state, action)
 
     def take_action(self, action):
