@@ -24,17 +24,27 @@ class Policy:
     def expected_reward(self, state, gamma, i):
         """ Updated version with the term accounting for infinite horizon """
         res = 0
-        # TODO Recoder ça en bottom-up
         if i == len(self.actions):
-            return self.network.total_power() / (1 - gamma)
+            return self.network.total_power() / (1 - gamma) # Not quite accurate
 
         a = self.actions[i]
         p = self.network.success_probability(a, state)
-        res += (Botnet(self.network).immediate_reward(state, a) +   # Are we sure it shouldn't be the new state here?
+        res += (Botnet(self.network).immediate_reward(state, a) +
                 gamma * p * self.expected_reward(State.added(state, a), gamma, i + 1))
         res /= float(1 - gamma * (1 - p))
 
         return res
 
     def value(self, gamma):
-        return self.expected_reward(State(1 + max(self.actions)), gamma, 0) # max instead of len to allow partial policies
+        """ Bottom-up (non-recursive) version of expected_reward """
+        # Initialization to last reward (accounting for infinite horizon)
+        power = self.network.initial_power + sum(self.network.get_proselytism(action) for action in self.actions)
+        reward = power / (1. - gamma)
+
+        # Backward computation, from end to start
+        for action in reversed(self.actions):
+            power -= self.network.get_proselytism(action)
+            p = self.network.success_probability_power(action, power)
+            reward = (self.network.immediate_reward_power(power, action) + gamma * p * reward) / (1 - gamma * (1 - p))
+
+        return reward

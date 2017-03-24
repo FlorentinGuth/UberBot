@@ -92,6 +92,10 @@ class Network:
             return -self.get_cost(action)
         return -self.get_cost(action) + self.current_power(state)
 
+    def immediate_reward_power(self, power, action):
+        """ Immediate reward, assumes that the node has not been hijacked yet! """
+        return -self.get_cost(action) + power
+
     def generate_random_connected(self):
         rep = [i for i in range(self.size)]
 
