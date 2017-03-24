@@ -6,7 +6,7 @@ from tests import *
 import fast
 import fast_incr
 import fast_tentative
-from rewardincr import *
+from reward_incr import *
 from math import *
 from network import *
 
