@@ -75,7 +75,7 @@ class Qlearning(Botnet):
         if state is None:
             state = self.state
 
-        best_q = -self.inf
+        best_q = -float("inf")
         best_actions = []
 
         for action in self.network.get_actions(state):

@@ -5,7 +5,7 @@ import sys
 
 sys.setrecursionlimit(10000)
 
-class Fast(Botnet):
+class FastTentative(Botnet):
     """
     Botnet maybe minimizing the average time needed to hijack the whole network (O(n^2)).
     """

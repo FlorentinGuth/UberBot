@@ -4,7 +4,6 @@ from botnet import Botnet
 from state import State
 
 # TODO Ajouter de l'auto-évaluation des stratégies adoptées, s'en servir pour les retenir, et détecter des blocages.
-# TODO remplacer inf par float("inf") partout
 
 
 class Thompson(Qlearning):
@@ -69,7 +68,7 @@ class Thompson(Qlearning):
             # return self.policy(state) TODO
             return self.random_action()
 
-        best_q = -self.inf
+        best_q = -float("inf")
         best_actions = []
 
         for action in possible_actions:
@@ -95,7 +94,7 @@ class Thompson(Qlearning):
 
     def be_curious(self, state):
 
-        min_cur = self.inf
+        min_cur = float("inf")
         best_a = []
 
         for a in self.network.get_actions(state):

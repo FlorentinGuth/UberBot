@@ -6,7 +6,7 @@ from tests import *
 import fast
 import fast_incr
 import fast_tentative
-from reward_incr import *
+from rewardincr import *
 from math import *
 from network import *
 
@@ -29,9 +29,9 @@ def botnets(network):
     # TODO: would be more practical if we had a class of list: [Fast, Fast_incr, Qlearning...] (no need to give the botnet)
     qs = [
         fast.Fast(network),
-        fast_incr.Fast(network),
-        Reward_incr(network),
-        fast_tentative.Fast(network),
+        fast_incr.FastIncr(network),
+        RewardIncr(network),
+        fast_tentative.FastTentative(network),
         Qstar(network, 0.9),
         Qlearning(network, 0.9, 0.01, strat=full_random, shape=False),
         Thompson(network, 0.9, 0.01, strat=curious_standard),
