@@ -1,6 +1,5 @@
 import abc
 from state import *
-# TODO OVERLEAF !!!
 
 
 class Botnet:

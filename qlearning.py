@@ -41,6 +41,7 @@ class Qlearning(Botnet):
         try:
             return self.content[(state.content, action)]
         except KeyError:
+            # Initialization
             # return self.immediate_reward(state, action) / (1 - self.gamma)
             return 0
 
@@ -128,18 +129,11 @@ class Qlearning(Botnet):
             return self.policy(self.state)
 
         return self.strat(self, tot_nb_invasions, cur_nb)
-    
+
     def immediate_reward(self, state, action, success):
         if not self.shape:
             return self.network.immediate_reward(state, action)
 
         if success:
-            return self.gamma / (1 - self.gamma) * self.network.get_proselytism(action) - self.network.get_cost(action)
+            return self.gamma / (1. - self.gamma) * self.network.get_proselytism(action) - self.network.get_cost(action)
         return -self.network.get_cost(action)
-        
-#        if success:
-#            bonus = self.network.get_proselytism(action)
-#            self.reward_shaping += bonus 
-#        else:
-#            bonus = 0
-#        return rew - (self.reward_shaping*self.gamma - (self.reward_shaping - bonus))/(1-self.gamma)
