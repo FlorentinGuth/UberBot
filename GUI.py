@@ -23,7 +23,7 @@ class MainGUI(tk.Frame):
         self.master = master
         
         self.nbP = 3
-        self.nbN = 49
+        self.comp = True
 
         self.running = False
 
@@ -34,7 +34,30 @@ class MainGUI(tk.Frame):
         self.width = 200
         self.height = 20
 
-        index.append((0, 0))
+        tk.Label(self, text="# nodes").grid(row=0, sticky=tk.W)
+
+        self.enodes = tk.Entry(self, width=15)
+        self.enodes.insert(tk.END, "49")
+
+        self.enodes.grid(row=0, column=0, columnspan=2, sticky=tk.E)
+
+        tk.Label(self, text="Difficulty").grid(row=1, sticky=tk.W)
+
+        self.ediff = tk.Entry(self, width=15)
+        self.ediff.insert(tk.END, "1.5")
+
+        self.ediff.grid(row=1, column=0, columnspan=2, sticky=tk.E)
+
+        tk.Label(self, text="Big nodes %").grid(row=2, sticky=tk.W)
+
+        self.bignodes = tk.Scale(self, from_=0, to=100, orient=tk.HORIZONTAL)
+        self.bignodes.grid(row=2, column=0, columnspan=2, sticky=tk.E)
+        self.bignodes.set(20)
+
+        self.complete = tk.Button(self, text="Complete", command=self.toggleComplete)
+        self.complete.grid(row=3, column=0, columnspan=2, sticky=tk.E+tk.N+tk.S+tk.W)
+
+        index.append((4, 0))
         c = tk.Canvas(self, width=self.width, height=self.height)
         c.create_rectangle(0, 0, self.width, self.height, tags=str(len(index)))
         c.create_text(self.width//2,self.height//2,text=str(self.nbP) + " policies")
@@ -42,44 +65,20 @@ class MainGUI(tk.Frame):
 
         self.c = c
 
-        index.append((1, 0))
+        index.append((5, 0))
         self.p_dec = tk.Button(self, text="Decrease", command=self.decreaseP)
         self.p_dec.grid(row=index[-1][0],column=index[-1][1],sticky=tk.N+tk.S+tk.E+tk.W)
         
-        index.append((1, 1))
+        index.append((5, 1))
         self.p_inc = tk.Button(self, text="Increase", command=self.increaseP)
         self.p_inc.grid(row=index[-1][0],column=index[-1][1],sticky=tk.N+tk.S+tk.E+tk.W)
 
-        index.append((2, 0))
-        d = tk.Canvas(self, width=self.width, height=self.height)
-        d.create_rectangle(0, 0, self.width, self.height, tags=str(len(index)))
-        d.create_text(self.width//2,self.height//2,text=str(self.nbN) + " nodes")
-        d.grid(row=index[-1][0], column=index[-1][1],columnspan=2)
-
-        self.d = d
-
-        index.append((3, 0))
-        self.p_dec = tk.Button(self, text="Decrease", command=self.decreaseN)
-        self.p_dec.grid(row=index[-1][0],column=index[-1][1],sticky=tk.N+tk.S+tk.E+tk.W)
-        
-        index.append((3, 1))
-        self.p_inc = tk.Button(self, text="Increase", command=self.increaseN)
-        self.p_inc.grid(row=index[-1][0],column=index[-1][1],sticky=tk.N+tk.S+tk.E+tk.W)
-
-        index.append((4, 0))
-        self.p_dec = tk.Button(self, text="-10", command=self.decreaseN10)
-        self.p_dec.grid(row=index[-1][0],column=index[-1][1],sticky=tk.N+tk.S+tk.E+tk.W)
-        
-        index.append((4, 1))
-        self.p_inc = tk.Button(self, text="+10", command=self.increaseN10)
-        self.p_inc.grid(row=index[-1][0],column=index[-1][1],sticky=tk.N+tk.S+tk.E+tk.W)
-
-        tk.Label(self, text="Gamma").grid(row=5, sticky=tk.W)
+        tk.Label(self, text="Gamma").grid(row=6, sticky=tk.W)
 
         self.e1 = tk.Entry(self, width=15)
         self.e1.insert(tk.END, "0.9")
 
-        self.e1.grid(row=5, column=0, columnspan=2, sticky=tk.E)
+        self.e1.grid(row=6, column=0, columnspan=2, sticky=tk.E)
 
         for _ in range(self.nbP):
             self.add_policy()
@@ -89,6 +88,13 @@ class MainGUI(tk.Frame):
         self.start.grid(row=index[-1][0],column=index[-1][1],sticky=tk.N+tk.S+tk.E+tk.W, columnspan=2)
 
         self.index = index
+
+    def toggleComplete(self):
+        if self.comp:
+            self.complete["text"] = "Not complete"
+        else:
+            self.complete["text"] = "Complete"
+        self.comp = not self.comp
 
     def add_policy(self):
         c = tk.Canvas(self, width=self.width, height=self.height)
@@ -133,38 +139,10 @@ class MainGUI(tk.Frame):
         self.c.itemconfigure(str(2), text=str(self.nbP) + " policies")
         self.c.update()
 
-    def decreaseN(self):
-        if self.nbN > 1:
-            self.nbN -= 1
-            self.d.itemconfigure(str(2), text=str(self.nbN) + " nodes")
-            if self.nbN == 1:
-                self.d.itemconfigure(str(2), text=str(self.nbN) + " node")
-            self.d.update()
-
-    def increaseN(self):
-        self.nbN += 1
-        self.d.itemconfigure(str(2), text=str(self.nbN) + " nodes")
-        self.d.update()
-
-    def decreaseN10(self):
-        self.nbN = max(self.nbN - 10, 1)
-        self.d.itemconfigure(str(2), text=str(self.nbN) + " nodes")
-        if self.nbN == 1:
-            self.d.itemconfigure(str(2), text=str(self.nbN) + " node")
-        self.d.update()
-
-    def increaseN10(self):
-        self.nbN += 10
-        self.d.itemconfigure(str(2), text=str(self.nbN) + " nodes")
-        self.d.update()
-
     def startf(self):
         if not self.running:
             self.running = True
-            net = network.Network(1)
-            for i in range(self.nbN):
-                net.add(i**2, i+1, i)
-            net.set_complete_network()
+            net = network.random_network(int(self.enodes.get()), float(self.ediff.get()), self.bignodes.get()/100, self.comp)
 
             s = []
             gamma = float(self.e1.get())
@@ -182,7 +160,7 @@ class MainGUI(tk.Frame):
                     q = pb(net, gamma, 0.1, strat=pc)
                 s.append((self.l[i][3].get(), tests.get_last_invasion(int(self.l[i][4].get()), q)))
 
-            n = GUI(self.nbN, s)
+            n = GUI(int(self.enodes.get()), s)
             n.mainloop()
             self.running = False
 
