@@ -187,7 +187,7 @@ class MainGUI(tk.Frame):
         self.d.update()
 
     def startf(self):
-        if self.running == False:
+        if not self.running:
             self.running = True
             net = network.Network(1)
             for i in range(self.nbN):
@@ -234,6 +234,8 @@ class GUI(tk.Tk):
 
         self.currPos = 0
         self.running = False
+        self.stop = False
+        self.reset = False
 
         m = max(math.floor(math.sqrt(self.n)),3)
 
@@ -271,7 +273,10 @@ class GUI(tk.Tk):
         self.b_backward.grid(column=0,row=index[-1][0]+1, columnspan=button_pos)
 
         self.b_launch = tk.Button(self, text="Launch", command=self.launch)
-        self.b_launch.grid(column=button_pos,row=index[-1][0]+1, columnspan = m-2*button_pos)
+        self.b_launch.grid(column=button_pos-1,row=index[-1][0]+1, columnspan = m-2*button_pos)
+
+        self.b_reset = tk.Button(self, text="Reset", command=self.reboot)
+        self.b_reset.grid(column=button_pos+1,row=index[-1][0]+1, columnspan = m-2*button_pos)
 
         self.b_forward = tk.Button(self, text="Next", command=self.forward)
         self.b_forward.grid(column=m-button_pos,row=index[-1][0]+1, columnspan=button_pos)
@@ -281,6 +286,7 @@ class GUI(tk.Tk):
         self.bind('<Left>',lambda x:self.backward())
         self.bind('<BackSpace>',lambda x:self.backward())
         self.bind('<space>',lambda x:self.launch())
+        self.bind('<Escape>',lambda x:self.reboot())
 
 
     def attacked(self,n,i):
@@ -316,13 +322,18 @@ class GUI(tk.Tk):
         wait()
 
     def reboot(self):
-        self.update = [None] * self.nbs
-        #for i in range(self.n):
-        #    self.l[i].itemconfigure("1", fill="black")
-        for i in range(self.n):
-            for j in range(self.nbs):
-                self.unharmed(i, j)
-        self.currPos = 0
+        if self.running:
+            self.reset = True
+            self.stop = True
+        else:
+            self.update = [None] * self.nbs
+            #for i in range(self.n):
+            #    self.l[i].itemconfigure("1", fill="black")
+            for i in range(self.n):
+                for j in range(self.nbs):
+                    self.unharmed(i, j)
+            self.currPos = 0
+            self.reset = False
 
     def launch(self):
         if not self.running:
@@ -335,12 +346,17 @@ class GUI(tk.Tk):
             while self.currPos >= len(sims[cur]):
                 cur += 1
             for i in range(self.currPos,self.last):
-                if i == len(sims[cur]):
+                if self.stop or i == len(sims[cur]):
                     break
                 self.act(i)
                 time.sleep(.1)
                 self.currPos += 1
+            self.stop = False
             self.running = False
+            if self.reset:
+                self.reboot()
+        else:
+            self.stop = True
 
     def forward(self):
         if self.currPos == self.last:
