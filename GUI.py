@@ -38,6 +38,8 @@ class MainGUI(tk.Frame):
         self.nbP = 3
         self.nbN = 49
 
+        self.running = False
+
         self.grid()
         index = []
         self.l = []
@@ -185,29 +187,32 @@ class MainGUI(tk.Frame):
         self.d.update()
 
     def startf(self):
-        net = network.Network(1)
-        for i in range(self.nbN):
-            net.add(i**2, i+1, i)
-        net.set_complete_network()
+        if self.running == False:
+            self.running = True
+            net = network.Network(1)
+            for i in range(self.nbN):
+                net.add(i**2, i+1, i)
+            net.set_complete_network()
 
-        s = []
-        gamma = float(self.e1.get())
+            s = []
+            gamma = float(self.e1.get())
 
-        for i in range(self.nbP):
-            q = None
-            pb, pc = None, None
-            for a, b, c in policies:
-                if a == self.l[i][3].get():
-                    pb, pc = b, c
-                    break
-            if pc == None:
-                q = pb(net, gamma)
-            else:
-                q = pb(net, gamma, 0.1, strat=pc)
-            s.append((self.l[i][3].get(), tests.get_last_invasion(int(self.l[i][4].get()), q)))
+            for i in range(self.nbP):
+                q = None
+                pb, pc = None, None
+                for a, b, c in policies:
+                    if a == self.l[i][3].get():
+                        pb, pc = b, c
+                        break
+                if pc == None:
+                    q = pb(net, gamma)
+                else:
+                    q = pb(net, gamma, 0.1, strat=pc)
+                s.append((self.l[i][3].get(), tests.get_last_invasion(int(self.l[i][4].get()), q)))
 
-        n = GUI(self.nbN, s)
-        n.mainloop()
+            n = GUI(self.nbN, s)
+            n.mainloop()
+            self.running = False
 
 
 class GUI(tk.Tk):
