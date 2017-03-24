@@ -59,7 +59,7 @@ class Thompson(Qlearning):
     def simulate(self, state):
         return [i for i in self.network.get_actions(state) if random.random() < self.get_p(i, state)]
 
-    def thompson_policy(self, state):
+    def thompson_policy(self, state, beta=1):
         # Computes best action to perform in this state according Thompson Sampling.
         possible_actions = self.simulate(state)
 
@@ -79,7 +79,6 @@ class Thompson(Qlearning):
             # new_q = self.max_line(State.added(state, action))
 
             # Third possibility
-            beta = 1.
             new_q = beta * self.get(state, action) + (1 - beta) * self.max_line(State.added(state, action))
 
             if new_q > best_q:

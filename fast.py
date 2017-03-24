@@ -7,8 +7,8 @@ class Fast(Botnet):
     Botnet minimizing the average time needed to hijack the whole network (exponential complexity).
     """
 
-    def __init__(self, network):
-        Botnet.__init__(self, network)
+    def __init__(self, network,gamma=0.9):
+        Botnet.__init__(self, network,gamma)
 
         self.time = {}      # time[(state, action)] is the time to finish the job from state doing action
         self.min_time = {}  # min_time[state] is the min over all actions of time[(state, action)]

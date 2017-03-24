@@ -10,8 +10,8 @@ class FastTentative(Botnet):
     Botnet maybe minimizing the average time needed to hijack the whole network (O(n^2)).
     """
 
-    def __init__(self, network):
-        Botnet.__init__(self, network)
+    def __init__(self, network, gamma=0.9):
+        Botnet.__init__(self, network, gamma)
 
         self.time = {}      # time[(power, action)] is an estimation of the time to finish the job doing action
         self.min_time = {}  # min_time[power] is the min over all actions of time[(power, action)]

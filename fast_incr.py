@@ -8,8 +8,8 @@ class FastIncr(Botnet):
     Different orders are possible: sort the nodes by decreasing power or increasing resistance.
     """
 
-    def __init__(self, network):
-        Botnet.__init__(self, network)
+    def __init__(self, network, gamma=0.9):
+        Botnet.__init__(self, network, gamma)
         self.type = "Fast_incr"
 
     def compute_policy(self):

@@ -8,7 +8,7 @@ class Botnet:
     It is an abstract base class (abc): it cannot be instantiated, and an actual botnet will inherit this class.
     """
 
-    def __init__(self, network):
+    def __init__(self, network, gamma=0.9):
         self.network = network
         self.state = State(network.size)
         self.power = network.initial_power
@@ -16,7 +16,7 @@ class Botnet:
         self.reward = 0
         self.time = 0
         self.time_factor = 1  # holds gamma ** T
-        self.gamma = 0.9      # TODO To change?
+        self.gamma = gamma
 
     def immediate_reward(self, state, action, success=None):
         return self.network.immediate_reward(state, action)
