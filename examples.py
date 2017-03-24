@@ -74,7 +74,13 @@ def plot_learning(nb_trials, window, network):
 
             print(q.type, r, pol.actions)
             r = [r] * nb_trials
+
         plot_perf(r, window, q.type)
+
+        if isinstance(q, FullModelBasedThompson):
+            # Plots the internal estimates of this botnet
+            estimates = [x[1] for x in q.history]
+            plot_perf(estimates, window, "Estimates of FullModelBasedThompson")
 
     legend(loc="lower right")
     show()
@@ -96,7 +102,7 @@ def plot_immediate(max_size, nb_trials, difficulty):
 
         trials = []
         for _ in range(nb_trials):
-            network = random_network(size, difficulty, big_nodes = log(size) / float(size))
+            network = random_network(size, difficulty, big_nodes=log(size) / float(size))
             network.set_complete_network()
 
             perf = []
