@@ -87,14 +87,14 @@ class Network:
         return rnd < probability
 
     def immediate_reward(self, state, action):
-        # TODO Remplacer par une notion de cout agréable
+        # TODO Remplacer par une notion de cout agréable, et fusionner les deux fonctions suivantes
         if action in state:
             return -self.get_cost(action)
-        return -self.get_cost(action) + self.current_power(state)
+        return max(-self.get_cost(action) + self.current_power(state), 0)
 
     def immediate_reward_power(self, power, action):
         """ Immediate reward, assumes that the node has not been hijacked yet! """
-        return -self.get_cost(action) + power
+        return max(-self.get_cost(action) + power, 0)
 
     def generate_random_connected(self):
         rep = [i for i in range(self.size)]

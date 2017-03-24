@@ -9,7 +9,10 @@ import fast_tentative
 from reward_incr import *
 from math import *
 from network import *
+from matplotlib.font_manager import FontProperties
 
+fontP = FontProperties()
+fontP.set_size('small')
 
 # Martin's pet network (that's cute)
 size = 13
@@ -75,14 +78,16 @@ def plot_learning(nb_trials, window, network):
             print(q.type, r, pol.actions)
             r = [r] * nb_trials
 
-        plot_perf(r, window, q.type)
+        plot_perf(r, window, q.type, )
 
         if isinstance(q, FullModelBasedThompson):
             # Plots the internal estimates of this botnet
             estimates = [x[1] for x in q.history]
             plot_perf(estimates, window, "Estimates of FullModelBasedThompson")
 
-    legend(loc="lower right")
+    # legend(loc="lower right")
+    legend(loc='center left', bbox_to_anchor=(1, 0.5), prop=fontP).draggable()
+
     show()
 
 
