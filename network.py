@@ -99,6 +99,7 @@ class Network:
     def generate_random_connected(self):
         rep = [i for i in range(self.size)]
 
+        # Union-Find with path compression (each operation takes O(log(n)))
         def find(n):
             if rep[n] != n:
                 rep[n] = find(rep[n])
@@ -128,6 +129,8 @@ class Network:
             for j in range(self.size):
                 prov[j] = -1
 
+            # We compute with a bfs the last node prov[j]
+            # on a shortest path between i and j
             queue = [(i, -1)]
             while len(queue) > 0:
                 cur, last = queue.pop()
@@ -137,6 +140,8 @@ class Network:
                     for v in self.graph[cur]:
                         queue.append((v, cur))
 
+            # For each node j, we follow the shortest path from
+            # j to i using the array prov computed previously
             for j in range(self.size):
                 if i != j and visited[j] == count:
                     cur = j
