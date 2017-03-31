@@ -51,16 +51,7 @@ class Fast(Botnet):
         return best
 
     def compute_policy(self):
-        n = self.network.size
-        state = State(n)
-        actions = []
-
-        for _ in range(n):
-            a = self.best_action(state)
-            actions.append(a)
-            state.add(a)
-
-        return Policy(self.network, actions)
+        return make_policy(self.best_action, self.network)
 
     def choose_action(self, state):
         return self.best_action(state)

@@ -68,11 +68,14 @@ class Network:
         """
         Returns the available actions in the given state
         :param state: the current state
-        :return: a set of actions
+        :return:      a set of actions
         """
         if state.is_empty():
+            # TODO: makes not much sense to be able to choose any node
+            # TODO: we could say that the Botnet starts with an already hijacked node instead (gives initial power)
             return set(range(self.size))
 
+        # TODO: implementation feasible in O(n) instead of O(n*ln(n)) (or maybe O(n²)...)
         res = set()
         state = state.to_list()
         for i in state:
@@ -128,6 +131,7 @@ class Network:
         :param power:  the available power
         :return:       the probability of success
         """
+        # TODO; change by an exponential?
         if self.get_resistance(action) == 0:
             return 1.
         return min(1., float(power) / self.get_resistance(action))

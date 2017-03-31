@@ -1,4 +1,5 @@
 from botnet import *
+import random
 
 
 class Policy:
@@ -59,3 +60,26 @@ class Policy:
             reward = float(self.network.immediate_reward_power(power, action) + gamma * p * reward) / (1 - gamma * (1 - p))
 
         return reward
+
+
+def make_policy(best_action, network):
+    """
+    Automatically computes a policy from the best_action dict
+    :param best_action: a function mapping a state to a list of best actions (think about dict.get) 
+                        (or a list/set of actions, in which case one will be randomly chosen)
+    :param network      the network
+    :return:            the policy
+    """
+    state = State(network.size)
+    actions = []
+
+    for _ in range(network.size):
+        a = best_action(state)
+
+        if type(a) != type(0):
+            a = random.choice(a)
+
+        actions.append(a)
+        state.add(a)
+
+    return Policy(network, actions)

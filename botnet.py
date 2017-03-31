@@ -10,13 +10,16 @@ class Botnet:
 
     def __init__(self, network, gamma=0.9):
         self.network = network
+
         self.state = State(network.size)
         self.power = network.initial_power
-        self.type = None
+
+        self.gamma = gamma
         self.reward = 0
         self.time = 0
-        self.time_factor = 1  # holds gamma ** T
-        self.gamma = gamma
+        self.time_factor = 1  # Holds gamma ** T
+
+        self.type = None
 
     def immediate_reward(self, state, action, success=None):
         """
@@ -28,26 +31,36 @@ class Botnet:
         """
         return self.network.immediate_reward(state, action)
 
+    def update_hijacked(self, action):
+        """
+        Considers the given node as hijacked, updates internals.
+        Beware: this does not update the time-related attributes!
+        :param action: 
+        :return:       None
+        """
+        # Gets the immediate reward
+        # TODO: update to make it depend on hijacked node (to gain a step)
+
+        self.state.add(action)
+        self.power += self.network.get_proselytism(action)
+
+        if self.state.is_full():
+            self.reward += self.time_factor * self.network.total_power() / (1 - self.gamma)
+
     def take_action(self, action):
         """
         Takes the given action, updates internal state and such
-        :param action: 
-        :return: True if the hijack was successful, False otherwise
+        :param action: the action to attempt
+        :return:       True if the hijack was successful, False otherwise
         """
         success = self.network.attempt_hijacking(action, self.state)
 
-        # Gets the immediate reward
         self.reward += self.time_factor * Botnet.immediate_reward(self, self.state, action)
         self.time_factor *= self.gamma
         self.time += 1
 
         if success:
-            # Modify the state of the botnet in case of success
-            self.state.add(action)
-            self.power += self.network.get_proselytism(action)
-
-            if self.state.is_full():
-                self.reward += self.time_factor * self.network.total_power() / (1 - self.gamma)
+            self.update_hijacked(action)  # Modify the state of the botnet in case of success
 
         return success
 
