@@ -1,4 +1,5 @@
 import random
+import queue
 from state import *
 
 
@@ -133,7 +134,6 @@ class Network:
 
         return fw
 
-    # TODO: O(n^4), should be optimized to O(n * m)
     def count_paths(self):
         nbP = [[[0] * self.size for _ in range(self.size)] for _ in range(self.size+1)]
         for i in range(self.size):
@@ -147,6 +147,21 @@ class Network:
                         nbP[i][a][b] += nbP[1][a][c] * nbP[i-1][c][b]
 
         return nbP
+
+    def shortest_paths(self):
+        SP = [[(-1, 0)] * self.size for _ in range(self.size)]
+
+        for i in range(self.size):
+            fl = queue.Queue()
+            fl.put((i, i, 0))
+            while not fl.empty():
+                cur = fl.get()
+                if SP[i][cur[0]][0] == -1:
+                    for v in self.graph[cur[0]]:
+                        fl.put((v, cur[0], cur[2]+1))
+                SP[i][cur[0]] = (cur[2], SP[i][cur[0]][1] + SP[i][cur[1]][1])
+    
+        return SP
 
     def compute_percolation(self):
         perc = [0] * self.size
@@ -180,6 +195,39 @@ class Network:
         return perc
 
     def compute_percolation_betweenness(self):
+        SP = self.shortest_paths()
+
+        B = []
+
+        for g in range(self.size):
+            p = 0
+            for s in range(self.size):
+                for t in range(self.size):
+                    if SP[s][g][0] + SP[g][t][0] == SP[s][t][0]:
+                        p += SP[s][g][1] * SP[g][t][1] / SP[s][t][1]
+            B.append(p / (self.size - 1) / (self.size - 2))
+
+        return B
+
+    def compute_percolation_centrality(self, I):
+        SP = self.shortest_paths()
+
+        P = []
+
+        sI = sum(I)
+
+        for g in range(self.size):
+            p = 0
+            for s in range(self.size):
+                for t in range(self.size):
+                    if SP[s][g][0] + SP[g][t][0] == SP[s][t][0]:
+                        w = I[s] / (sI - I[g])
+                        p += SP[s][g][1] * SP[g][t][1] / SP[s][t][1] * w
+            P.append(p / (self.size - 2))
+
+        return P
+
+    def compute_percolation_betweenness_slow(self):
         fw = self.floyd_warshall()
         nbP = self.count_paths()
 
@@ -195,7 +243,7 @@ class Network:
 
         return B
 
-    def compute_percolation_centrality(self, I):
+    def compute_percolation_centrality_slow(self, I):
         fw = self.floyd_warshall()
         nbP = self.count_paths()
 
