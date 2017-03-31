@@ -22,10 +22,17 @@ class Policy:
         return t
 
     def expected_reward(self, state, gamma, i):
-        """ Updated version with the term accounting for infinite horizon """
+        """
+        Updated version with the term accounting for infinite horizon
+        You should not call this method, use value instead
+        :param state the state from which to calculate the reward (usually the empty one)
+        :param gamma
+        :param i     the cardinality of state
+        :return
+        """
         res = 0
         if i == len(self.actions):
-            return self.network.total_power() / (1 - gamma) # Not quite accurate
+            return self.network.total_power() / (1 - gamma)  # TODO: Not quite accurate for incr botnets
 
         a = self.actions[i]
         p = self.network.success_probability(a, state)
@@ -36,7 +43,11 @@ class Policy:
         return res
 
     def value(self, gamma):
-        """ Bottom-up (non-recursive) version of expected_reward """
+        """
+        Bottom-up (non-recursive) version of expected_reward
+        :param gamma
+        :return
+        """
         # Initialization to last reward (accounting for infinite horizon)
         power = self.network.initial_power + sum(self.network.get_proselytism(action) for action in self.actions)
         reward = power / (1. - gamma)
@@ -45,6 +56,6 @@ class Policy:
         for action in reversed(self.actions):
             power -= self.network.get_proselytism(action)
             p = self.network.success_probability_power(action, power)
-            reward = (self.network.immediate_reward_power(power, action) + gamma * p * reward) / (1 - gamma * (1 - p))
+            reward = float(self.network.immediate_reward_power(power, action) + gamma * p * reward) / (1 - gamma * (1 - p))
 
         return reward

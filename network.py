@@ -16,9 +16,16 @@ class Network:
         self.resistance = []
         self.proselytism = []
         self.action_cost = []
-        self.graph = []
+        self.graph = []         # List of set of neighbors
 
     def add(self, resistance, proselytism, cost):
+        """
+        Adds the given node to the network. This does not add any link between nodes.
+        :param resistance: 
+        :param proselytism: 
+        :param cost: 
+        :return: 
+        """
         self.action_cost.append(cost)
         self.proselytism.append(proselytism)
         self.resistance.append(resistance)
@@ -27,76 +34,153 @@ class Network:
 
     def add_link(self, node1, node2):
         """
+        Adds the edge 'node1 --> node2' to the graph of the network
         :param node1:
         :param node2:
-        :return: adds the edge node1-node2 to the graph of the network
+        :return:
         """
-        # un attribut accessibles (ensemble des noeuds accesibles depuis l'etat courant)
-        # Possibilité de modifier le graphe en des ensembles ?
-        # Ajouter une methode get_actions(self, state) ou qqch comme ca
+        # TODO: un attribut accessibles (ensemble des noeuds accesibles depuis l'etat courant)
+        # TODO: Possibilité de modifier le graphe en des ensembles ?
+        # TODO: Ajouter une methode get_actions(self, state) ou qqch comme ca
+        # TODO: It does not make any sense for the graph to be cyclic
+
         self.graph[node1].add(node2)
 
+
     def set_complete_network(self):
+        """
+        Sets the network to be the complete graph
+        :return: 
+        """
         tot = set(range(self.size))
         for i in range(self.size):
             self.graph[i] = tot
 
     def clear_graph(self):
+        """
+        Removes all edges from the graph
+        :return: 
+        """
         for i in range(self.size):
             self.graph[i] = set()
 
     def get_actions(self, state):
+        """
+        Returns the available actions in the given state
+        :param state: the current state
+        :return: a set of actions
+        """
         if state.is_empty():
             return set(range(self.size))
 
         res = set()
         state = state.to_list()
         for i in state:
-            res.update(self.graph[i])
+            res.update(self.graph[i])  # Adds the neighbours of node i
         for i in state:
-            res.discard(i)
+            res.discard(i)             # Removes the nodes we already hijacked
         return res
 
     def current_power(self, state):
+        """
+        Returns the sum of the proselytism of the hijacked nodes, plus the initial power
+        :param state: 
+        :return:  
+        """
         return self.initial_power + sum(self.proselytism[i] for i in range(self.size) if i in state)
 
     def total_power(self):
+        """
+        Total available power (including initial power)
+        :return: 
+        """
+        # TODO: memoize this if used often
         return self.current_power(State.full_state(self.size))
 
     def get_cost(self, action):
+        """
+        Returns the cost of the given action
+        :param action: 
+        :return: 
+        """
         return self.action_cost[action]
 
     def get_proselytism(self, node):
+        """
+        Returns the proselytism of the given node
+        :param node: 
+        :return: 
+        """
         return self.proselytism[node]
 
     def get_resistance(self, node):
+        """
+        Returns the resistance of the given node
+        :param node: 
+        :return: 
+        """
         return self.resistance[node]
 
     def success_probability_power(self, action, power):
-        if self.resistance[action] == 0:
+        """
+        Returns the probability of success
+        :param action: the node to hijack
+        :param power:  the available power
+        :return:       the probability of success
+        """
+        if self.get_resistance(action) == 0:
             return 1.
-        return min(1., float(power) / self.resistance[action])
+        return min(1., float(power) / self.get_resistance(action))
 
     def success_probability(self, action, state):
+        """
+        Same as success_probability_power, but with a state
+        :param action: the node to hijack
+        :param state:  the current state
+        :return:       the probability of success
+        """
         power = self.current_power(state)
         return self.success_probability_power(action, power)
 
     def attempt_hijacking(self, action, state):
+        """
+        Attempts to hijack the given node
+        :param action: 
+        :param state: 
+        :return:       True if the attack succeeded, False otherwise
+        """
         rnd = random.random()
         probability = self.success_probability(action, state)
         return rnd < probability
 
     def immediate_reward(self, state, action):
-        # TODO Remplacer par une notion de cout agréable, et fusionner les deux fonctions suivantes
+        """
+        Computes the immediate reward (for one turn only). Please note this depends not on the result of the action.
+        :param state: 
+        :param action: 
+        :return:       the immediate reward (independent on the success) 
+        """
+        # TODO: Remplacer par une notion de cout agréable, et fusionner les deux fonctions suivantes
+        # TODO: Unify with the rest (see learning algorithms), and make it depend on the success?
         if action in state:
             return -self.get_cost(action)
-        return max(-self.get_cost(action) + self.current_power(state), 0)
+        return -self.get_cost(action) + self.current_power(state)  # No reason to do a max with 0...
 
     def immediate_reward_power(self, power, action):
-        """ Immediate reward, assumes that the node has not been hijacked yet! """
-        return max(-self.get_cost(action) + power, 0)
+        """
+        Same as immediate_reward, but with a power instead of a state.
+        Please note that this assumes the node was not already part of the botnet!
+        :param power: 
+        :param action: 
+        :return: 
+        """
+        return -self.get_cost(action) + power
 
     def generate_random_connected(self):
+        """
+        Adds random links on the network. The result is guaranteed to be connected.
+        :return: None
+        """
         rep = [i for i in range(self.size)]
 
         # Union-Find with path compression (each operation takes O(log(n)))
@@ -121,6 +205,10 @@ class Network:
                 n -= 1
 
     def compute_percolation(self):
+        """
+        Computes the percolation of the graph of the network.
+        :return: the percolation
+        """
         perc = [0] * self.size
         visited = [0] * self.size
         prov = [0] * self.size
@@ -154,9 +242,7 @@ class Network:
 
 def random_network(size, difficulty, big_nodes, complete=True):
     """
-    Returns a random network with given size.
-    For each node, we can expect the resistance to be approximately equivalent to its proselytism ** difficulty.
-    Big_nodes is the ratio (between 0 and 1) of hard-to-hijack nodes.
+    Generates a random network.
 
     How the network is computed:
      - For each node, we test at random if it will be a big one
@@ -164,6 +250,12 @@ def random_network(size, difficulty, big_nodes, complete=True):
      - The resistance is between a half and the double of the proselytism ** difficulty
      - The cost is a random fraction of the resistance
      - The edges are computed from Network.generate_random_connected()
+     
+    :param size:       the number of nodes in the resulting network
+    :param difficulty: the resistance of a node is approximately equivalent to its proselytism ** difficulty
+    :param big_nodes:  the ratio (between 0 and 1) of hard-to-hijack nodes
+    :param complete:   if True, the network is complete, and is randomly connected otherwise
+    :return:           the random network
     """
     network = Network(1)
 

@@ -33,13 +33,15 @@ def botnets(network):
     qs = [
         fast.Fast(network),
         fast_incr.FastIncr(network),
-        RewardIncr(network),
         fast_tentative.FastTentative(network),
+
+        RewardIncr(network),
         Qstar(network, 0.9),
+
         Qlearning(network, 0.9, 0.01, strat=full_random, shape=False),
-        Thompson(network, 0.9, 0.01, strat=curious_standard),
-        ModelBasedThompson(network, 0.9, 0.01, strat=thompson_standard),
-        FullModelBasedThompson(network, 0.9, 0.1, strat=thompson_standard),
+        # Thompson(network, 0.9, 0.01, strat=curious_standard),
+        # ModelBasedThompson(network, 0.9, 0.01, strat=thompson_standard),
+        # FullModelBasedThompson(network, 0.9, 0.1, strat=thompson_standard),
     ]
     return qs
 botnet_names = [q.type for q in botnets(Network(0))]
@@ -75,7 +77,7 @@ def plot_learning(nb_trials, window, network):
             pol = q.compute_policy()
             r = pol.value(q.gamma)
 
-            print(q.type, r, pol.actions)
+            print(q.type, r, pol.expected_time(), sep='\t')
             r = [r] * nb_trials
 
         plot_perf(r, window, q.type, )
@@ -128,5 +130,5 @@ def plot_immediate(max_size, nb_trials, difficulty):
     show()
 
 
-#plot_immediate(10, 20, 2)
+# plot_immediate(10, 20, 2)
 plot_learning(100, 10, n_martin)
