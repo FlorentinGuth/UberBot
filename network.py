@@ -120,6 +120,34 @@ class Network:
             if a != b and union(a, b):
                 n -= 1
 
+    def floyd_warshall(self):
+        fw = [[1000 * self.size] * self.size for _ in range(self.size)]
+        for i in range(self.size):
+            for v in self.graph[i]:
+                fw[i][v] = 1
+
+        for c in range(self.size):
+            for a in range(self.size):
+                for b in range(self.size):
+                    fw[a][b] = min(fw[a][b], fw[a][c] + fw[c][b])
+
+        return fw
+
+    # TODO: O(n^4), should be optimized to O(n * m)
+    def count_paths(self):
+        nbP = [[[0] * self.size for _ in range(self.size)] for _ in range(self.size+1)]
+        for i in range(self.size):
+            for v in self.graph[i]:
+                nbP[0][i][v] = 1
+
+        for i in range(2, self.size+1):
+            for a in range(self.size):
+                for b in range(self.size):
+                    for c in range(self.size):
+                        nbP[i][a][b] += nbP[1][a][c] * nbP[i-1][c][b]
+
+        return nbP
+
     def compute_percolation(self):
         perc = [0] * self.size
         visited = [0] * self.size
@@ -150,6 +178,41 @@ class Network:
                         cur = prov[cur]
             count += 1
         return perc
+
+    def compute_percolation_betweenness(self):
+        fw = self.floyd_warshall()
+        nbP = self.count_paths()
+
+        B = []
+
+        for g in range(self.size):
+            p = 0
+            for s in range(self.size):
+                for t in range(self.size):
+                    if fw[s][g] + fw[g][t] == fw[s][t]:
+                        p += nbP[fw[s][g]][s][g] * nbP[fw[g][t]][g][t] / nbP[fw[s][t]][s][t]
+            B.append(p / (self.size - 1) / (self.size - 2))
+
+        return B
+
+    def compute_percolation_centrality(self, I):
+        fw = self.floyd_warshall()
+        nbP = self.count_paths()
+
+        P = []
+
+        sI = sum(I)
+
+        for g in range(self.size):
+            p = 0
+            for s in range(self.size):
+                for t in range(self.size):
+                    if fw[s][g] + fw[g][t] == fw[s][t]:
+                        w = I[s] / (sI - I[g])
+                        p += nbP[fw[s][g]][s][g] * nbP[fw[g][t]][g][t] / nbP[fw[s][t]][s][t] * w
+            P.append(p / (self.size - 2))
+
+        return P
 
 
 def random_network(size, difficulty, big_nodes, complete=True):
