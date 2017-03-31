@@ -1,6 +1,7 @@
 import random
 from policy import *
 # TODO Implémenter l'exploration online à profondeur fixée, par calcul exact
+# TODO: refactor, along with qlearning.py to provide clearer interface and computes lazily everything (see fast.py for instance)
 
 
 class Qstar(Botnet):
@@ -8,46 +9,88 @@ class Qstar(Botnet):
     This class performs the computation of the Q* function.
     """
 
-    def __init__(self, network, gamma, inf=float("inf")):
+    def __init__(self, network, gamma):
 
         Botnet.__init__(self, network)
 
-        self.content = dict()
-        self.best_actions = dict()
-        self.actions = list(range(network.size))  # May not be used, use network.get_actions instead.
+        self.content = dict()                     # Maps (state, action) to its Q*-value
+        self.best_actions = dict()                # Maps a state to (best value, best action)
+
         self.gamma = gamma
-        self.inf = inf
         self.type = "Qstar"
 
     def clear(self):
+        """
+        Clears internal storage of Q*
+        :return: 
+        """
         self.content = dict()
+        self.best_actions = dict()
 
-    def set(self, state, action, value):
+    def set_q_value(self, state, action, value):
+        """
+        Updates Q* along with best action
+        :param state: 
+        :param action: 
+        :param value: 
+        :return: 
+        """
         self.content[(state.content, action)] = value
 
-        if value > self.max_line(state):
+        if value > self.max_line(state)[0]:
             # Update of the best action for this state.
-            self.best_actions[state] = value
+            self.best_actions[state] = value, action
 
-    def get(self, state, action):
+    def get_q_value(self, state, action):
+        """
+        Wrapper for content (Q*) with default value
+        :param state: 
+        :param action: 
+        :return: 
+        """
         try:
             return self.content[(state.content, action)]
         except KeyError:
-            return 0.
+            return self.ex_value(state, action)
 
     def exists(self, state, action):
+        """
+        Checks whether we know the Q*-value of the pair (state, action)
+        :param state: 
+        :param action: 
+        :return: 
+        """
         return (state.content, action) in self.content
 
     def max_line(self, state):
+        """
+        Wrapper for best_action with default values, calls ex_value
+        :param state: 
+        :return: (best value, best action) (beware that best_action can be None!)
+        """
         try:
             return self.best_actions[state]
         except KeyError:
-            return 0.
+            best_a = None
+            best_q = -float("inf")
+            for a in self.network.get_actions(state):
+                q = self.ex_value(state, a)
+                if q > best_q:
+                    best_q = q
+                    best_a = a
+            self.best_actions[state] = best_q, best_a
+            return best_q, best_a
 
     def ex_value(self, state, action):
-        # Compute the exact value of Qstar.
+        """
+        Computes Q* (or an under-approximation for non-optimal values)
+        :param state: 
+        :param action: 
+        :return: the Q* value
+        """
+
         if self.exists(state, action):
-            return self.get(state, action)
+            return self.get_q_value(state, action)
 
         # The result may be smaller than its real exact value if it isn't the maximum.
         res = self.network.immediate_reward(state, action)
@@ -55,56 +98,43 @@ class Qstar(Botnet):
         splusa = State.added(state, action)
         proba_s_to_splusa = self.network.success_probability(action, state)
 
-        max_q = -self.inf
+        max_q = -float("inf")
+        max_action = None
         for h in self.network.get_actions(splusa):
-            if h in splusa:
-                assert False
+            assert h not in splusa
 
             new_q = self.ex_value(splusa, h)
 
             if new_q > max_q:
                 max_q = new_q
 
-        if max_q == -self.inf:
+        if max_q == -float("inf"):
             # No more target left.
             # Possibility 1
             # max_q = 0
 
-            # Possibility 2
+            # Possibility 2 (infinite horizon)
             max_q = self.network.total_power() / (1. - self.gamma)
 
         res += self.gamma * proba_s_to_splusa * max_q
         res /= (1 - self.gamma * (1 - proba_s_to_splusa))
 
-        self.set(state, action, res)
+        self.set_q_value(state, action, res)
         return res
 
     def ex_policy(self, state):
-        # Computes the best action to perform according to Qstar.
-
-        best_q = -self.inf
-        best_actions = []
-
-        for action in self.network.get_actions(state):
-            if action in state:
-                assert False
-
-            new_q = self.ex_value(state, action)
-
-            if new_q > best_q:
-                best_q = new_q
-                best_actions = [action]
-
-            elif new_q == best_q:
-                best_actions.append(action)
-
-        if len(best_actions) == 0:
-            return None
-
-        # print("Expected best value : ", best_q)
-        return random.choice(best_actions)
+        """
+        Computes the best action to perform according to Q*
+        :param state: 
+        :return: 
+        """
+        return self.max_line(state)[1]
 
     def compute_policy(self):
+        """
+        Computes the optimal policy from self.best_actions
+        :return: 
+        """
         n = self.network.size
         state = State(n)
         actions = []
@@ -118,4 +148,10 @@ class Qstar(Botnet):
         return Policy(self.network, actions)
 
     def choose_action(self, tot_nb_invasions=1, cur_nb_invasions=1):
+        """
+        Useless, wrapper for ex_policy to conform to the Qlearning interface
+        :param tot_nb_invasions: 
+        :param cur_nb_invasions: 
+        :return: 
+        """
         return self.ex_policy(self.state)

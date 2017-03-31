@@ -19,9 +19,21 @@ class Botnet:
         self.gamma = gamma
 
     def immediate_reward(self, state, action, success=None):
+        """
+        Wrapper for network.immediate_reward()
+        :param state: 
+        :param action: 
+        :param success: unused here, but useful when inherited
+        :return: 
+        """
         return self.network.immediate_reward(state, action)
 
     def take_action(self, action):
+        """
+        Takes the given action, updates internal state and such
+        :param action: 
+        :return: True if the hijack was successful, False otherwise
+        """
         success = self.network.attempt_hijacking(action, self.state)
 
         # Gets the immediate reward
@@ -40,6 +52,10 @@ class Botnet:
         return success
 
     def reset(self):
+        """
+        Resets the internal state, power, current time, reward...
+        :return: 
+        """
         self.state = State(self.network.size)
         self.power = self.network.initial_power
         

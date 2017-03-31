@@ -79,9 +79,12 @@ class Thompson(Qlearning):
             # new_q = self.max_line(State.added(state, action))
 
             # Third possibility
-            new_q = beta * self.get(state, action) + (1 - beta) * self.max_line(State.added(state, action))
-
-            if new_q > best_q:
+            max_line = self.max_line(State.added(state, action))[0]
+            if beta == 1:
+                max_line = 0
+            new_q = beta * self.get(state, action) + (1 - beta) * self.max_line(State.added(state, action))[0]
+            print(new_q, max_line, beta)
+            if new_q >= best_q:
                 best_q = new_q
                 best_actions = [action]
 
