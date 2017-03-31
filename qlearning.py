@@ -2,7 +2,6 @@ from state import State
 from botnet import Botnet
 import random
 from policy import Policy
-# TODO Surcharger la methode immediate_reward en ajoutant un potentiel de reward shaping
 # TODO Comprendre l'initialisation des valeurs de Q learning
 # TODO Detecter les blocages lors de l'apprentissage
 # TODO Tester les blocages, essayer d'en déterminer l'origine
@@ -14,7 +13,7 @@ class Qlearning(Botnet):
     This class computes an approximation of the exact Qstar, by learning it incrementally.
     """
 
-    def __init__(self, network, gamma, alpha=0.01, strat=None, shape=False):
+    def __init__(self, network, gamma, alpha=0.01, strat=None, shape=False, potential=None):
         Botnet.__init__(self, network)
 
         self.content = dict()
@@ -26,6 +25,7 @@ class Qlearning(Botnet):
         self.strat = strat
         self.type = "Qlearning"
         self.shape = shape
+        self.potential = potential
 
     def clear(self):
         self.content = dict()
@@ -134,6 +134,18 @@ class Qlearning(Botnet):
         if not self.shape:
             return self.network.immediate_reward(state, action)
 
+        if self.potential is None:
+            if success:
+                return self.gamma / (1. - self.gamma) * self.network.get_proselytism(action) - self.network.get_cost(
+                    action)
+            return -self.network.get_cost(action)
+
         if success:
-            return self.gamma / (1. - self.gamma) * self.network.get_proselytism(action) - self.network.get_cost(action)
-        return -self.network.get_cost(action)
+            state_f = State.added(state, action)
+        else:
+            state_f = state
+
+        return self.network.immediate_reward(state, action) \
+            + self.gamma * self.potential(state_f) \
+            - self.potential(state)
+
