@@ -18,10 +18,10 @@ fontP.set_size('small')
 size = 13
 delta = 2
 
-n_martin = Network(1)
-for i in range(size):
-    n_martin.add(i ** delta + 1, i + 1, i ** delta)
-n_martin.set_complete_network()
+# n_martin = Network(1)
+# for i in range(size):
+#     n_martin.add(i ** delta + 1, i + 1, i ** delta)
+# n_martin.set_complete_network()
 
 
 def botnets(network):
@@ -31,15 +31,15 @@ def botnets(network):
     """
     # TODO: would be more practical if we had a class of list: [Fast, Fast_incr, Qlearning...] (no need to give the botnet)
     qs = [
-        fast.Fast(network),
-        fast_incr.FastIncr(network),
+        #fast.Fast(network),
+        #fast_incr.FastIncr(network),
         RewardIncr(network),
-        fast_tentative.FastTentative(network),
+        #fast_tentative.FastTentative(network),
         Qstar(network, 0.9),
-        Qlearning(network, 0.9, 0.01, strat=full_random, shape=False),
-        Thompson(network, 0.9, 0.01, strat=curious_standard),
-        ModelBasedThompson(network, 0.9, 0.01, strat=thompson_standard),
-        FullModelBasedThompson(network, 0.9, 0.1, strat=thompson_standard),
+        #Qlearning(network, 0.9, 0.01, strat=full_random, shape=False),
+        #Thompson(network, 0.9, 0.01, strat=curious_standard),
+        #ModelBasedThompson(network, 0.9, 0.01, strat=thompson_standard),
+        #FullModelBasedThompson(network, 0.9, 0.1, strat=thompson_standard),
     ]
     return qs
 botnet_names = [q.type for q in botnets(Network(0))]
@@ -127,6 +127,6 @@ def plot_immediate(max_size, nb_trials, difficulty):
     legend(loc="lower right")
     show()
 
-
+n_martin = random_network(13,2,0.3,True)
 #plot_immediate(10, 20, 2)
 plot_learning(100, 10, n_martin)

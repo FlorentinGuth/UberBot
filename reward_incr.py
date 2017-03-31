@@ -1,7 +1,6 @@
 from botnet import *
 from policy import *
 
-
 class RewardIncr(Botnet):
     """
     Botnet trying to maximize the average time, by inserting nodes one after the other (sub-optimal, O(n^3)).
@@ -11,13 +10,10 @@ class RewardIncr(Botnet):
     def __init__(self, network, gamma=0.9):
         Botnet.__init__(self, network, gamma)
         self.type = "Reward_incr"
+        self.madness = madness
 
-    def compute_policy(self):
-        n = self.network.size
+    def one_try(self, nodes):
         actions = []
-
-        nodes = list(range(n))
-        nodes.sort(key=lambda node: self.network.get_resistance(node))
         for node in nodes:
             best_pos = None
             best_reward = float("-inf")
@@ -29,5 +25,24 @@ class RewardIncr(Botnet):
                     best_pos = i
                 del actions[i]
             actions.insert(best_pos, node)
+        return actions
 
-        return Policy(self.network, actions)
+
+
+    def compute_policy(self):
+        n = self.network.size
+        nodes = list(range(n))
+        nodes.sort(key=lambda node: self.network.get_resistance(node))
+        value = -float("inf")
+        while True:
+            old_value = value
+            old = nodes[:]
+            nodes = self.one_try(old)
+            value = Policy(self.network, nodes).value(self.gamma)
+            if old_value > value:
+                nodes = old[:]
+                value = old_value
+            if old_value == value:
+                break
+            print(value)
+        return Policy(self.network, nodes)
