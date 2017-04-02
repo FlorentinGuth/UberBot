@@ -2,7 +2,6 @@ from state import State
 from botnet import Botnet
 import random
 from policy import Policy
-# TODO Surcharger la methode immediate_reward en ajoutant un potentiel de reward shaping
 # TODO Comprendre l'initialisation des valeurs de Q learning
 # TODO Detecter les blocages lors de l'apprentissage
 # TODO Tester les blocages, essayer d'en déterminer l'origine
@@ -11,7 +10,7 @@ from policy import Policy
 
 class Qlearning(Botnet):
     """
-    This class computes an approximation of the exact Qstar, by learning it incrementally.
+    This class computes an approximation of the exact Q*, by learning it incrementally.
     """
 
     def __init__(self, network, gamma, alpha=0.01, strat=None, shape=False):
@@ -28,9 +27,10 @@ class Qlearning(Botnet):
 
     def clear(self):
         """
-        Clears the internal storage of Q
+        Clears the internal storage
         :return: 
         """
+        self.reset()
         self.content = dict()
         self.best_actions = dict()
 

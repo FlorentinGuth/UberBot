@@ -23,7 +23,7 @@ class RewardIncr(Botnet):
             best_reward = float("-inf")
             for i in range(len(actions)+1):
                 actions.insert(i, node) # tests node in position i
-                reward = Policy(self.network, actions).value(self.gamma)
+                reward = Policy(self.network, actions).expected_reward(self.gamma)
                 if reward > best_reward:
                     best_reward = reward
                     best_pos = i

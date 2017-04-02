@@ -63,7 +63,7 @@ def try_invasions(nb, q, printing=False):
         durations.append(i - 1)
 
     pol = q.compute_policy()
-    print(q.type, pol.value(q.gamma), pol.actions)
+    print(q.type, pol.expected_reward(q.gamma), pol.actions)
 
     return rewards, sum(durations) / len(durations), invasions[-1]
 
@@ -142,7 +142,7 @@ def get_rewards(nb, q, printing=False):
     """
     if isinstance(q, Qlearning):
         return try_invasions(nb, q, printing)[0]
-    return [q.compute_policy().value(q.gamma)] * nb
+    return [q.compute_policy().expected_reward(q.gamma)] * nb
 
 
 def soft(points, window_size):

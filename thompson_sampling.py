@@ -79,11 +79,18 @@ class Thompson(Qlearning):
             # new_q = self.max_line(State.added(state, action))
 
             # Third possibility
+
             max_line = self.max_line(State.added(state, action))[0]
+            q_value = self.get(state, action)
+
+            # 0 * -\infty = 0 here
             if beta == 1:
-                max_line = 0
-            new_q = beta * self.get(state, action) + (1 - beta) * self.max_line(State.added(state, action))[0]
-            print(new_q, max_line, beta)
+                new_q = q_value
+            elif beta == 0:
+                new_q = max_line
+            else:
+                new_q = beta * q_value + (1 - beta) * max_line
+
             if new_q >= best_q:
                 best_q = new_q
                 best_actions = [action]
@@ -142,7 +149,7 @@ class ModelBasedThompson(Thompson):
                 # new_value = reward + self.gamma * new_value
 
                 # Tricky update rule --> A lot better !!
-                new_value = reward + self.gamma * p * self.max_line(State.added(state, action))
+                new_value = reward + self.gamma * p * self.max_line(State.added(state, action))[0]
                 new_value /= 1 - self.gamma * (1 - p)
 
                 self.set(state, action, new_value)

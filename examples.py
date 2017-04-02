@@ -75,7 +75,7 @@ def plot_learning(nb_trials, window, network):
 
         else:
             pol = q.compute_policy()
-            r = pol.value(q.gamma)
+            r = pol.expected_reward(q.gamma)
 
             print(q.type, r, pol.expected_time(), sep='\t')
             r = [r] * nb_trials
@@ -114,7 +114,7 @@ def plot_immediate(max_size, nb_trials, difficulty):
 
             perf = []
             for q in non_learning_botnets(network):
-                perf.append(q.compute_policy().value(q.gamma))
+                perf.append(q.compute_policy().expected_reward(q.gamma))
 
             trials.append(perf)
 

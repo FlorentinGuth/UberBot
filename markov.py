@@ -89,7 +89,7 @@ class Qstar(Botnet):
 
     # def clear(self):
     #     """
-    #     Clears internal storage of Q*
+    #     Clears all internal storage
     #     :return:
     #     """
     #     self.reset()

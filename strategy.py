@@ -3,10 +3,11 @@ import random
 
 def strategy(q, nb_tot, i):
     """
-    :param q: botnet
+    Prototype of a strategy
+    :param q:      botnet
     :param nb_tot: total number of invasions
-    :param i: current number of the invasion
-    :return: action to take in the q.state according to this strategy
+    :param i:      current number of the invasion
+    :return:       action to take in the q.state according to this strategy
     """
     return 0
 

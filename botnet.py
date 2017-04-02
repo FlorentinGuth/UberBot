@@ -21,16 +21,6 @@ class Botnet:
 
         self.type = None
 
-    def immediate_reward(self, state, action, success=None):
-        """
-        Wrapper for network.immediate_reward()
-        :param state: 
-        :param action: 
-        :param success: unused here, but useful when inherited
-        :return: 
-        """
-        return self.network.immediate_reward(state, action)
-
     def update_hijacked(self, action):
         """
         Considers the given node as hijacked, updates internals.
