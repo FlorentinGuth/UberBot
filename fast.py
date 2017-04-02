@@ -7,15 +7,18 @@ class Fast(Botnet):
     Botnet minimizing the average time needed to hijack the whole network (exponential complexity).
     """
 
-    def __init__(self, network,gamma=0.9):
-        Botnet.__init__(self, network,gamma)
+    def __init__(self, network, gamma=0.9):
+        Botnet.__init__(self, network, gamma)
 
-        self.time = {}      # time[(state, action)] is the time to finish the job from state doing action
-        self.min_time = {}  # min_time[state] is the min over all actions of time[(state, action)]
-        self.type = "Fast_optimal"
+        self.time = {}              # time[(state, action)] is the time to finish the job from state doing action
+        self.min_time = {}          # min_time[state] is the min over all actions of time[(state, action)]
+
+        self.type = "FastOptimal"
 
     def compute_time(self, state, action):
-        """ Returns time[(state, action)] and computes it if needed """
+        """ 
+        Returns time[(state, action)] and computes it if needed.
+        """
         if (state, action) in self.time:
             return self.time[state, action]
 
@@ -29,7 +32,9 @@ class Fast(Botnet):
         return res
 
     def compute_min_time(self, state):
-        """ Returns min_time[state] and computes it if needed """
+        """
+        Returns min_time[state] and computes it if needed.
+        """
         if state in self.min_time:
             return self.min_time[state]
 
@@ -41,17 +46,26 @@ class Fast(Botnet):
         self.min_time[state] = res
         return res
 
-    def best_action(self, state):
+    def exploitation(self):
+        """
+        Returns the action minimizing the expected time of capture.
+        :return: 
+        """
+        # TODO: can be O(1) if computed during compute_min_time
         best = None
         best_time = float("inf")
         for action in range(self.network.size):
-            if self.compute_time(state, action) < best_time:
+            if self.compute_time(self.state, action) < best_time:
                 best = action
-                best_time = self.compute_time(state, action)
+                best_time = self.compute_time(self.state, action)
         return best
 
-    def compute_policy(self):
-        return make_policy(self.best_action, self.network)
+    def clear(self):
+        """
+        Clears internal storage.
+        :return: 
+        """
+        Botnet.clear(self)
 
-    def choose_action(self, state):
-        return self.best_action(state)
+        self.time = dict()
+        self.min_time = dict()

@@ -131,7 +131,7 @@ class Network:
         :param power:  the available power
         :return:       the probability of success
         """
-        # TODO; change by an exponential?
+        # TODO; change to 1 - exp(-C*P/R) with C to adjust?
         if self.get_resistance(action) == 0:
             return 1.
         return min(1., float(power) / self.get_resistance(action))
@@ -166,6 +166,7 @@ class Network:
         """
         # TODO: Remplacer par une notion de cout agréable, et fusionner les deux fonctions suivantes
         # TODO: Unify with the rest (see learning algorithms), and make it depend on the success?
+        # TODO: Deal with the fact that the state may be full
         if action in state:
             return -self.get_cost(action)
         return -self.get_cost(action) + self.current_power(state)  # No reason to do a max with 0...

@@ -1,14 +1,13 @@
 from policy import *
-# TODO: Implement online exploration with fixed depth (exact computation)
 
 
 class Qstar(Botnet):
     """
     This class performs the computation of the Q* function.
     """
+    # TODO: Implement online exploration with fixed depth (exact computation)
 
-    def __init__(self, network, gamma):
-
+    def __init__(self, network, gamma=0.9):
         Botnet.__init__(self, network, gamma)
 
         self.q_value = dict()                     # Maps (state, action) to its Q*-value
@@ -18,11 +17,12 @@ class Qstar(Botnet):
         self.type = "Qstar"
 
         # Initialization for the full state (infinite horizon)
+        # TODO: include in network
         self.best_value[State.full_state(network.size)] = self.network.total_power() / (1. - self.gamma)
 
     def compute_q_value(self, state, action):
         """
-        Returns the q_value of (state, action), computing it if needed.
+        Returns the Q*-value of (state, action), computing it if needed.
         The result may be smaller than its real exact value if it isn't the maximum.
         :param state:  a not full state
         :param action: a legal action (not already hijacked)
@@ -80,27 +80,16 @@ class Qstar(Botnet):
         self.compute_best_value(state)      # Ensures the value has been computed
         return self.best_actions[state][0]
 
-    def compute_policy(self):
-        """
-        Computes the optimal policy from self.best_actions
-        :return: the policy
-        """
-        return make_policy(self.compute_best_action, self.network)
+    def exploitation(self):
+        return self.compute_best_action(self.state)
 
-    # def clear(self):
-    #     """
-    #     Clears all internal storage
-    #     :return:
-    #     """
-    #     self.reset()
-    #     self.content = dict()
-    #     self.best_actions = dict()
-    #
-    # def choose_action(self, tot_nb_invasions=1, cur_nb_invasions=1):
-    #     """
-    #     Useless, wrapper for ex_policy to conform to the Qlearning interface
-    #     :param tot_nb_invasions:
-    #     :param cur_nb_invasions:
-    #     :return:
-    #     """
-    #     return self.compute_best_action(self.state)
+    def clear(self):
+        """
+        Clears all internal storage.
+        :return:
+        """
+        Botnet.clear(self)
+
+        self.q_value = dict()
+        self.best_value = dict()
+        self.best_actions = dict()

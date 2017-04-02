@@ -1,25 +1,23 @@
 import random
 
 
-def strategy(q, nb_tot, i):
+def strategy(q):
     """
     Prototype of a strategy
-    :param q:      botnet
-    :param nb_tot: total number of invasions
-    :param i:      current number of the invasion
+    :param q:      learning botnet
     :return:       action to take in the q.state according to this strategy
     """
     return 0
 
 
-def full_random(q, nb_tot, i):
+def full_random(q):
     """
-     Full random strategy, except in the last round, available for every Qlearning botnet.
+     Full random strategy, except in the last round, available for every learning botnet.
     """
-    if i == nb_tot - 1:
-        return q.policy(q.state)
+    if q.completed_trials == q.nb_trials - 1:
+        return q.exploitation()
 
-    return q.random_action()
+    return q.exploration()
 
 
 def thompson_standard(q, nb_tot, i):

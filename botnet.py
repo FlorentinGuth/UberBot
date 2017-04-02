@@ -1,92 +1,53 @@
 import abc
 from state import *
+from learning_botnet import *
+from strategy import *
 
 
-class Botnet:
+class Botnet(LearningBotnet):
     """
-    The Botnet class contains the botnet state and information about its current reward.
-    It is an abstract base class (abc): it cannot be instantiated, and an actual botnet will inherit this class.
+    This class provides helper methods for non-learning botnets, who have perfect knowledge of the network.
     """
 
-    def __init__(self, network, gamma=0.9):
+    def __init__(self, network, gamma):
+        """
+        Initializes the botnet. The parameters nb_trials and strategy are here irrelevant.
+        :param network: 
+        :param gamma:  
+        """
+        # Chooses a full random strategy because exploration doesn't matter here (as long as it is O(1))
+        LearningBotnet.__init__(self, full_random, network.graph, gamma)
+
         self.network = network
-
-        self.state = State(network.size)
         self.power = network.initial_power
 
-        self.gamma = gamma
-        self.reward = 0
-        self.time = 0
-        self.time_factor = 1  # Holds gamma ** T
+        self.type = "Botnet"
 
-        self.type = None
-
-    def update_hijacked(self, action):
+    def receive_reward(self, action, success, reward=None):
         """
-        Considers the given node as hijacked, updates internals.
-        Beware: this does not update the time-related attributes!
+        Same as LearningBotnet.receive_reward, but updates also the botnet's power.
         :param action: 
-        :return:       None
+        :param success: 
+        :param reward:  can be None, will be calculated
+        :return:        None
         """
-        # Gets the immediate reward
-        # TODO: update to make it depend on hijacked node (to gain a step)
+        # TODO: last step!
+        # Computes the reward if needed
+        if reward is None:
+            self.network.immediate_reward(self.state, action)
 
-        self.state.add(action)
-        self.power += self.network.get_proselytism(action)
+        # Updates state, time and reward
+        LearningBotnet.receive_reward(self, action, success, reward)
 
-        if self.state.is_full():
-            self.reward += self.time_factor * self.network.total_power() / (1 - self.gamma)
-
-    def take_action(self, action):
-        """
-        Takes the given action, updates internal state and such
-        :param action: the action to attempt
-        :return:       True if the hijack was successful, False otherwise
-        """
-        success = self.network.attempt_hijacking(action, self.state)
-
-        self.reward += self.time_factor * Botnet.immediate_reward(self, self.state, action)
-        self.time_factor *= self.gamma
-        self.time += 1
-
+        # Updates power
         if success:
-            self.update_hijacked(action)  # Modify the state of the botnet in case of success
+            self.power += self.network.get_proselytism(action)
 
-        return success
-
-    def reset(self):
+    def clear(self):
         """
         Resets the internal state, power, current time, reward...
         :return: 
         """
-        self.state = State(self.network.size)
+        LearningBotnet.clear(self)
+
         self.power = self.network.initial_power
-        
-        self.reward = 0
-        self.time = 0
-        self.time_factor = 1
-
-    @abc.abstractmethod
-    def compute_policy(self):
-        """ Returns a policy, must be implemented when inherited """
-
-
-def memoize(func):
-    """
-    Decorator whose type is (('a -> 'b) -> 'a -> 'b) -> ('a -> 'b), working with recursive functions.
-    Usage:
-    @memoize
-    def f(f_mem, x):
-        return f_mem(x-1) + 1
-    """
-    table = {}
-
-    def func_mem(*args, **kwargs):
-        if (args, kwargs) in table:
-            return table[args, kwargs]
-
-        res = func(func_mem, *args, **kwargs)
-        table[args, kwargs] = res
-        return res
-
-    return func_mem

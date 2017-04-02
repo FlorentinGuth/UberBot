@@ -1,12 +1,11 @@
-from botnet import *
 import abc
 import random
+from state import *
 
 
 class LearningBotnet:
     """
-    Same as botnet, but for learning ones (no knowledge of the network).
-    This class provides the interface all learning botnets must match.
+    This class provides the interface all botnets (learning or not) must match.
     Convention: the botnet knows nothing except:
                  - the graph of the network (could be learned after one trial, doing a depth first search)
                  - its state (which nodes are hijacked)
@@ -14,13 +13,14 @@ class LearningBotnet:
                  - the immediate reward at each step
     """
 
-    def __init__(self, strategy, gamma, graph, nb_trials):
+    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None):
         """
-        Initialize the botnet.
+        Initializes the botnet.
         :param strategy:      function of signature LearningBotnet -> action (using q.exploration() and q.exploitation())
-        :param gamma:         to compute the reward
         :param graph:         the graph of the network (of type node set list)
+        :param gamma:         to compute the reward
         :param nb_trials:     total number of trials (goal: this parameter is None)
+
         """
         self.graph = graph
         self.size = len(graph)
