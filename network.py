@@ -46,7 +46,6 @@ class Network:
 
         self.graph[node1].add(node2)
 
-
     def set_complete_network(self):
         """
         Sets the network to be the complete graph

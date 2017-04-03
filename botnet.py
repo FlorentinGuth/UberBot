@@ -23,18 +23,17 @@ class Botnet(LearningBotnet):
 
         self.type = "Botnet"
 
-    def receive_reward(self, action, success, reward=None):
+    def receive_reward(self, action, time, reward=None):
         """
         Same as LearningBotnet.receive_reward, but updates also the botnet's power.
         :param action: 
-        :param success: 
+        :param time:
         :param reward:  can be None, will be calculated
-        :return:        None
+        :return: None
         """
-        # TODO: last step!
         # Computes the reward if needed
         if reward is None:
-            self.network.immediate_reward(self.state, action)
+            reward = self.network.immediate_reward(self.state, action) * (1 - )
 
         # Updates state, time and reward
         LearningBotnet.receive_reward(self, action, success, reward)

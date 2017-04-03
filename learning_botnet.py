@@ -29,7 +29,7 @@ class LearningBotnet:
         self.gamma = gamma
         self.reward = 0
         self.time = 0
-        self.time_factor = 1          # Holds gamma ** T
+        self.time_factor = 1          # Holds gamma ** time
 
         self.completed_trials = 0     # Number of already completed trials
         self.nb_trials = nb_trials    # Number of total trials (can be None)
@@ -82,20 +82,18 @@ class LearningBotnet:
         """
         return self.strategy(self)
 
-    def receive_reward(self, action, success, reward):
+    def receive_reward(self, action, time, reward):
         """
-        Tells the botnet the result of its attack.
+        Tells the botnet the reward obtained during its attack.
         :param action:  the node the botnet tried to hijack
-        :param success: whether the hijacking succeeded
-        :param reward:  the reward received for the current step
+        :param time: time spent on this attack
+        :param reward:  the reward received during this attack
         :return:        None
         """
-        if success:
-            self.state.add(action)
-
+        self.state.add(action)
         self.reward += self.time_factor * reward
-        self.time += 1
-        self.time_factor *= self.gamma
+        self.time += time
+        self.time_factor = self.gamma ** time
 
     def clear(self):
         """
