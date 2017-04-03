@@ -1,11 +1,11 @@
-from markov import Qstar
+from markov import QStar
 from thompson_sampling import Thompson, ModelBasedThompson, FullModelBasedThompson
-from qlearning import Qlearning
+from qlearning import QLearning
 from strategy import *
 from tests import *
-import fast
-import fast_incr
-import fast_tentative
+from fast import *
+from fast_incr import *
+from fast_tentative import *
 from reward_incr import *
 from math import *
 from network import *
@@ -18,10 +18,10 @@ fontP.set_size('small')
 size = 13
 delta = 2
 
-# n_martin = Network(1)
-# for i in range(size):
-#     n_martin.add(i ** delta + 1, i + 1, i ** delta)
-# n_martin.set_complete_network()
+n_martin = Network(1)
+for i in range(size):
+    n_martin.add_node(i ** delta + 1, i + 1, i ** delta)
+n_martin.set_complete_network()
 
 
 def botnets(network):
@@ -29,30 +29,32 @@ def botnets(network):
     :param network:
     :return: The list of all botnets parametrized with the given network
     """
-    # TODO: would be more practical if we had a class of list: [Fast, Fast_incr, Qlearning...] (no need to give the botnet)
+    # TODO: would be more practical if we had a class of list: [Fast, Fast_incr, QLearning...] (no need to give the botnet)
     qs = [
-        #fast.Fast(network),
-        #fast_incr.FastIncr(network),
+        Fast(network),
+        FastIncr(network),
+        FastTentative(network),
+
         RewardIncr(network),
-        #fast_tentative.FastTentative(network),
-        Qstar(network, 0.9),
-        #Qlearning(network, 0.9, 0.01, strat=full_random, shape=False),
-        #Thompson(network, 0.9, 0.01, strat=curious_standard),
-        #ModelBasedThompson(network, 0.9, 0.01, strat=thompson_standard),
-        #FullModelBasedThompson(network, 0.9, 0.1, strat=thompson_standard),
+        QStar(network, 0.9),
+
+        QLearning(full_exploration, network.graph, shape=False),
+        Thompson(thompson_standard, network.graph, nb_trials=200),
+        ModelBasedThompson(thompson_standard, network.graph, nb_trials=200),
+        FullModelBasedThompson(thompson_standard, network.graph, nb_trials=200),
     ]
     return qs
 botnet_names = [q.type for q in botnets(Network(0))]
 
 
 def learning_botnets(network):
-    return filter(lambda q: isinstance(q, Qlearning), botnets(network))
+    return filter(lambda q: not isinstance(q, Botnet), botnets(network))
 
 learning_botnet_names = [q.type for q in learning_botnets(Network(0))]
 
 
 def non_learning_botnets(network):
-    return filter(lambda q: not isinstance(q, Qlearning), botnets(network))
+    return filter(lambda q: isinstance(q, Botnet), botnets(network))
 
 non_learning_botnet_names = [q.type for q in non_learning_botnets(Network(0))]
 
@@ -68,27 +70,14 @@ def plot_learning(nb_trials, window, network):
 
     for q in qs:
 
-        if isinstance(q, Qlearning):
-            r = get_rewards(nb_trials, q)
+        test_botnet(q, network, nb_trials, window)
 
-        else:
-            pol = q.compute_policy()
-            r = pol.value(q.gamma)
+        # if isinstance(q, FullModelBasedThompson):
+        #     # Plots the internal estimates of this botnet
+        #     estimates = [x[1] for x in q.history]
+        #     plot_perf(estimates, window, "Estimates of FullModelBasedThompson")
 
-            print(q.type, r, pol.actions)
-            r = [r] * nb_trials
-
-        plot_perf(r, window, q.type, )
-
-        if isinstance(q, FullModelBasedThompson):
-            # Plots the internal estimates of this botnet
-            estimates = [x[1] for x in q.history]
-            plot_perf(estimates, window, "Estimates of FullModelBasedThompson")
-
-    # legend(loc="lower right")
-    legend(loc='center left', bbox_to_anchor=(1, 0.5), prop=fontP).draggable()
-
-    show()
+    show_with_legend()
 
 
 def plot_immediate(max_size, nb_trials, difficulty):
@@ -112,7 +101,7 @@ def plot_immediate(max_size, nb_trials, difficulty):
 
             perf = []
             for q in non_learning_botnets(network):
-                perf.append(q.compute_policy().value(q.gamma))
+                perf.append(q.compute_policy().expected_reward(q.gamma))
 
             trials.append(perf)
 
@@ -127,6 +116,6 @@ def plot_immediate(max_size, nb_trials, difficulty):
     legend(loc="lower right")
     show()
 
-n_martin = random_network(13,2,0.3,True)
-#plot_immediate(10, 20, 2)
-plot_learning(100, 10, n_martin)
+
+# plot_immediate(10, 20, 2)
+plot_learning(200, 10, n_martin)

@@ -1,39 +1,42 @@
 from botnet import *
 from policy import *
 
-import sys
-
-sys.setrecursionlimit(10000)
 
 class FastTentative(Botnet):
     """
-    Botnet maybe minimizing the average time needed to hijack the whole network (O(n^2)).
+    Botnet trying to minimize the average time needed to hijack the whole network (suboptimal, O(n^2)).
     """
 
     def __init__(self, network, gamma=0.9):
         Botnet.__init__(self, network, gamma)
 
-        self.time = {}      # time[(power, action)] is an estimation of the time to finish the job doing action
+        self.exp_time = {}  # exp_time[(power, action)] is an estimation of the time to finish the job doing action
         self.min_time = {}  # min_time[power] is the min over all actions of time[(power, action)]
-        self.total_power = network.total_power()
-        self.type = "Fast_tentative"
+
+        self.total_power = network.total_power
+
+        self.type = "FastTentative"
 
     def compute_time(self, power, action):
-        """ Returns time[(power, action)] and computes it if needed """
-        if (power, action) in self.time:
-            return self.time[power, action]
+        """
+        Returns time[(power, action)] and computes it if needed.
+        """
+        if (power, action) in self.exp_time:
+            return self.exp_time[power, action]
 
         if power >= self.total_power:
-            res = 0 # We consider we have hijacked the whole network here
+            res = 0  # We consider we have hijacked the whole network here
         else:
             res = 1. / self.network.success_probability_power(action, power) + \
                   self.compute_min_time(power + self.network.get_proselytism(action))
 
-        self.time[power, action] = res
+        self.exp_time[power, action] = res
         return res
 
     def compute_min_time(self, power):
-        """ Returns min_time[power] and computes it if needed """
+        """
+        Returns min_time[power] and computes it if needed.
+        """
         if power in self.min_time:
             return self.min_time[power]
 
@@ -44,7 +47,14 @@ class FastTentative(Botnet):
         self.min_time[power] = res
         return res
 
-    def best_action(self, state, power): # power for avoiding recomputation
+    def best_action(self, state, power):
+        """
+        Returns the "best" action.
+        :param state: 
+        :param power: to avoid re-computation
+        :return: 
+        """
+        # TODO: Can be O(1) if computed during compute_min_time
         best = None
         best_time = float("inf")
         for action in range(self.network.size):
@@ -53,19 +63,21 @@ class FastTentative(Botnet):
                 best_time = self.compute_time(power, action)
         return best
 
-    def compute_policy(self):
-        n = self.network.size
-        state = State(n)
-        power = self.network.initial_power
-        actions = []
+    def exploitation(self):
+        """
+        Just calls best_action.
+        :return: 
+        """
+        return self.best_action(self.state, self.network.current_power(self.state))
 
-        for _ in range(n):
-            a = self.best_action(state, power)
-            actions.append(a)
-            state.add(a)
-            power += self.network.get_proselytism(a)
+    def clear(self, all=False):
+        """
+        Clears internal storage.
+        :param all: whether to also clear computed times
+        :return: 
+        """
+        Botnet.clear(self)
 
-        return Policy(self.network, actions)
-
-    def choose_action(self, state):
-        return self.best_action(state)
+        if all:
+            self.exp_time = dict()
+            self.min_time = dict()

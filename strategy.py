@@ -1,60 +1,60 @@
 import random
 
 
-def strategy(q, nb_tot, i):
+# TODO: Delete this file (the smart code is in the exploration, not in the strategy)
+def strategy(botnet):
     """
-    :param q: botnet
-    :param nb_tot: total number of invasions
-    :param i: current number of the invasion
-    :return: action to take in the q.state according to this strategy
+    Prototype of a strategy. A strategy dictates how exploration and exploitation should be balanced during the training.
+    You do not need to deal with the last training case, this is handled in test.py which uses compute_policy instead.
+    :param botnet: learning botnet
+    :return:       action to take in the q.state according to this strategy
     """
     return 0
 
 
-def full_random(q, nb_tot, i):
+def full_exploration(botnet):
     """
-     Full random strategy, except in the last round, available for every Qlearning botnet.
+     Full exploration strategy available for every learning botnet.
+     :param botnet:
+     :return:
     """
-    if i == nb_tot - 1:
-        return q.policy(q.state)
+    return botnet.exploration()
 
-    return q.random_action()
-
-
-def thompson_standard(q, nb_tot, i):
+def full_exploitation(botnet):
     """
-     Uses random at the beginning and then uses more and more Thompson policy.
+    Full exploitation strategy available for every learning botnet.
+    :param botnet: 
+    :return: 
+    """
+    return botnet.exploitation()
+
+
+def thompson_standard(botnet):
+    """
+    Uses random at the beginning and then uses more and more Thompson policy.
+    This strategy is available if the number of trials is not None.
+    :param botnet: 
+    :return: 
     """
 
     phi = lambda x: 1.*x  # Controls the decrease of random use : phi = 1 means no random, 0 means full random.
 
-    if i == nb_tot - 1:
-        return q.policy(q.state)
+    if random.random() > phi(botnet.completed_trials / float(botnet.nb_trials)):
+        return botnet.exploration()
 
-    if random.random() > phi(i / nb_tot):
-        return q.random_action()
-
-    return q.thompson_policy(q.state)
+    return botnet.exploitation()
 
 
-def greedy(q, nb_tot, i):
+def curious_standard(botnet):
     """
-     Greedy policy, only exploits current approximation.
-    """
-    return q.policy(q.state)
-
-
-def curious_standard(q, nb_tot, i):
-    """
-     Same as random_standard but uses curiosity instead. Available on Thompson policy.
+    Same as thompson_standard but uses curiosity instead. Available on Thompson Botnets.
+    :param botnet: a thompson botnet
+    :return: 
     """
 
     phi = lambda x: x  # Controls the decrease of curiosity. phi = 1 means no curiosity, 0 means full curiosity.
 
-    if i == nb_tot - 1:
-        return q.policy(q.state)
+    if random.random() > phi(botnet.completed_trials / float(botnet.nb_trials)):
+        return botnet.be_curious()
 
-    if random.random() > phi(i / nb_tot):
-        return q.be_curious(q.state)
-
-    return q.thompson_policy(q.state)
+    return botnet.exploitation()

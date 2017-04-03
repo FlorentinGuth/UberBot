@@ -1,4 +1,5 @@
 from botnet import *
+import random
 
 
 class Policy:
@@ -21,22 +22,13 @@ class Policy:
 
         return t
 
-    def expected_reward(self, state, gamma, i):
-        """ Updated version with the term accounting for infinite horizon """
-        res = 0
-        if i == len(self.actions):
-            return self.network.total_power() / (1 - gamma) # Not quite accurate
-
-        a = self.actions[i]
-        p = self.network.success_probability(a, state)
-        res += (Botnet(self.network).immediate_reward(state, a) +
-                gamma * p * self.expected_reward(State.added(state, a), gamma, i + 1))
-        res /= float(1 - gamma * (1 - p))
-
-        return res
-
-    def value(self, gamma):
-        """ Bottom-up (non-recursive) version of expected_reward """
+    def expected_reward(self, gamma):
+        """
+        Computes the expected total reward of the policy
+        :param gamma
+        :return
+        """
+        # TODO: Change when it will change in network (--> network?)
         # Initialization to last reward (accounting for infinite horizon)
         power = self.network.initial_power + sum(self.network.get_proselytism(action) for action in self.actions)
         reward = power / (1. - gamma)
@@ -45,6 +37,6 @@ class Policy:
         for action in reversed(self.actions):
             power -= self.network.get_proselytism(action)
             p = self.network.success_probability_power(action, power)
-            reward = (self.network.immediate_reward_power(power, action) + gamma * p * reward) / (1 - gamma * (1 - p))
+            reward = float(self.network.immediate_reward_power(power, action) + gamma * p * reward) / (1 - gamma * (1 - p))
 
         return reward

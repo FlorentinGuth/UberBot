@@ -1,121 +1,96 @@
-import random
 from policy import *
-# TODO Implémenter l'exploration online à profondeur fixée, par calcul exact
 
 
-class Qstar(Botnet):
+class QStar(Botnet):
     """
     This class performs the computation of the Q* function.
     """
+    # TODO: Implement online exploration with fixed depth (exact computation)
 
-    def __init__(self, network, gamma, inf=float("inf")):
+    def __init__(self, network, gamma=0.9):
+        Botnet.__init__(self, network, gamma)
 
-        Botnet.__init__(self, network)
+        self.q_value = dict()                     # Maps (state, action) to its Q*-value
+        self.best_value = dict()                  # Maps a state s to max_a Q*(s,a)
+        self.best_actions = dict()                # Maps a state to its best actions
 
-        self.content = dict()
-        self.best_actions = dict()
-        self.actions = list(range(network.size))  # May not be used, use network.get_actions instead.
-        self.gamma = gamma
-        self.inf = inf
-        self.type = "Qstar"
+        self.type = "QStar"
 
-    def clear(self):
-        self.content = dict()
+        # Initialization for the full state (infinite horizon)
+        self.best_value[State.full_state(network.size)] = self.network.final_reward(gamma)
 
-    def set(self, state, action, value):
-        self.content[(state.content, action)] = value
-
-        if value > self.max_line(state):
-            # Update of the best action for this state.
-            self.best_actions[state] = value
-
-    def get(self, state, action):
+    def compute_q_value(self, state, action):
+        """
+        Returns the Q*-value of (state, action), computing it if needed.
+        The result may be smaller than its real exact value if it isn't the maximum.
+        :param state:  a not full state
+        :param action: a legal action (not already hijacked)
+        :return:       Q*(state, action)
+        """
         try:
-            return self.content[(state.content, action)]
+            return self.q_value[state, action]
         except KeyError:
-            return 0.
+            reward_imm = self.network.immediate_reward(state, action)
 
-    def exists(self, state, action):
-        return (state.content, action) in self.content
+            next_state = state.add(action)
+            success_proba = self.network.success_probability(state, action)
 
-    def max_line(self, state):
+            max_q = self.compute_best_value(next_state)
+
+            value = (reward_imm + self.gamma * success_proba * max_q) / float(1 - self.gamma * (1 - success_proba))
+
+            self.q_value[state, action] = value
+            return value
+
+    def compute_best_value(self, state):
+        """
+        Updates best_value[state] and best_actions[state] 
+        :param state: a state (which may be full)
+        :return:      max_a Q*(state,a)
+        """
         try:
-            return self.best_actions[state]
+            return self.best_value[state]
         except KeyError:
-            return 0.
+            # Here the state is not full thanks to initialization
+            best_q = -float("inf")
+            best_actions = []
 
-    def ex_value(self, state, action):
-        # Compute the exact value of Qstar.
-        if self.exists(state, action):
-            return self.get(state, action)
+            for action in self.available_actions(state):
+                # assert action not in state
 
-        # The result may be smaller than its real exact value if it isn't the maximum.
-        res = self.network.immediate_reward(state, action)
+                q = self.compute_q_value(state, action)
 
-        splusa = State.added(state, action)
-        proba_s_to_splusa = self.network.success_probability(action, state)
+                if q > best_q:
+                    best_q = q
+                    best_actions = [action]
+                elif q == best_q:
+                    best_actions.append(action)
 
-        max_q = -self.inf
-        for h in self.network.get_actions(splusa):
-            if h in splusa:
-                assert False
+            self.best_value[state] = best_q
+            self.best_actions[state] = best_actions
+            return best_q
 
-            new_q = self.ex_value(splusa, h)
+    def compute_best_action(self, state):
+        """
+        Returns the (an) optimal action to take in state 
+        :param state: a non-full state
+        :return:      the action
+        """
+        self.compute_best_value(state)      # Ensures the value has been computed
+        return self.best_actions[state][0]
 
-            if new_q > max_q:
-                max_q = new_q
+    def exploitation(self):
+        return self.compute_best_action(self.state)
 
-        if max_q == -self.inf:
-            # No more target left.
-            # Possibility 1
-            # max_q = 0
+    def clear(self, all=False):
+        """
+        Clears internal storage.
+        :param all: whether to clear also computed Q*-values
+        :return:
+        """
+        Botnet.clear(self)
 
-            # Possibility 2
-            max_q = self.network.total_power() / (1. - self.gamma)
-
-        res += self.gamma * proba_s_to_splusa * max_q
-        res /= (1 - self.gamma * (1 - proba_s_to_splusa))
-
-        self.set(state, action, res)
-        return res
-
-    def ex_policy(self, state):
-        # Computes the best action to perform according to Qstar.
-
-        best_q = -self.inf
-        best_actions = []
-
-        for action in self.network.get_actions(state):
-            if action in state:
-                assert False
-
-            new_q = self.ex_value(state, action)
-
-            if new_q > best_q:
-                best_q = new_q
-                best_actions = [action]
-
-            elif new_q == best_q:
-                best_actions.append(action)
-
-        if len(best_actions) == 0:
-            return None
-
-        # print("Expected best value : ", best_q)
-        return random.choice(best_actions)
-
-    def compute_policy(self):
-        n = self.network.size
-        state = State(n)
-        actions = []
-
-        for _ in range(n):
-            a = self.ex_policy(state)
-            actions.append(a)
-            state.add(a)
-
-        self.reset()
-        return Policy(self.network, actions)
-
-    def choose_action(self, tot_nb_invasions=1, cur_nb_invasions=1):
-        return self.ex_policy(self.state)
+        if all:
+            self.q_value = dict()
+            self.best_value = dict()
+            self.best_actions = dict()
