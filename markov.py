@@ -1,7 +1,8 @@
-from policy import *
+from math import log
+from botnet import *
 
 
-class Qstar(Botnet):
+class QStar(Botnet):
     """
     This class performs the computation of the Q* function.
     """
@@ -14,16 +15,14 @@ class Qstar(Botnet):
         self.best_value = dict()                  # Maps a state s to max_a Q*(s,a)
         self.best_actions = dict()                # Maps a state to its best actions
 
-        self.type = "Qstar"
+        self.type = "QStar"
 
         # Initialization for the full state (infinite horizon)
-        # TODO: include in network
-        self.best_value[State.full_state(network.size)] = self.network.total_power() / (1. - self.gamma)
+        self.best_value[State.full_state(network.size)] = self.network.final_reward(gamma)
 
     def compute_q_value(self, state, action):
         """
         Returns the Q*-value of (state, action), computing it if needed.
-        The result may be smaller than its real exact value if it isn't the maximum.
         :param state:  a not full state
         :param action: a legal action (not already hijacked)
         :return:       Q*(state, action)
@@ -33,12 +32,14 @@ class Qstar(Botnet):
         except KeyError:
             reward_imm = self.network.immediate_reward(state, action)
 
-            next_state = State.added(state, action)
-            success_proba = self.network.success_probability(action, state)
+            next_state = state.add(action)
+            success_proba = self.network.success_probability(state, action)
+            expected_time_factor = 1 / (1 - success_proba * log(self.gamma))
+            expected_reward = reward_imm * (1 - expected_time_factor)
 
             max_q = self.compute_best_value(next_state)
 
-            value = (reward_imm + self.gamma * success_proba * max_q) / float(1 - self.gamma * (1 - success_proba))
+            value = expected_reward + expected_time_factor * max_q
 
             self.q_value[state, action] = value
             return value
@@ -56,7 +57,7 @@ class Qstar(Botnet):
             best_q = -float("inf")
             best_actions = []
 
-            for action in self.network.get_actions(state):
+            for action in self.available_actions(state):
                 # assert action not in state
 
                 q = self.compute_q_value(state, action)
@@ -83,13 +84,15 @@ class Qstar(Botnet):
     def exploitation(self):
         return self.compute_best_action(self.state)
 
-    def clear(self):
+    def clear(self, all=False):
         """
-        Clears all internal storage.
+        Clears internal storage.
+        :param all: whether to clear also computed Q*-values
         :return:
         """
         Botnet.clear(self)
 
-        self.q_value = dict()
-        self.best_value = dict()
-        self.best_actions = dict()
+        if all:
+            self.q_value = dict()
+            self.best_value = dict()
+            self.best_actions = dict()

@@ -1,22 +1,21 @@
 import random
 
 
-def strategy(q):
+# TODO: Delete this file (the smart code is in the exploration, not in the strategy)
+def strategy(botnet):
     """
-    Prototype of a strategy
-    :param q:      learning botnet
+    Prototype of a strategy. A strategy dictates how exploration and exploitation should be balanced during the training.
+    You do not need to deal with the last training case, this is handled in test.py which uses compute_policy instead.
+    :param botnet: learning botnet
     :return:       action to take in the q.state according to this strategy
     """
     return 0
 
 
-def full_random(q):
+def full_exploration(q):
     """
-     Full random strategy, except in the last round, available for every learning botnet.
+     Full exploration strategy available for every learning botnet.
     """
-    if q.completed_trials == q.nb_trials - 1:
-        return q.exploitation()
-
     return q.exploration()
 
 

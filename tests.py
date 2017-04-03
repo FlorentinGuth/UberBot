@@ -1,155 +1,147 @@
 from state import State
 from network import Network
-import fast
-import fast_incr
-import fast_tentative
-from qlearning import Qlearning
-# import sys
+from qlearning import QLearning
+from policy import Policy
 
+# import sys
 from matplotlib.pyplot import *
+from matplotlib.font_manager import FontProperties
 import random
 
-# TODO Fonction de génération de graphes aléatoires
-# TODO Fonction de génération d'ordinateurs aléatoires
-# TODO Reprendre les algorithmes, les structures de données, les optimiser !
 
-
-def try_invasions(nb, q, printing=False):
+def plot_with_legend(x_axis, y_axis, legend):
     """
-    :param nb: number of invasions
-    :param q: botnet to test
-    :param printing: Print all the details about the invasions.
-    :return:
+    Plots the given function using a legend
+    :param x_axis: 
+    :param y_axis: 
+    :param legend: 
+    :return: 
     """
+    plot(x_axis, y_axis, label=legend)
 
-    invasions = []
-    durations = []
+
+def show_with_legend():
+    """
+    Shows the current plot, along with its legend
+    :return: 
+    """
+    font_p = FontProperties()
+    font_p.set_size('small')
+
+    legend(loc='lower right', bbox_to_anchor=(1, 0.5), prop=font_p).draggable()
+    show()
+
+
+def invade(botnet, network, printing=False):
+    """
+    Let the botnet invade once the network.
+    :param botnet:   a (learning) botnet, set up on this network, and which must have been cleared beforehand
+    :param network:  the network to invade
+    ;param printing: if True, prints all the details about the invasions
+    :return:         a list of all (action, result), the total reward received, and the expected reward of the induced 
+                     policy (which is constructed by taking the successful actions)
+    """
+    actions = []
+    reward = 0
+    policy = []
+
+    t = 0
+    while not botnet.state.is_full():
+        action = botnet.choose_action()
+
+        if printing:
+            print("Action ", t)
+            print("Remaining nodes = %s" % botnet.state.nb_remaining())
+            print("Attack %s!" % action)
+
+        time = network.attempt_hijacking(botnet.state, action)
+
+        policy.append(action)
+        if printing:
+            print("Time spent on this attack : %d\n" % time)
+
+        time_factor = botnet.gamma ** time
+        immediate_reward = (1 - time_factor) * network.immediate_reward(botnet.state, action)
+        if botnet.state.add(action).is_full():  # TODO: include all this in network somehow
+            immediate_reward += time_factor * network.final_reward(botnet.gamma)
+        reward += botnet.time_factor * immediate_reward
+        botnet.receive_reward(action, time, immediate_reward)
+
+        actions.append((action, time))
+        t += 1
+
+    return actions, reward, Policy(network, policy).expected_reward(botnet.gamma)
+
+
+def train(botnet, network, nb_trials, printing=False):
+    """
+    Trains the botnet by doing multiple invasions on the same network.
+    Please note that this function does not modify the nb_trials parameter of the botnet, neither takes it into account!
+    :param botnet:    a (learning) botnet, set up on this network, and which must have been cleared beforehand
+    :param network: 
+    :param nb_trials: number of invasions to do, not necessarily equal to botnet.nb_trials
+    :param printing: 
+    :return:          the list of the real rewards and the expected rewards of the induced policy (see invade documentation)          
+    """
+    real_rewards = []
+    expected_rewards = []
+    for _ in range(nb_trials):
+        _actions, reward, expected_reward = invade(botnet, network, printing)
+        real_rewards.append(reward)
+        expected_rewards.append(expected_reward)
+        botnet.clear()
+    return real_rewards, expected_rewards
+
+
+def test_botnet(botnet, network, nb_trials, window_size=1, show=False):
+    """
+    Plots the expected reward of the induced policy over trainings, and prints the expected reward of the computed policy.
+    :param botnet: 
+    :param network: 
+    :param nb_trials: 
+    :param show:      if True, shows the results
+    :return: 
+    """
+    rewards, expected = train(botnet, network, nb_trials)
+    plot_with_legend(list(range(nb_trials)), soften(rewards,  window_size), legend=botnet.type+" real")
+    plot_with_legend(list(range(nb_trials)), soften(expected, window_size), legend=botnet.type+" expected")
+    print(botnet.type, Policy(network, botnet.compute_policy()).expected_reward(botnet.gamma), sep='\t')
+    if show:
+        show_with_legend()
+
+
+def hyper_parameter_influence(botnet, network, nb_trials, hyper_param, values):
+    """
+    Plots expected time and reward of the given botnet with respect to the hyper parameter.
+    :param botnet: 
+    :param network: 
+    :param nb_trials: 
+    :param hyper_param: the name of the hyper parameter
+    :param values:      the set of values to test
+    :return: 
+    """
+    times = []
     rewards = []
 
-    for j in range(nb):
-        if printing:
-            print("Invasion N°", j)
+    for value in values:
+        botnet.__setattr__(hyper_param, value)
+        _ = train(botnet, network, nb_trials)
+        policy = botnet.compute_policy()
+        botnet.clear(all=True)
 
-        i = 1
-        actions = []
-        while not q.state.is_full():
-            action = q.choose_action(nb, j)
+        times.append(policy.expected_time())
+        rewards.append(policy.expected_reward(botnet.gamma))
 
-            if printing:
-                print("Action ", i)
-                print("Remaining nodes = %s" % q.state.nb_remaining())
-                print("Attack %s!" % action)
-
-            res_action = q.take_action(action)
-
-            if res_action:
-                if printing:
-                    print("Success")
-                    print("\n")
-
-            elif printing:
-                print("Failure")
-                print("\n")
-
-            actions.append((action, res_action))
-            i += 1
-
-        if printing:
-            print(actions)
-
-        rewards.append(q.reward)
-        q.reset()
-        invasions.append(actions)
-        durations.append(i - 1)
-
-    pol = q.compute_policy()
-    print(q.type, pol.expected_reward(q.gamma), pol.actions)
-
-    return rewards, sum(durations) / len(durations), invasions[-1]
+    plot_with_legend(values, times, "Time")
+    plot_with_legend(values, rewards, "Reward")
+    show_with_legend()
 
 
-def gamma_influence(gammas, nb, q):
+def soften(points, window_size):
     """
-    :param gammas: set of values of gamma
-    :param nb: number of trials for each gamma
-    :param q: botnet to test
-    :return: the expected time and reward for each learnt policy for each gamma.
-    """
-    res_t = []
-    res_v = []
-
-    for gamma in gammas:
-        q.gamma = gamma
-        _ = try_invasions(nb, q)
-        pol = q.compute_policy()
-        t = pol.expected_time()
-        v = pol.expected_reward(State(_), gamma, 0)
-
-        res_t.append(t)
-        res_v.append(v)
-        q.clear()
-
-    plot(gammas, res_t)
-    plot(gammas, res_v)
-    show()
-
-    return res_t, res_v
-
-
-def alpha_influence(alphas, nb, q):
-    """
-    :param alphas: set of values of alpha
-    :param nb: number of trials for each alpha
-    :param q: botnet to test
-    :return: the expected time and reward for each learnt policy for each alpha.
-    """
-    res_t = []
-    res_v = []
-
-    for alpha in alphas:
-        q.alpha = alpha
-        _ = try_invasions(nb, q)
-        pol = q.compute_policy()
-        t = pol.expected_time()
-        v = pol.expected_reward(State(_), alpha, 0)
-
-        res_t.append(t)
-        res_v.append(v)
-        q.clear()
-
-    plot(alphas, res_t)
-    plot(alphas, res_v)
-    show()
-
-    return res_t, res_v
-
-
-def get_last_invasion(nb, q):
-    """
-    :param nb: number of invasions to lead
-    :param q: botnet to train
-    :return: actions of the botnet according to its final policy
-    """
-    return try_invasions(nb, q, printing=False)[-1]
-
-
-def get_rewards(nb, q, printing=False):
-    """
-    :param nb: number of invasions to lead
-    :param q: botnet to train
-    :param printing: enables information printing
-    :return: successive rewards obtained at the end of each invasion
-    """
-    if isinstance(q, Qlearning):
-        return try_invasions(nb, q, printing)[0]
-    return [q.compute_policy().expected_reward(q.gamma)] * nb
-
-
-def soft(points, window_size):
-    """
-    :param points: signal
+    :param points:      signal
     :param window_size: width of the window used to compute the mean
-    :return: list of points of the local mean of the input signal
+    :return:            list of points of the local mean of the input signal
     """
     n = len(points)
     soft_points = []
@@ -167,9 +159,10 @@ def soft(points, window_size):
 
 def plot_perf(points, window_size=1, name=None):
     """
-    :param points: signal to plot
-    :param window_size: size of the window used to call soft function
-    :return: plots the obtained local mean
+    :param points:      signal to plot
+    :param window_size: size of the window used to call soften function
+    :param name:        legend of the plot
+    :return:            plots the obtained local mean
     """
-    soft_points = soft(points, window_size)
+    soft_points = soften(points, window_size)
     plot(range(len(points)), soft_points, label=name)

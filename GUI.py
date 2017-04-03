@@ -13,8 +13,8 @@ import random as rd
 import time
 
 policies = [("Thompson", thom.Thompson, strategy.thompson_standard),
-            ("Qstar", markov.Qstar, None),
-            ("Qlearning", qlearning.Qlearning, strategy.full_random)]
+            ("QStar", markov.QStar, None),
+            ("QLearning", qlearning.QLearning, strategy.full_random)]
 
 class MainGUI(tk.Frame):
 

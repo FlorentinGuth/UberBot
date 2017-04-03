@@ -1,15 +1,15 @@
 import random
-from qlearning import Qlearning
+from qlearning import QLearning
 from botnet import Botnet
 from state import State
 
 # TODO Ajouter de l'auto-évaluation des stratégies adoptées, s'en servir pour les retenir, et détecter des blocages.
 
 
-class Thompson(Qlearning):
+class Thompson(QLearning):
 
     def __init__(self, network, gamma, alpha=0.01, strat=None):
-        Qlearning.__init__(self, network, gamma, alpha, strat)
+        QLearning.__init__(self, network, gamma, alpha, strat)
 
         self.p = dict()  # Saves the internal estimates of the success probabilities
         self.type = "Thompson Sampling"
@@ -48,9 +48,9 @@ class Thompson(Qlearning):
         self.update_p(action, state, result)
         self.update_q_learning(state, action, self.state, result)
 
-    def take_action(self, action):
+    def choose_action(self, action):
         si = self.state.copy()
-        res = Botnet.take_action(self, action)
+        res = Botnet.choose_action(self, action)
 
         self.add_trial(action, si, res)
 
@@ -80,7 +80,7 @@ class Thompson(Qlearning):
 
             # Third possibility
 
-            max_line = self.max_line(State.added(state, action))[0]
+            max_line = self.max_line(state.add(action))[0]
             q_value = self.get(state, action)
 
             # 0 * -\infty = 0 here
@@ -139,7 +139,7 @@ class ModelBasedThompson(Thompson):
             # It is also going to evaluate the realized policy.
             policy = []
             previous_state = self.state
-            expected_value = self.network.total_power() / (1 - self.gamma)  # Some constant ? TODO
+            expected_value = self.network.total_power / (1 - self.gamma)  # Some constant ? TODO
 
             for (state, action, reward) in reversed(self.memory):
                 p = self.get_p(action, state)
@@ -149,7 +149,7 @@ class ModelBasedThompson(Thompson):
                 # new_value = reward + self.gamma * new_value
 
                 # Tricky update rule --> A lot better !!
-                new_value = reward + self.gamma * p * self.max_line(State.added(state, action))[0]
+                new_value = reward + self.gamma * p * self.max_line(state.add(action))[0]
                 new_value /= 1 - self.gamma * (1 - p)
 
                 self.set(state, action, new_value)

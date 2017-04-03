@@ -16,7 +16,7 @@ class Botnet(LearningBotnet):
         :param gamma:  
         """
         # Chooses a full random strategy because exploration doesn't matter here (as long as it is O(1))
-        LearningBotnet.__init__(self, full_random, network.graph, gamma)
+        LearningBotnet.__init__(self, full_exploration, network.graph, gamma)
 
         self.network = network
         self.power = network.initial_power
@@ -31,20 +31,21 @@ class Botnet(LearningBotnet):
         :param reward:  can be None, will be calculated
         :return: None
         """
+        # TODO: last step! (but actually the reward should be totally unused by non-learning botnets)
         # Computes the reward if needed
         if reward is None:
-            reward = self.network.immediate_reward(self.state, action) * (1 - )
+            reward = self.network.immediate_reward(self.state, action) * (1 - self.gamma ** time)
 
         # Updates state, time and reward
-        LearningBotnet.receive_reward(self, action, success, reward)
+        LearningBotnet.receive_reward(self, action, time, reward)
 
         # Updates power
-        if success:
-            self.power += self.network.get_proselytism(action)
+        self.power += self.network.get_proselytism(action)
 
-    def clear(self):
+    def clear(self, all=False):
         """
         Resets the internal state, power, current time, reward...
+        :param all: whether to also clear computed values, unused here
         :return: 
         """
         LearningBotnet.clear(self)

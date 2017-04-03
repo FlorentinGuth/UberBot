@@ -1,202 +1,143 @@
-from state import State
-from botnet import Botnet
 import random
-from policy import Policy
-# TODO Comprendre l'initialisation des valeurs de Q learning
-# TODO Detecter les blocages lors de l'apprentissage
-# TODO Tester les blocages, essayer d'en déterminer l'origine
-# TODO Sparse sampling algorithm ? / variante d'exploration à profondeur fixée ?
+from learning_botnet import *
 
 
-class Qlearning(Botnet):
+class QLearning(LearningBotnet):
     """
     This class computes an approximation of the exact Q*, by learning it incrementally.
     """
+    # TODO Understand initialization of the Q values
+    # TODO Detect and eliminate blockades (decrease in reward during learning)
+    # TODO Sparse sampling algorithm? / fixed-depth exploration variant?
 
-    def __init__(self, network, gamma, alpha=0.01, strat=None, shape=False):
-        Botnet.__init__(self, network)
+    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None, alpha=0.01, shape=False):
+        """
+        Initializes the Q-learning botnet.
+        :param strategy: defining how to resolve exploration vs. exploitation conflict
+        :param graph:    the graph of the network
+        :param gamma:    
+        :param alpha:    learning rate
+        :param shape:    whether to use reward shaping
+        """
+        LearningBotnet.__init__(self, strategy, graph, gamma, nb_trials)
 
-        self.content = dict()                     # Maps (state, action) to its Q value
-        self.best_actions = dict()                # Maps a state to a couple (best_q, list of optimal actions)
-        self.gamma = gamma
+        self.q_value = dict()                     # Maps (state, action) to its Q-value
+        self.initialization = 0                   # Initialization value for Q
+        self.path = []                            # Sequence of actions the botnet achieved, for back-propagation
+
         self.alpha = alpha
-
-        self.strat = strat
-        self.type = "Qlearning"
         self.shape = shape
 
-    def clear(self):
-        """
-        Clears the internal storage
-        :return: 
-        """
-        self.reset()
-        self.content = dict()
-        self.best_actions = dict()
+        self.type = "QLearning"
 
-    def set(self, state, action, value):
+    def set_q_value(self, state, action, value):
         """
-        Remembers that doing this action in this state has the given Q value (and updates best_actions)
+        Remembers that doing this action in this state has the given Q-value.
+        We cannot memoize the best actions, since the value of an action can decrease.
         :param state: 
         :param action: 
         :param value: 
         :return: 
         """
-        self.content[(state, action)] = value
+        self.q_value[state, action] = value
+        # print("Setting new q to", value, self.q_value[state, action])
 
-        # Update best_actions
-        (best_q, actions) = self.max_line(state)
-        if value > best_q:
-            self.best_actions[state] = (value, [action])
-        elif value == best_q:
-            actions.append(action)
-
-    def get(self, state, action):
+    def get_q_value(self, state, action):
         """
-        Returns the Q value
+        Returns the Q-value.
         :param state: 
         :param action: 
         :return: 
         """
         try:
-            return self.content[(state, action)]
+            # print("asked", self.q_value[state, action])
+            return self.q_value[state, action]
         except KeyError:
             # Initialization
-            # return self.immediate_reward(state, action) / (1 - self.gamma)
-            return -float("inf")
+            return self.initialization
 
-    def exists(self, state, action):
+    def get_best_actions(self, state):
         """
-        Returns True if we the Q value has already been computed
+        Returns the set of the best actions in the given state.
         :param state: 
-        :param action: 
-        :return: 
+        :return:      (best Q-value, best actions)
         """
-        return (state.content, action) in self.content
+        # We receive no reward after the capture of the whole network
+        if state.is_full():
+            return 0, set()
 
-    def max_line(self, state):
-        """
-        Returns the best Q value of the available actions in the given state, along with the corresponding actions
-        :param state: 
-        :return:
-        """
-        try:
-            return self.best_actions[state]
-        except KeyError:
-            return -float("inf"), list(self.network.get_actions(state))
+        best_q_value = -float("inf")
+        best_actions = set()
 
-    def update_q_learning(self, si, a, sf, success):
+        for action in self.available_actions(state):
+            q_value = self.get_q_value(state, action)
+
+            if q_value > best_q_value:
+                best_q_value = q_value
+                best_actions = {action}     # This is a set, just saying
+            elif q_value == best_q_value:
+                best_actions.add(action)
+
+        # print("best", best_q_value)
+        return best_q_value, best_actions
+
+    def exploration(self):
         """
-        Updates Q with the current experiment
-        :param si:      the initial state
-        :param a:       the action
-        :param sf:      the final state
-        :param success: whether the action was successful
+        Tries to learn the network, given the current state.
+        :return: an action
+        """
+        # TODO: find something more interesting?
+        return LearningBotnet.exploration(self)  # Random action
+
+    def exploitation(self):
+        """
+        Chooses a random action between those that maximizes the learned Q.
+        :return: an action
+        """
+        q_value, actions = self.get_best_actions(self.state)
+        # print("Exploitation: %d actions with %f value" % (len(actions), q_value))
+        return random.choice(list(actions))
+
+    def receive_reward(self, action, time, reward):
+        """
+        Updates the internal Q.
+        :param action:  the action lead by the botnet
+        :param time: time spent on this attack
+        :param reward:  reward obtained during this attack
         :return:        None
         """
-        reward = self.immediate_reward(si, a, success)
-        self.set(si, a, (1 - self.alpha) * self.get(si, a) + self.alpha * (reward + self.gamma * self.max_line(sf)[0]))
+        # Account for shaping if needed
+        if self.shape:
+            assert False  # TODO: Insert shaping for Q-learning
 
-    def take_action(self, action):
+        self.path.append(action)
+
+        time_factor = self.gamma ** time
+        new_q_value = reward * (1 - time_factor) + time_factor * self.get_best_actions(self.state)[0]
+        old_q_value = self.get_q_value(self.state, action)
+        q_value = (1 - self.alpha) * old_q_value + self.alpha * new_q_value
+
+        self.set_q_value(self.state, action, q_value)
+
+        LearningBotnet.receive_reward(self, action, time, reward)  # Updates state, reward...
+
+    def clear(self, all=False):
         """
-        Takes the given action in the current state, and updates Q-learning
-        :param action: 
+        Clears internal storage.
+        :param all: whether to also clear learned Q-values
         :return: 
         """
-        si = self.state.copy()
-        res = Botnet.take_action(self, action)
+        LearningBotnet.clear(self)
 
-        self.update_q_learning(si, action, self.state, success=res)
+        if all:
+            self.q_value = dict()
+            self.best_actions = dict()
+        else:
+            # TODO: Back-propagates the max_a Q(s, a) on each state to speed-up learning
+            # state = State.full_state(self.size)
+            # for action in reversed(self.path):
+            #     state.remove(action)
+            #     self.set_q_value(state, action, )
+            pass
 
-        return res
-
-    def random_action(self):
-        """
-        Returns a random available action
-        :return: 
-        """
-        return random.choice(list(self.network.get_actions(self.state)))
-
-    def policy(self, state=None):
-        """
-        Computes the best action to take in this state according to the already computed Q.
-        :param state: 
-        :return: a random choice between the best actions available
-        """
-
-        if state is None:
-            state = self.state
-
-        best_q = -float("inf")
-        best_actions = []
-
-        for action in self.network.get_actions(state):
-            if action in state:
-                assert False
-
-            new_q = self.get(state, action)
-
-            if new_q > best_q:
-                best_q = new_q
-                best_actions = [action]
-
-            elif new_q == best_q:
-                best_actions.append(action)
-
-        if len(best_actions) == 0:
-            assert False
-
-        # print("Expected best value : ", best_q)
-        return random.choice(best_actions)
-
-    def compute_policy(self):
-        """
-        Uses the policy method to computes the optimal policy (Q should already be computed)
-        :return: the optimal policy
-        """
-        n = self.network.size
-        state = State(n)
-        actions = []
-
-        for _ in range(n):
-            a = self.policy(state)
-            actions.append(a)
-            state.add(a)
-        self.reset()
-        return Policy(self.network, actions)
-
-    def choose_action(self, tot_nb_invasions, cur_nb):
-        """
-        :param tot_nb_invasions: total number of invasions
-        :param cur_nb: current number of invasions
-        :return: chooses an action to perform in current state, according to a variable strategy
-        """
-        # TODO In progress
-        # Exploration
-        #   Curious
-        #   Random
-        #   Progress
-        #
-        # Exploitation
-        #   Best_action
-        #   ...
-
-        if self.strat is None:
-            return self.policy(self.state)
-
-        return self.strat(self, tot_nb_invasions, cur_nb)
-
-    def immediate_reward(self, state, action, success):
-        """
-        Computes the immediate reward, corrected with shaping if self.shape is True
-        :param state: 
-        :param action: 
-        :param success: whether the action was successful, needed for shaping (needs final state)
-        :return: 
-        """
-        if not self.shape:
-            return self.network.immediate_reward(state, action)
-
-        if success:
-            return self.gamma / (1. - self.gamma) * self.network.get_proselytism(action) - self.network.get_cost(action)
-        return -self.network.get_cost(action)
+        self.path = []
