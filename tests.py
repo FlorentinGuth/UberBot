@@ -50,7 +50,7 @@ def invade(botnet, network, printing=False):
         action = botnet.choose_action()
 
         if printing:
-            print("Action ", t)
+            print("Action at time ", t)
             print("Remaining nodes = %s" % botnet.state.nb_remaining())
             print("Attack %s!" % action)
 
@@ -68,7 +68,7 @@ def invade(botnet, network, printing=False):
         botnet.receive_reward(action, time, immediate_reward)
 
         actions.append((action, time))
-        t += 1
+        t += time
 
     return actions, reward, Policy(network, policy).expected_reward(botnet.gamma)
 

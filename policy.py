@@ -30,14 +30,13 @@ class Policy:
         # TODO: Change when it will change in network (--> network?)
         # Initialization to last reward (accounting for infinite horizon)
         power = self.network.initial_power + sum(self.network.get_proselytism(action) for action in self.actions)
-        reward = power
+        reward = float(power)
 
         # Backward computation, from end to start
         for action in reversed(self.actions):
             power -= self.network.get_proselytism(action)
             p = self.network.success_probability_power(action, power)
-            expected_time_factor = 1 / (1 - p * log(self.gamma))
-            reward = float(reward)
+            expected_time_factor = 1 / (1 - p * log(gamma))
             reward *= expected_time_factor
             reward += self.network.immediate_reward_power(power, action) * (1 - expected_time_factor)
 
