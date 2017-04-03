@@ -13,7 +13,7 @@ class FastTentative(Botnet):
         self.time = {}      # time[(power, action)] is an estimation of the time to finish the job doing action
         self.min_time = {}  # min_time[power] is the min over all actions of time[(power, action)]
 
-        self.total_power = network.total_power()
+        self.total_power = network.total_power
 
         self.type = "FastTentative"
 
@@ -70,12 +70,14 @@ class FastTentative(Botnet):
         """
         return self.best_action(self.state, self.network.current_power(self.state))
 
-    def clear(self):
+    def clear(self, all=False):
         """
         Clears internal storage.
+        :param all: whether to also clear computed times
         :return: 
         """
         Botnet.clear(self)
 
-        self.time = dict()
-        self.min_time = dict()
+        if all:
+            self.time = dict()
+            self.min_time = dict()

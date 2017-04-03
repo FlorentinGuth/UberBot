@@ -5,12 +5,12 @@ from state import *
 class Network:
     """
     The Network class contains everything about the base data: the nodes, their attributes...
-    It does not contain a state, and neither the different reward-related functions (those are associated with the
-    botnet rather than being a part of the problem)
+    It also contains the default reward functions (which can be modified by the botnets, by reward shaping for instance).
     """
 
     def __init__(self, initial_power):
-        self.initial_power = initial_power
+        self.initial_power = initial_power  # TODO: change this by initial node?
+        self.total_power = initial_power
         self.size = 0
 
         self.resistance = []
@@ -18,7 +18,7 @@ class Network:
         self.action_cost = []
         self.graph = []         # List of set of neighbors
 
-    def add(self, resistance, proselytism, cost):
+    def add_node(self, resistance, proselytism, cost):
         """
         Adds the given node to the network. This does not add any link between nodes.
         :param resistance: 
@@ -29,27 +29,27 @@ class Network:
         self.action_cost.append(cost)
         self.proselytism.append(proselytism)
         self.resistance.append(resistance)
-        self.size += 1
         self.graph.append(set())
+
+        self.size += 1
+        self.total_power += proselytism
 
     def add_link(self, node1, node2):
         """
-        Adds the edge 'node1 --> node2' to the graph of the network
+        Adds the edge 'node1 --> node2' to the graph of the network.
         :param node1:
         :param node2:
         :return:
         """
-        # TODO: un attribut accessibles (ensemble des noeuds accesibles depuis l'etat courant)
-        # TODO: Possibilité de modifier le graphe en des ensembles ?
-        # TODO: Ajouter une methode get_actions(self, state) ou qqch comme ca
-        # TODO: It does not make any sense for the graph to be cyclic
+        # TODO: Un attribut accessibles (ensemble des noeuds accesibles depuis l'etat courant)
+        # TODO: It does not make any sense for the graph to be directed
 
         self.graph[node1].add(node2)
 
 
     def set_complete_network(self):
         """
-        Sets the network to be the complete graph
+        Sets the network to be the complete graph.
         :return: 
         """
         tot = set(range(self.size))
@@ -64,41 +64,13 @@ class Network:
         for i in range(self.size):
             self.graph[i] = set()
 
-    def get_actions(self, state):
-        """
-        Returns the available actions in the given state
-        :param state: the current state
-        :return:      a set of actions
-        """
-        if state.is_empty():
-            # TODO: makes not much sense to be able to choose any node
-            # TODO: we could say that the Botnet starts with an already hijacked node instead (gives initial power)
-            return set(range(self.size))
-
-        # TODO: implementation feasible in O(n) instead of O(n*ln(n)) (or maybe O(n²)...)
-        res = set()
-        state = state.to_list()
-        for i in state:
-            res.update(self.graph[i])  # Adds the neighbours of node i
-        for i in state:
-            res.discard(i)             # Removes the nodes we already hijacked
-        return res
-
     def current_power(self, state):
         """
         Returns the sum of the proselytism of the hijacked nodes, plus the initial power
         :param state: 
         :return:  
         """
-        return self.initial_power + sum(self.proselytism[i] for i in range(self.size) if i in state)
-
-    def total_power(self):
-        """
-        Total available power (including initial power)
-        :return: 
-        """
-        # TODO: memoize this if used often
-        return self.current_power(State.full_state(self.size))
+        return self.initial_power + sum(self.get_proselytism(i) for i in state.to_list())
 
     def get_cost(self, action):
         """
@@ -131,45 +103,47 @@ class Network:
         :param power:  the available power
         :return:       the probability of success
         """
-        # TODO; change to 1 - exp(-C*P/R) with C to adjust?
+        # TODO: change to 1 - exp(-C*P/R) with C to adjust?
         if self.get_resistance(action) == 0:
             return 1.
         return min(1., float(power) / self.get_resistance(action))
 
-    def success_probability(self, action, state):
+    def success_probability(self, state, action):
         """
         Same as success_probability_power, but with a state
-        :param action: the node to hijack
         :param state:  the current state
+        :param action: the node to hijack
         :return:       the probability of success
         """
         power = self.current_power(state)
         return self.success_probability_power(action, power)
 
-    def attempt_hijacking(self, action, state):
+    def attempt_hijacking(self, state, action):
         """
-        Attempts to hijack the given node
-        :param action: 
+        Attempts to hijack the given node.
         :param state: 
+        :param action: 
         :return:       True if the attack succeeded, False otherwise
         """
         rnd = random.random()
-        probability = self.success_probability(action, state)
+        probability = self.success_probability(state, action)
         return rnd < probability
 
     def immediate_reward(self, state, action):
         """
         Computes the immediate reward (for one turn only). Please note this depends not on the result of the action.
-        :param state: 
+        :param state:
         :param action: 
         :return:       the immediate reward (independent on the success) 
         """
-        # TODO: Remplacer par une notion de cout agréable, et fusionner les deux fonctions suivantes
-        # TODO: Unify with the rest (see learning algorithms), and make it depend on the success?
-        # TODO: Deal with the fact that the state may be full
+        # TODO: Change cost?
+        # TODO: Make it depend on the success?
+        # TODO: Discrepancy between the final reward and this function when the state is full (except if action is None)
         if action in state:
+            print("Someone tried to compute the reward of a stupid action, this can be optimized!")
             return -self.get_cost(action)
-        return -self.get_cost(action) + self.current_power(state)  # No reason to do a max with 0...
+
+        return -self.get_cost(action) + self.current_power(state)
 
     def immediate_reward_power(self, power, action):
         """
@@ -180,6 +154,14 @@ class Network:
         :return: 
         """
         return -self.get_cost(action) + power
+
+    def final_reward(self, gamma):
+        """
+        Returns the last term of the reward, when the network has been fully captured.
+        :param gamma: 
+        :return: 
+        """
+        return self.total_power / float(1 - gamma)
 
     def generate_random_connected(self):
         """
@@ -275,7 +257,7 @@ def random_network(size, difficulty, big_nodes, complete=True):
         resistance = int((3*random.random()+1)/2 * (proselytism ** difficulty))
         cost = int(random.random() * proselytism)
 
-        network.add(resistance, proselytism, cost)
+        network.add_node(resistance, proselytism, cost)
 
     if complete:
         network.set_complete_network()

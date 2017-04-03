@@ -4,7 +4,7 @@ import copy
 class State:
     """
     The State class is actually a set of integers, represented by an integer.
-    WARNING: add is now mutable, use State.added(state, node) instead
+    This class is immutable, so it can be used as dictionary keys.
     """
 
     def __init__(self, size, nodes=None):
@@ -14,7 +14,8 @@ class State:
 
         if nodes is not None:
             for node in nodes:
-                self.add(node)
+                self.content += 1 << node
+                self.nb_hijacked += 1
 
     def __contains__(self, item):
         return (self.content >> item) & 1
@@ -52,17 +53,37 @@ class State:
         return self.size - self.cardinality()
 
     def add(self, node):
-        if not (0 <= node < self.size):
+        """
+        Returns a new state with the node added. This has no effect if the node was already present.
+        :param node: 
+        :return: 
+        """
+        new_state = self.copy()
+
+        if not (0 <= node < new_state.size):
             raise ValueError("Node %d out of bounds" % node)
 
-        if node not in self:
-            self.content += 1 << node
-            self.nb_hijacked += 1
+        if node not in new_state:
+            new_state.content += 1 << node
+            new_state.nb_hijacked += 1
 
-    @staticmethod
-    def added(state, node):
-        new_state = copy.copy(state)
-        new_state.add(node)
+        return new_state
+
+    def remove(self, node):
+        """
+        Returns a new state, with the node removed. This has no effect if the node was already not present.
+        :param node: 
+        :return: 
+        """
+        new_state = self.copy()
+
+        if not (0 <= node < new_state.size):
+            raise ValueError("Node %d out of bounds" % node)
+
+        if node in new_state:
+            new_state.content -= 1 << node
+            new_state.nb_hijacked -= 1
+
         return new_state
 
     def copy(self):

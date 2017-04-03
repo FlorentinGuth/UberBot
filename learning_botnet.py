@@ -16,7 +16,8 @@ class LearningBotnet:
     def __init__(self, strategy, graph, gamma=0.9, nb_trials=None):
         """
         Initializes the botnet.
-        :param strategy:      function of signature LearningBotnet -> action (using q.exploration() and q.exploitation())
+        :param strategy:      function of signature LearningBotnet -> action 
+                              (using q.exploration() and q.exploitation())
         :param graph:         the graph of the network (of type node set list)
         :param gamma:         to compute the reward
         :param nb_trials:     total number of trials (goal: this parameter is None)
@@ -38,19 +39,23 @@ class LearningBotnet:
 
         self.type = "LearningBotnet"  # A string containing the name of the botnet
 
-    def available_actions(self):
+    def available_actions(self, state=None):
         """
-        Computes the neighbours of the hijacked nodes
-        :return: a set of actions 
+        Computes the neighbours of the hijacked nodes.
+        :param state: if not provided, defaults to self.state
+        :return:      a set of actions 
         """
-        if self.state.is_empty():
+        if state is None:
+            state = self.state
+
+        if state.is_empty():
             # TODO: makes not much sense to be able to choose any node
             # TODO: we could say that the Botnet starts with an already hijacked node instead (gives initial power)
             return set(range(self.size))
 
         # TODO: implementation feasible in O(n) instead of O(n*ln(n)) (or maybe O(n²)...)
         res = set()
-        state = self.state.to_list()
+        state = state.to_list()
         for i in state:
             res.update(self.graph[i])  # Adds the neighbours of node i
         for i in state:
@@ -60,10 +65,10 @@ class LearningBotnet:
     def exploration(self):
         """
         This method tells the botnet to try to learn as much information on the network as possible.
-        By default, it chooses one of the action at random.
+        By default, it chooses one of the available actions at random.
         :return: an action
         """
-        return random.choice(self.available_actions())
+        return random.choice(list(self.available_actions()))
 
     @abc.abstractmethod
     def exploitation(self):
@@ -75,9 +80,9 @@ class LearningBotnet:
         """
         pass
 
-    def take_action(self):
+    def choose_action(self):
         """
-        Either explore or exploit, depending on the strategy
+        Either explore or exploit, depending on the strategy.
         :return: an action
         """
         return self.strategy(self)
@@ -91,16 +96,17 @@ class LearningBotnet:
         :return:        None
         """
         if success:
-            self.state.add(action)
+            self.state = self.state.add(action)
 
         self.reward += self.time_factor * reward
         self.time += 1
         self.time_factor *= self.gamma
 
-    def clear(self):
+    def clear(self, all=False):
         """
-        Prepares the botnet for another trial on the same network
-        :return: None
+        Prepares the botnet for another trial on the same network.
+        :param all: whether to clear also learned values, unused here
+        :return:    None
         """
         self.state = State(self.size)
 
@@ -122,7 +128,7 @@ class LearningBotnet:
         for _ in range(self.size):
             action = self.exploitation()
             actions.append(action)
-            self.state.add(action)
+            self.state = self.state.add(action)
 
-        self.state = temp             # Restores the current state
+        self.state = temp              # Restores the current state
         return actions

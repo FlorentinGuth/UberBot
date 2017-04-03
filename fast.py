@@ -25,8 +25,8 @@ class Fast(Botnet):
         if action in state:
             res = float("inf")  # We want to discourage such behavior (never useful)
         else:
-            new_state = State.added(state, action)
-            res = 1. / self.network.success_probability(action, state) + self.compute_min_time(new_state)
+            new_state = state.add(action)
+            res = 1. / self.network.success_probability(state, action) + self.compute_min_time(new_state)
 
         self.time[state, action] = res
         return res
@@ -60,12 +60,14 @@ class Fast(Botnet):
                 best_time = self.compute_time(self.state, action)
         return best
 
-    def clear(self):
+    def clear(self, all=False):
         """
         Clears internal storage.
+        :param all: whether to also clear computed times
         :return: 
         """
         Botnet.clear(self)
 
-        self.time = dict()
-        self.min_time = dict()
+        if all:
+            self.time = dict()
+            self.min_time = dict()

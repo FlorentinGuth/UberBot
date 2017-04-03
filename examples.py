@@ -1,6 +1,6 @@
-from markov import Qstar
+from markov import QStar
 from thompson_sampling import Thompson, ModelBasedThompson, FullModelBasedThompson
-from qlearning import Qlearning
+from qlearning import QLearning
 from strategy import *
 from tests import *
 from fast import *
@@ -20,7 +20,7 @@ delta = 2
 
 n_martin = Network(1)
 for i in range(size):
-    n_martin.add(i ** delta + 1, i + 1, i ** delta)
+    n_martin.add_node(i ** delta + 1, i + 1, i ** delta)
 n_martin.set_complete_network()
 
 
@@ -29,16 +29,16 @@ n_martin.set_complete_network()
 #     :param network:
 #     :return: The list of all botnets parametrized with the given network
 #     """
-#     # TODO: would be more practical if we had a class of list: [Fast, Fast_incr, Qlearning...] (no need to give the botnet)
+#     # TODO: would be more practical if we had a class of list: [Fast, Fast_incr, QLearning...] (no need to give the botnet)
 #     qs = [
 #         fast.Fast(network),
 #         fast_incr.FastIncr(network),
 #         fast_tentative.FastTentative(network),
 #
 #         RewardIncr(network),
-#         Qstar(network, 0.9),
+#         QStar(network, 0.9),
 #
-#         Qlearning(network, 0.9, 0.01, strat=full_random, shape=False),
+#         QLearning(network, 0.9, 0.01, strat=full_random, shape=False),
 #         # Thompson(network, 0.9, 0.01, strat=curious_standard),
 #         # ModelBasedThompson(network, 0.9, 0.01, strat=thompson_standard),
 #         # FullModelBasedThompson(network, 0.9, 0.1, strat=thompson_standard),
@@ -48,13 +48,13 @@ n_martin.set_complete_network()
 #
 #
 # def learning_botnets(network):
-#     return filter(lambda q: isinstance(q, Qlearning), botnets(network))
+#     return filter(lambda q: isinstance(q, QLearning), botnets(network))
 #
 # learning_botnet_names = [q.type for q in learning_botnets(Network(0))]
 #
 #
 # def non_learning_botnets(network):
-#     return filter(lambda q: not isinstance(q, Qlearning), botnets(network))
+#     return filter(lambda q: not isinstance(q, QLearning), botnets(network))
 #
 # non_learning_botnet_names = [q.type for q in non_learning_botnets(Network(0))]
 #
@@ -70,7 +70,7 @@ n_martin.set_complete_network()
 #
 #     for q in qs:
 #
-#         if isinstance(q, Qlearning):
+#         if isinstance(q, QLearning):
 #             r = get_rewards(nb_trials, q)
 #
 #         else:
@@ -133,7 +133,9 @@ n_martin.set_complete_network()
 # plot_immediate(10, 20, 2)
 # plot_learning(100, 10, n_martin)
 
-for B in [Qstar, Fast, FastIncr, FastTentative, RewardIncr]:
+for B in [QStar, Fast, FastIncr, FastTentative, RewardIncr]:
     q = B(n_martin, 0.9)
     pol = Policy(n_martin, q.compute_policy())
     print(q.type, pol.expected_time(), pol.expected_reward(0.9), sep='\t')
+
+test_botnet(QLearning(full_exploration, n_martin.graph, alpha=0.01), n_martin, 1000, 1, True)

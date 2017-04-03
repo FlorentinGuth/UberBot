@@ -1,7 +1,7 @@
 from policy import *
 
 
-class Qstar(Botnet):
+class QStar(Botnet):
     """
     This class performs the computation of the Q* function.
     """
@@ -14,11 +14,10 @@ class Qstar(Botnet):
         self.best_value = dict()                  # Maps a state s to max_a Q*(s,a)
         self.best_actions = dict()                # Maps a state to its best actions
 
-        self.type = "Qstar"
+        self.type = "QStar"
 
         # Initialization for the full state (infinite horizon)
-        # TODO: include in network
-        self.best_value[State.full_state(network.size)] = self.network.total_power() / (1. - self.gamma)
+        self.best_value[State.full_state(network.size)] = self.network.final_reward(gamma)
 
     def compute_q_value(self, state, action):
         """
@@ -33,8 +32,8 @@ class Qstar(Botnet):
         except KeyError:
             reward_imm = self.network.immediate_reward(state, action)
 
-            next_state = State.added(state, action)
-            success_proba = self.network.success_probability(action, state)
+            next_state = state.add(action)
+            success_proba = self.network.success_probability(state, action)
 
             max_q = self.compute_best_value(next_state)
 
@@ -56,7 +55,7 @@ class Qstar(Botnet):
             best_q = -float("inf")
             best_actions = []
 
-            for action in self.network.get_actions(state):
+            for action in self.available_actions(state):
                 # assert action not in state
 
                 q = self.compute_q_value(state, action)
@@ -83,13 +82,15 @@ class Qstar(Botnet):
     def exploitation(self):
         return self.compute_best_action(self.state)
 
-    def clear(self):
+    def clear(self, all=False):
         """
-        Clears all internal storage.
+        Clears internal storage.
+        :param all: whether to clear also computed Q*-values
         :return:
         """
         Botnet.clear(self)
 
-        self.q_value = dict()
-        self.best_value = dict()
-        self.best_actions = dict()
+        if all:
+            self.q_value = dict()
+            self.best_value = dict()
+            self.best_actions = dict()
