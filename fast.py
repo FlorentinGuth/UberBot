@@ -10,7 +10,7 @@ class Fast(Botnet):
     def __init__(self, network, gamma=0.9):
         Botnet.__init__(self, network, gamma)
 
-        self.time = {}              # time[(state, action)] is the time to finish the job from state doing action
+        self.exp_time = {}          # exp_time[(state, action)] is the time to finish the job from state doing action
         self.min_time = {}          # min_time[state] is the min over all actions of time[(state, action)]
 
         self.type = "FastOptimal"
@@ -19,8 +19,8 @@ class Fast(Botnet):
         """ 
         Returns time[(state, action)] and computes it if needed.
         """
-        if (state, action) in self.time:
-            return self.time[state, action]
+        if (state, action) in self.exp_time:
+            return self.exp_time[state, action]
 
         if action in state:
             res = float("inf")  # We want to discourage such behavior (never useful)
@@ -28,7 +28,7 @@ class Fast(Botnet):
             new_state = state.add(action)
             res = 1. / self.network.success_probability(state, action) + self.compute_min_time(new_state)
 
-        self.time[state, action] = res
+        self.exp_time[state, action] = res
         return res
 
     def compute_min_time(self, state):
@@ -69,5 +69,5 @@ class Fast(Botnet):
         Botnet.clear(self)
 
         if all:
-            self.time = dict()
+            self.exp_time = dict()
             self.min_time = dict()

@@ -131,7 +131,6 @@ class QLearning(LearningBotnet):
 
         if all:
             self.q_value = dict()
-            self.best_actions = dict()
         else:
             # TODO: Back-propagates the max_a Q(s, a) on each state to speed-up learning
             # state = State.full_state(self.size)

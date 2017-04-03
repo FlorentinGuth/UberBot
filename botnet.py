@@ -34,7 +34,7 @@ class Botnet(LearningBotnet):
         # TODO: last step! (but actually the reward should be totally unused by non-learning botnets)
         # Computes the reward if needed
         if reward is None:
-            self.network.immediate_reward(self.state, action)
+            reward = self.network.immediate_reward(self.state, action)
 
         # Updates state, time and reward
         LearningBotnet.receive_reward(self, action, success, reward)

@@ -83,30 +83,44 @@ def train(botnet, network, nb_trials, printing=False):
     :param network: 
     :param nb_trials: number of invasions to do, not necessarily equal to botnet.nb_trials
     :param printing: 
-    :return:          the list of the real rewards and the expected rewards of the induced policy (see invade documentation)          
+    :return:          the list of the real rewards,
+                      the list of the expected rewards of the induced policy (see invade documentation),
+                      the list of the expected rewards of the computed policy
     """
     real_rewards = []
     expected_rewards = []
+    policy_rewards = []
     for _ in range(nb_trials):
         _actions, reward, expected_reward = invade(botnet, network, printing)
         real_rewards.append(reward)
         expected_rewards.append(expected_reward)
+        policy_rewards.append(Policy(network, botnet.compute_policy()).expected_reward(botnet.gamma))
         botnet.clear()
-    return real_rewards, expected_rewards
+    return real_rewards, expected_rewards, policy_rewards
 
 
-def test_botnet(botnet, network, nb_trials, window_size=1, show=False):
+def test_botnet(botnet, network, nb_trials, window_size=1, real_rewards=False, induced_rewards=False, policy_rewards=True, show=False):
     """
     Plots the expected reward of the induced policy over trainings, and prints the expected reward of the computed policy.
     :param botnet: 
     :param network: 
     :param nb_trials: 
-    :param show:      if True, shows the results
+    :param window_size:
+    :param real_rewards:    whether to plot the real rewards received during the training
+    :param induced_rewards: whether to plot the expected rewards of the induced policy
+    :param policy_rewards:  whether to plot the expected rewards of the full-exploitation policy
+    :param show:            if True, shows the results
     :return: 
     """
-    rewards, expected = train(botnet, network, nb_trials)
-    plot_with_legend(list(range(nb_trials)), soften(rewards,  window_size), legend=botnet.type+" real")
-    plot_with_legend(list(range(nb_trials)), soften(expected, window_size), legend=botnet.type+" expected")
+    rewards, expected, policy = train(botnet, network, nb_trials)
+
+    if real_rewards:
+        plot_with_legend(list(range(nb_trials)), soften(rewards,  window_size), legend=botnet.type+" real")
+    if induced_rewards:
+        plot_with_legend(list(range(nb_trials)), soften(expected, window_size), legend=botnet.type+" induced")
+    if policy_rewards:
+        plot_with_legend(list(range(nb_trials)), soften(policy,   window_size), legend=botnet.type+" policy")
+
     print(botnet.type, Policy(network, botnet.compute_policy()).expected_reward(botnet.gamma), sep='\t')
     if show:
         show_with_legend()

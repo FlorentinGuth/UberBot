@@ -10,7 +10,7 @@ class FastTentative(Botnet):
     def __init__(self, network, gamma=0.9):
         Botnet.__init__(self, network, gamma)
 
-        self.time = {}      # time[(power, action)] is an estimation of the time to finish the job doing action
+        self.exp_time = {}  # exp_time[(power, action)] is an estimation of the time to finish the job doing action
         self.min_time = {}  # min_time[power] is the min over all actions of time[(power, action)]
 
         self.total_power = network.total_power
@@ -21,8 +21,8 @@ class FastTentative(Botnet):
         """
         Returns time[(power, action)] and computes it if needed.
         """
-        if (power, action) in self.time:
-            return self.time[power, action]
+        if (power, action) in self.exp_time:
+            return self.exp_time[power, action]
 
         if power >= self.total_power:
             res = 0  # We consider we have hijacked the whole network here
@@ -30,7 +30,7 @@ class FastTentative(Botnet):
             res = 1. / self.network.success_probability_power(action, power) + \
                   self.compute_min_time(power + self.network.get_proselytism(action))
 
-        self.time[power, action] = res
+        self.exp_time[power, action] = res
         return res
 
     def compute_min_time(self, power):
@@ -79,5 +79,5 @@ class FastTentative(Botnet):
         Botnet.clear(self)
 
         if all:
-            self.time = dict()
+            self.exp_time = dict()
             self.min_time = dict()
