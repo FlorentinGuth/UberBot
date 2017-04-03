@@ -114,6 +114,7 @@ class QLearning(LearningBotnet):
 
         time_factor = self.gamma ** time
         new_q_value = reward * (1 - time_factor) + time_factor * self.get_best_actions(self.state)[0]
+
         old_q_value = self.get_q_value(self.state, action)
         q_value = (1 - self.alpha) * old_q_value + self.alpha * new_q_value
 
@@ -131,7 +132,6 @@ class QLearning(LearningBotnet):
 
         if all:
             self.q_value = dict()
-            self.best_actions = dict()
         else:
             # TODO: Back-propagates the max_a Q(s, a) on each state to speed-up learning
             # state = State.full_state(self.size)

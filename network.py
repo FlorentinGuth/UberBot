@@ -121,11 +121,12 @@ class Network:
         """
         Attempts to hijack the given node.
         :param state: 
-        :param action: 
+        :param action:
         :return:       time needed to hijack the given node
         """
         probability = self.success_probability(state, action)
         return random.expovariate(1 / probability)
+
 
     def immediate_reward(self, state, action):
         """

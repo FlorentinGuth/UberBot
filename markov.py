@@ -34,6 +34,7 @@ class QStar(Botnet):
 
             next_state = state.add(action)
             success_proba = self.network.success_probability(state, action)
+
             expected_time_factor = 1 / (1 - success_proba * log(self.gamma))
             expected_reward = reward_imm * (1 - expected_time_factor)
 

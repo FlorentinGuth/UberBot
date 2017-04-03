@@ -2,71 +2,121 @@ import random
 from qlearning import QLearning
 from botnet import Botnet
 from state import State
+from learning_botnet import *
 
 # TODO Ajouter de l'auto-évaluation des stratégies adoptées, s'en servir pour les retenir, et détecter des blocages.
+# TODO: Initialization of successes/failures
 
 
 class Thompson(QLearning):
+    """
+    This class learns the Q-values just as Q-learning, but also learns the transition probabilities.
+    Those are used to sample an action with Thompson Sampling.
+    """
 
-    def __init__(self, network, gamma, alpha=0.01, strat=None):
-        QLearning.__init__(self, network, gamma, alpha, strat)
+    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None, alpha=0.01, beta=1):
+        """
+        Initializes the Thompson sampling botnet.
+        :param strategy: defining how to resolve exploration vs. exploitation conflict
+        :param graph:    the graph of the network
+        :param gamma:    
+        :param alpha:    learning rate
+        :param beta:     a number between 0 and 1:
+                         if 0, only look at the successive simulated trials ;
+                         if 1, act as if the simulation was real
+        """
+        QLearning.__init__(self, strategy, graph, gamma, nb_trials, alpha)
 
-        self.p = dict()  # Saves the internal estimates of the success probabilities
-        self.type = "Thompson Sampling"
+        self.p = dict()                 # Saves the internal estimates of the success probabilities: (nb_successes, nb_trials)
+        self.beta = beta
 
-    def update_p(self, action, state, result):
+        self.type = "ThompsonSampling"
+
+    def update_p(self, state, action, time):
+        """
+        Updates the internal estimate of the probability of success.
+        :param state: 
+        :param action: 
+        :param result: True if the hijacking succeeded, False otherwise
+        :return: 
+        """
         try:
-            success, trials = self.p[(action, state)]
+            sum_trials, trials = self.p[state, action]
         except KeyError:
-            success, trials = 1, 1
+            sum_trials, trials = 1, 1
             # success, trials = 0, 0 TODO
 
+        sum_trials += time
         trials += 1
 
-        if result:
-            success += 1
+        self.p[state, action] = sum_trials, trials
 
-        self.p[(action, state)] = success, trials
-
-    def get_p(self, action, state):
+    def get_p(self, state, action):
+        """
+        Returns the empirical probability of success.
+        :param state: 
+        :param action: 
+        :return: 
+        """
         try:
-            success, trials = self.p[(action, state)]
-            return success / trials
+            sum_trials, trials = self.p[state, action]
+            return sum_trials / trials
 
         except KeyError:
             return 1  # TODO
 
-    def get_trials(self, action, state):
+    def get_trials(self, state, action):
+        """
+        Returns the number of time this action was attempted.
+        :param state: 
+        :param action: 
+        :return: 
+        """
         try:
-            _, trials = self.p[(action, state)]
-            return trials - 1
+            _, trials = self.p[state, action]
+            return trials - 1   # Because of initialization, TODO
 
         except KeyError:
             return 0
 
-    def add_trial(self, action, state, result):
-        self.update_p(action, state, result)
-        self.update_q_learning(state, action, self.state, result)
+    def simulate(self):
+        """
+        Simulates an attack on each reachable node.
+        :return: the list of the successful attacks
+        """
+        return [i for i in self.available_actions() if random.random() < self.get_p(self.state, i)]
 
-    def choose_action(self, action):
-        si = self.state.copy()
-        res = Botnet.choose_action(self, action)
+    def be_curious(self):  # TODO: merge with exploration?
+        """
+        Chooses the action with the smallest probability.
+        :return: 
+        """
+        min_cur = float("inf")
+        best_actions = []
 
-        self.add_trial(action, si, res)
+        for action in self.available_actions():
+            if action not in self.state:
+                x = self.get_p(self.state, action)
+                if x < min_cur:
+                    min_cur = x
+                    best_actions = [action]
+                elif x == min_cur:
+                    best_actions.append(action)
 
-        return res
+        return int(random.choice(best_actions))
 
-    def simulate(self, state):
-        return [i for i in self.network.get_actions(state) if random.random() < self.get_p(i, state)]
-
-    def thompson_policy(self, state, beta=1):
+    def exploitation(self):
+        """
+        Chooses an action according to the Thompson Sampling policy.
+        :return: 
+        """
         # Computes best action to perform in this state according Thompson Sampling.
-        possible_actions = self.simulate(state)
+        possible_actions = self.simulate()
 
         if len(possible_actions) == 0:
             # No positive simulated action.
             # return self.policy(state) TODO
-            return self.random_action()
+            return self.exploration()  # Random action
 
         best_q = -float("inf")
         best_actions = []
@@ -80,16 +130,16 @@ class Thompson(QLearning):
 
             # Third possibility
 
-            max_line = self.max_line(state.add(action))[0]
-            q_value = self.get(state, action)
+            max_line = self.get_best_actions(self.state.add(action))[0]  # TODO: sure of the state.add()?
+            q_value = self.get_q_value(self.state, action)
 
-            # 0 * -\infty = 0 here
-            if beta == 1:
+            # 0 * -inf = 0 here
+            if self.beta == 1:
                 new_q = q_value
-            elif beta == 0:
+            elif self.beta == 0:
                 new_q = max_line
             else:
-                new_q = beta * q_value + (1 - beta) * max_line
+                new_q = self.beta * q_value + (1 - self.beta) * max_line
 
             if new_q >= best_q:
                 best_q = new_q
@@ -101,103 +151,176 @@ class Thompson(QLearning):
         # print("Expected best value : ", best_q)
         return random.choice(best_actions)
 
-    def be_curious(self, state):
+    def receive_reward(self, action, time, reward):
+        """
+        Receives the reward and update the probability.
+        :param action: 
+        :param time:
+        :param reward: 
+        :return: 
+        """
+        self.update_p(self.state, action, time)
+        QLearning.receive_reward(self, action, time, reward)
 
-        min_cur = float("inf")
-        best_a = []
+    def clear(self, all=False):
+        """
+        Clears internal storage.
+        :param all: 
+        :return: 
+        """
+        QLearning.clear(self, all)
 
-        for a in self.network.get_actions(state):
-            if a not in state:
-                x = self.get_p(a, state)
-                if x < min_cur:
-                    min_cur = x
-                    best_a = [a]
-                elif x == min_cur:
-                    best_a.append(a)
-
-        return int(random.choice(best_a))
+        if all:
+            self.p = dict()
 
 
 class ModelBasedThompson(Thompson):
+    """
+    blah blah
+    """
+    # TODO: add doc
 
-    def __init__(self, network, gamma, alpha=0.01, strat=None):
-        Thompson.__init__(self, network, gamma, alpha, strat)
+    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None, alpha=0.01, beta=1):
+        """
+        Initializes the Thompson sampling botnet.
+        :param strategy: defining how to resolve exploration vs. exploitation conflict
+        :param graph:    the graph of the network
+        :param gamma:    
+        :param alpha:    learning rate
+        :param beta:     a number between 0 and 1:
+                         if 0, only look at the successive simulated trials ;
+                         if 1, act as if the simulation was real
+        """
+        Thompson.__init__(self, strategy, graph, gamma, nb_trials, alpha, beta)
+
+        self.memory = []   # TODO: add doc
+        self.history = []  # TODO: add doc
+
         self.type = "ModelBasedThompson"
-        self.memory = []
-        self.history = []
 
-    def add_trial(self, action, state, result):
-        self.update_p(action, state, result)
+    def receive_reward(self, action, time, reward):
+        """
+        Bottom-up model-base update rule.
+        :param action: 
+        :param time:
+        :param reward: 
+        :return: 
+        """
+        temp = self.state.copy()
+        # Updates state and probability
+        Thompson.receive_reward(self, action, time, reward)
 
-        # Uses model-based update rule, but in a bottom-up way.
+        # TODO: change this
+        # The problem is that a learning botnet does not have access to the total power...
+        # # Uses model-based update rule, but in a bottom-up way.
+        # if not self.state.is_full():
+        #     self.memory.append((temp, action, reward))
+        # else:
+        #     # The botnet reached the end of the invasion.
+        #     # It is now time to apply updates from the bottom of the tree.
+        #     # It is also going to evaluate the realized policy.
+        #     policy = []
+        #     previous_state = self.state
+        #     expected_value = self.network.total_power / (1 - self.gamma)  # Some constant ? TODO
+        #
+        #     for (state, action, reward) in reversed(self.memory):
+        #         p = self.get_p(state, action)
+        #
+        #         # Basic update rule
+        #         # new_value = (1 - p) * self.max_line(state) + p * self.max_line(State.added(state, action))
+        #         # new_value = reward + self.gamma * new_value
+        #
+        #         # Tricky update rule --> A lot better !!
+        #         new_value = reward + self.gamma * p * self.max_line(state.add(action))[0]
+        #         new_value /= 1 - self.gamma * (1 - p)
+        #
+        #         self.set(state, action, new_value)
+        #
+        #         if previous_state != state:
+        #             # It is a new action !
+        #             # Update the expected reward
+        #             expected_value = (reward + self.gamma * p * expected_value) / (1 - self.gamma * (1 - p))
+        #
+        #             # Saves the action in the policy
+        #             policy.append(action)
+        #             previous_state = state
+        #
+        #     # Clears the memory of the botnet
+        #     self.memory = []
+        #
+        #     # Could also try to evaluate this policy ?
+        #     policy.reverse()
+        #     self.history.append((policy, expected_value))
 
-        if not self.state.is_full():
-            self.memory.append((state, action, self.immediate_reward(state, action, result)))
-        else:
-            # The botnet reached the end of the invasion.
-            # It is now time to apply updates from the bottom of the tree.
-            # It is also going to evaluate the realized policy.
-            policy = []
-            previous_state = self.state
-            expected_value = self.network.total_power / (1 - self.gamma)  # Some constant ? TODO
+    def clear(self, all=False):
+        """
+        Clears internal storage
+        :param all: 
+        :return: 
+        """
+        Thompson.clear(self, all)
 
-            for (state, action, reward) in reversed(self.memory):
-                p = self.get_p(action, state)
-
-                # Basic update rule
-                # new_value = (1 - p) * self.max_line(state) + p * self.max_line(State.added(state, action))
-                # new_value = reward + self.gamma * new_value
-
-                # Tricky update rule --> A lot better !!
-                new_value = reward + self.gamma * p * self.max_line(state.add(action))[0]
-                new_value /= 1 - self.gamma * (1 - p)
-
-                self.set(state, action, new_value)
-
-                if previous_state != state:
-                    # It is a new action !
-                    # Update the expected reward
-                    expected_value = (reward + self.gamma * p * expected_value) / (1 - self.gamma * (1 - p))
-
-                    # Saves the action in the policy
-                    policy.append(action)
-                    previous_state = state
-
-            # Clears the memory of the botnet
+        if all:
             self.memory = []
-
-            # Could also try to evaluate this policy ?
-            policy.reverse()
-            self.history.append((policy, expected_value))
+            self.history = []
 
 
 class FullModelBasedThompson(ModelBasedThompson):
+    """
+    blah
+    """
+    # TODO: add doc
 
-    def __init__(self, network, gamma, alpha=0.01, strat=None):
-        ModelBasedThompson.__init__(self, network, gamma, alpha, strat)
+    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None, alpha=0.01, beta=1):
+        """
+        Initializes the Thompson sampling botnet.
+        :param strategy: defining how to resolve exploration vs. exploitation conflict
+        :param graph:    the graph of the network
+        :param gamma:    
+        :param alpha:    learning rate
+        :param beta:     a number between 0 and 1:
+                         if 0, only look at the successive simulated trials ;
+                         if 1, act as if the simulation was real
+        """
+        ModelBasedThompson.__init__(self, strategy, graph, gamma, nb_trials, alpha, beta)
+
         self.type = "FullModelBasedThompson"
 
-    def update_p(self, action, state, result):
+    def update_p(self, state, action, time):
+        """
+        Overrides the update rule of Thompson.
+        Here, we learn the probability rather than empirically compute it.
+        :param state: 
+        :param action: 
+        :param time:
+        :return: 
+        """
         try:
-            p, trials = self.p[(action, state)]
+            mean, trials = self.p[(action, state)]
         except KeyError:
-            p, trials = 1, 0
-            # success, trials = 0, 0 TODO
+            mean, trials = 1, 0
+            # mean, trials = 0, 0 TODO
 
         trials += 1
-        p += self.alpha * (result - p)
+        mean += self.alpha * (time - mean)
 
-        self.p[(action, state)] = p, trials
+        self.p[(action, state)] = mean, trials
 
-    def get_p(self, action, state):
+    def get_p(self, state, action):
+        """
+        Reflect the fact that the probability isn't stored the same way.
+        :param state: 
+        :param action: 
+        :return: 
+        """
         try:
-            p, _ = self.p[(action, state)]
-            return p
+            mean, _ = self.p[(action, state)]
+            return mean
 
         except KeyError:
             return 1  # TODO
 
-    def get_trials(self, action, state):
+    def get_trials(self, state, action):
         try:
             _, trials = self.p[(action, state)]
             return trials
