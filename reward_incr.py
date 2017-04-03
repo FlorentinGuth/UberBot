@@ -65,7 +65,7 @@ class RewardIncr(Botnet):
             old_value = value
             old = nodes[:]
             nodes = self.one_try(old)
-            value = Policy(self.network, nodes).value(self.gamma)
+            value = Policy(self.network, nodes).expected_reward(self.gamma)
 
             if old_value > value:
                 nodes = old[:]
