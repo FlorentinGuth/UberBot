@@ -1,3 +1,20 @@
+Recent changes:
+ - Addition of learning_botnet.py, common interface for all botnets. The inheritance tree is as follows:
+   LearningBotnet --> Botnet --> QStar
+                   |          |
+                   |          |-> Fast, FastIncr, FastTentative, RewardIncr
+                   |
+                   -> QLearning --> Thompson --> ModelBased --> FullModelBased
+ - Update of all the botnets to match the interface, along with tests and examples.
+ - A Botnet must provide three methods:
+    - exploration(), to gather information
+    - exploitation(), to receive the highest reward
+    - receive_reward(), to acknowledge the result of an action during training (and update internal values...)
+ - A state is now immutable, to be hashable properly
+ - Some changes in network.py, to reflect the convention that the state is always before the actions in parameters
+ - Little refactoring to make methods available where they should be
+
+
 Files:
  - state.py:                implementation of integer set
  - network.py:              operations on the input
