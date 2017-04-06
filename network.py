@@ -125,7 +125,7 @@ class Network:
         :return:       time needed to hijack the given node
         """
         probability = self.success_probability(state, action)
-        return random.expovariate(1 / probability)
+        return random.expovariate(probability)
 
 
     def immediate_reward(self, state, action):

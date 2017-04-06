@@ -16,7 +16,7 @@ fontP.set_size('small')
 
 # Martin's pet network (that's cute)
 size = 13
-delta = 2
+delta = 2.
 
 n_martin = Network(1)
 for i in range(size):
@@ -101,7 +101,7 @@ def plot_immediate(max_size, nb_trials, difficulty):
 
             perf = []
             for q in non_learning_botnets(network):
-                perf.append(q.compute_policy().expected_reward(q.gamma))
+                perf.append(Policy(network, q.compute_policy()).expected_reward(q.gamma))
 
             trials.append(perf)
 

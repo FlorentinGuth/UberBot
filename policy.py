@@ -36,7 +36,7 @@ class Policy:
         for action in reversed(self.actions):
             power -= self.network.get_proselytism(action)
             p = self.network.success_probability_power(action, power)
-            expected_time_factor = 1 / (1 - p * log(gamma))
+            expected_time_factor = 1 / (1 - log(gamma) / p)
             reward *= expected_time_factor
             reward += self.network.immediate_reward_power(power, action) * (1 - expected_time_factor)
 

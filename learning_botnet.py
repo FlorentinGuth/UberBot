@@ -98,7 +98,7 @@ class LearningBotnet:
         self.state = self.state.add(action)
         self.reward += self.time_factor * reward
         self.time += time
-        self.time_factor = self.gamma ** time
+        self.time_factor = self.gamma ** self.time
 
     def clear(self, all=False):
         """
