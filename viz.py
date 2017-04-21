@@ -1,4 +1,5 @@
 
+import matplotlib.pyplot as plt
 import tests
 import network
 import strategy
@@ -31,3 +32,15 @@ for (i, r) in l:
     else:
         net.clear_hijack(i)
 net.viz_save()
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+plt.ion()
+plt.show()
+
+for i in range(net.vtime):
+    fname = "Images/" + str(i) + ".png"
+    im = plt.imread(fname)
+    img = ax.imshow(im)
+    plt.draw()
+    accept = input('OK? ')
