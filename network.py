@@ -230,7 +230,12 @@ class Network:
                 if SP[i][cur[0]][0] == -1:
                     for v in self.graph[cur[0]]:
                         fl.put((v, cur[0], cur[2]+1))
-                SP[i][cur[0]] = (cur[2], SP[i][cur[0]][1] + SP[i][cur[1]][1])
+                    if cur[0] == i:
+                        SP[i][cur[0]] = (cur[2], 0.5)
+                    else:
+                        SP[i][cur[0]] = (cur[2], 0)
+                if SP[i][cur[0]][0] == cur[2]:
+                    SP[i][cur[0]] = (cur[2], int(SP[i][cur[0]][1] + SP[i][cur[1]][1]))
     
         return SP
 
@@ -277,9 +282,11 @@ class Network:
         for g in range(self.size):
             p = 0
             for s in range(self.size):
-                for t in range(self.size):
-                    if SP[s][g][0] + SP[g][t][0] == SP[s][t][0]:
-                        p += SP[s][g][1] * SP[g][t][1] / SP[s][t][1]
+                if s != g:
+                    for t in range(self.size):
+                        if t != g:
+                            if SP[s][g][0] + SP[g][t][0] == SP[s][t][0]:
+                                p += SP[s][g][1] * SP[g][t][1] / SP[s][t][1]
             B.append(p / (self.size - 1) / (self.size - 2))
 
         return B
