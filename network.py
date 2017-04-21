@@ -1,5 +1,6 @@
 import random
 import queue
+import pygraphviz as pgv
 from state import *
 
 
@@ -19,6 +20,9 @@ class Network:
         self.action_cost = []
         self.graph = []         # List of set of neighbors
 
+        self.viz = pgv.AGraph()
+        self.vtime = 0
+
     def add_node(self, resistance, proselytism, cost):
         """
         Adds the given node to the network. This does not add any link between nodes.
@@ -31,6 +35,8 @@ class Network:
         self.proselytism.append(proselytism)
         self.resistance.append(resistance)
         self.graph.append(set())
+
+        self.viz.add_node(self.size, color="#93a1a1", style="filled")
 
         self.size += 1
         self.total_power += proselytism
@@ -46,6 +52,8 @@ class Network:
         # TODO: It does not make any sense for the graph to be directed
 
         self.graph[node1].add(node2)
+
+        self.viz.add_edge(node1, node2)
 
 
     def set_complete_network(self):
@@ -163,6 +171,23 @@ class Network:
         :return: 
         """
         return self.total_power / float(1 - gamma)
+
+    def viz_save(self):
+        self.viz.layout()
+        self.viz.draw("Images/" + str(self.vtime) + ".png")
+        self.vtime += 1
+
+    def clear_hijack(self, node):
+        self.viz.get_node(node).attr['color'] = "#93a1a1"
+
+    def fail_hijack(self, node):
+        self.viz.get_node(node).attr['color'] = "blue"
+
+    def succeed_hijack(self, node):
+        self.viz.get_node(node).attr['color'] = "#ff9400"
+
+    def done_hijack(self, node):
+        self.viz.get_node(node).attr['color'] = "#cc2222"
 
     def generate_random_connected(self):
         """
