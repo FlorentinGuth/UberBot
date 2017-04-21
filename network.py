@@ -301,10 +301,12 @@ class Network:
         for g in range(self.size):
             p = 0
             for s in range(self.size):
-                for t in range(self.size):
-                    if SP[s][g][0] + SP[g][t][0] == SP[s][t][0]:
-                        w = I[s] / (sI - I[g])
-                        p += SP[s][g][1] * SP[g][t][1] / SP[s][t][1] * w
+                if s != g:
+                    for t in range(self.size):
+                        if t != g:
+                            if SP[s][g][0] + SP[g][t][0] == SP[s][t][0]:
+                                w = I[s] / (sI - I[g])
+                                p += SP[s][g][1] * SP[g][t][1] / SP[s][t][1] * w
             P.append(p / (self.size - 2))
 
         return P
