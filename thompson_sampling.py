@@ -14,7 +14,7 @@ class Thompson(QLearning):
     Those are used to sample an action with Thompson Sampling.
     """
 
-    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None, alpha=0.01, beta=1, shape=False, potential=None):
+    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None, alpha=0.01, beta=1, shape=False, potential=None, initial_nodes=None):
         """
         Initializes the Thompson sampling botnet.
         :param strategy:  defining how to resolve exploration vs. exploitation conflict
@@ -27,7 +27,7 @@ class Thompson(QLearning):
         :param shape:     whether to use reward shaping
         :param potential: user-specified potential for reward shaping
         """
-        QLearning.__init__(self, strategy, graph, gamma, nb_trials, alpha, shape, potential)
+        QLearning.__init__(self, strategy, graph, gamma, nb_trials, alpha, shape, potential, initial_nodes)
 
         self.p = dict()                 # Saves the internal estimates of the success probabilities: (nb_successes, nb_trials)
         self.beta = beta
@@ -184,7 +184,7 @@ class ModelBasedThompson(Thompson):
     """
     # TODO: add doc
 
-    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None, alpha=0.01, beta=1, shape=False, potential=None):
+    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None, alpha=0.01, beta=1, shape=False, potential=None, initial_nodes=None):
         """
         Initializes the Thompson sampling botnet.
         :param strategy:  defining how to resolve exploration vs. exploitation conflict
@@ -197,7 +197,7 @@ class ModelBasedThompson(Thompson):
         :param shape:     whether to use reward shaping
         :param potential: user-specified potential for reward shaping
         """
-        Thompson.__init__(self, strategy, graph, gamma, nb_trials, alpha, beta, shape, potential)
+        Thompson.__init__(self, strategy, graph, gamma, nb_trials, alpha, beta, shape, potential, initial_nodes)
 
         self.memory = []   # TODO: add doc
         self.history = []  # TODO: add doc
@@ -277,7 +277,7 @@ class FullModelBasedThompson(ModelBasedThompson):
     """
     # TODO: add doc
 
-    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None, alpha=0.01, beta=1, shape=False, potential=None):
+    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None, alpha=0.01, beta=1, shape=False, potential=None, initial_nodes=None):
         """
         Initializes the Thompson sampling botnet.
         :param strategy:  defining how to resolve exploration vs. exploitation conflict
@@ -290,7 +290,7 @@ class FullModelBasedThompson(ModelBasedThompson):
         :param shape:     whether to use reward shaping
         :param potential: user-specified potential for reward shaping
         """
-        ModelBasedThompson.__init__(self, strategy, graph, gamma, nb_trials, alpha, beta, shape, potential)
+        ModelBasedThompson.__init__(self, strategy, graph, gamma, nb_trials, alpha, beta, shape, potential, initial_nodes)
 
         self.type = "FullModelBasedThompson"
 

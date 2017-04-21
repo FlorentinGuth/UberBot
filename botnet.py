@@ -9,14 +9,14 @@ class Botnet(LearningBotnet):
     This class provides helper methods for non-learning botnets, who have perfect knowledge of the network.
     """
 
-    def __init__(self, network, gamma):
+    def __init__(self, network, gamma, initial_nodes=None):
         """
         Initializes the botnet. The parameters nb_trials and strategy are here irrelevant.
         :param network: 
         :param gamma:  
         """
         # Chooses a full random strategy because exploration doesn't matter here (as long as it is O(1))
-        LearningBotnet.__init__(self, full_exploration, network.graph, gamma)
+        LearningBotnet.__init__(self, full_exploration, network.graph, gamma, initial_nodes)
 
         self.network = network
         self.power = network.initial_power

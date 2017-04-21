@@ -13,7 +13,7 @@ class LearningBotnet:
                  - the immediate reward at each step
     """
 
-    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None):
+    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None, initial_nodes=None):
         """
         Initializes the botnet.
         :param strategy:      function of signature LearningBotnet -> action 
@@ -25,7 +25,8 @@ class LearningBotnet:
         """
         self.graph = graph
         self.size = len(graph)
-        self.state = State(self.size)
+        self.state = State(self.size, initial_nodes)
+        self.initial_nodes = initial_nodes
 
         self.gamma = gamma
         self.reward = 0
@@ -49,11 +50,9 @@ class LearningBotnet:
             state = self.state
 
         if state.is_empty():
-            # TODO: makes not much sense to be able to choose any node
-            # TODO: we could say that the Botnet starts with an already hijacked node instead (gives initial power)
+            # If the botnet starts in empty state, it is allowed to choose any action.
             return set(range(self.size))
 
-        # TODO: implementation feasible in O(n) instead of O(n*ln(n)) (or maybe O(n²)...)
         res = set()
         state = state.to_list()
         for i in state:
@@ -108,7 +107,7 @@ class LearningBotnet:
         :param all: whether to clear also learned values, unused here
         :return:    None
         """
-        self.state = State(self.size)
+        self.state = State(self.size, self.initial_nodes)
 
         self.reward = 0
         self.time = 0

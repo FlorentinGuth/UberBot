@@ -9,8 +9,11 @@ class Network:
     It also contains the default reward functions (which can be modified by the botnets, by reward shaping for instance).
     """
 
-    def __init__(self, initial_power):
-        self.initial_power = initial_power  # TODO: change this by initial node?
+    def __init__(self, initial_power=0):
+
+        self.initial_nodes = []
+        self.initial_power = initial_power
+
         self.total_power = initial_power
         self.size = 0
 
@@ -18,6 +21,14 @@ class Network:
         self.proselytism = []
         self.action_cost = []
         self.graph = []         # List of set of neighbors
+
+    def add_initial_node(self, node):
+
+        self.initial_nodes.append(node)
+        self.initial_power += self.get_proselytism(node)
+
+    def get_initial_state(self):
+        return State(self.size, self.initial_nodes)
 
     def add_node(self, resistance, proselytism, cost):
         """
@@ -46,7 +57,6 @@ class Network:
         # TODO: It does not make any sense for the graph to be directed
 
         self.graph[node1].add(node2)
-
 
     def set_complete_network(self):
         """

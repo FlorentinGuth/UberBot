@@ -10,7 +10,7 @@ class QLearning(LearningBotnet):
     # TODO Detect and eliminate blockades (decrease in reward during learning)
     # TODO Sparse sampling algorithm? / fixed-depth exploration variant?
 
-    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None, alpha=0.01, shape=False, potential=None):
+    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None, alpha=0.01, shape=False, potential=None, initial_nodes=None):
         """
         Initializes the Q-learning botnet.
         :param strategy:  defining how to resolve exploration vs. exploitation conflict
@@ -20,7 +20,7 @@ class QLearning(LearningBotnet):
         :param shape:     whether to use reward shaping
         :param potential: apply the given potential for shaping
         """
-        LearningBotnet.__init__(self, strategy, graph, gamma, nb_trials)
+        LearningBotnet.__init__(self, strategy, graph, gamma, nb_trials, initial_nodes)
 
         self.q_value = dict()                     # Maps (state, action) to its Q-value
         self.initialization = 0                   # Initialization value for Q

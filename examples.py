@@ -16,12 +16,13 @@ fontP.set_size('small')
 
 # Martin's pet network (that's cute)
 size = 13
-delta = 2
+delta = 2.
 
 n_martin = Network(1)
 for i in range(size):
     n_martin.add_node(i ** delta + 1, i + 1, i ** delta)
 n_martin.set_complete_network()
+n_martin.add_initial_node(0)
 
 
 def botnets(network):
@@ -29,7 +30,6 @@ def botnets(network):
     :param network:
     :return: The list of all botnets parametrized with the given network
     """
-    # TODO: would be more practical if we had a class of list: [Fast, Fast_incr, QLearning...] (no need to give the botnet)
     qs = [
         Fast(network),
         FastIncr(network),
@@ -38,10 +38,10 @@ def botnets(network):
         RewardIncr(network),
         QStar(network, 0.9),
 
-        QLearning(full_exploration, network.graph, shape=False),
-        Thompson(thompson_standard, network.graph, nb_trials=200),
-        ModelBasedThompson(thompson_standard, network.graph, nb_trials=200),
-        FullModelBasedThompson(thompson_standard, network.graph, nb_trials=200),
+        QLearning(full_exploration, network.graph, shape=False, initial_nodes=[0]),
+        Thompson(thompson_standard, network.graph, nb_trials=200, initial_nodes=[0]),
+        ModelBasedThompson(thompson_standard, network.graph, nb_trials=200, initial_nodes=[0]),
+        FullModelBasedThompson(thompson_standard, network.graph, nb_trials=200, initial_nodes=[0]),
     ]
     return qs
 botnet_names = [q.type for q in botnets(Network(0))]

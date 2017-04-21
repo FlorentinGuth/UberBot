@@ -5,7 +5,6 @@ class QStar(Botnet):
     """
     This class performs the computation of the Q* function.
     """
-    # TODO: Implement online exploration with fixed depth (exact computation)
 
     def __init__(self, network, gamma=0.9):
         Botnet.__init__(self, network, gamma)
