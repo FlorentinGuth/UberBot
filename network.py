@@ -1,5 +1,6 @@
 import random
 import queue
+import pygraphviz as pgv
 from state import *
 
 
@@ -19,6 +20,9 @@ class Network:
         self.action_cost = []
         self.graph = []         # List of set of neighbors
 
+        self.viz = pgv.AGraph()
+        self.vtime = 0
+
     def add_node(self, resistance, proselytism, cost):
         """
         Adds the given node to the network. This does not add any link between nodes.
@@ -31,6 +35,8 @@ class Network:
         self.proselytism.append(proselytism)
         self.resistance.append(resistance)
         self.graph.append(set())
+
+        self.viz.add_node(self.size, color="#93a1a1", style="filled")
 
         self.size += 1
         self.total_power += proselytism
@@ -46,6 +52,8 @@ class Network:
         # TODO: It does not make any sense for the graph to be directed
 
         self.graph[node1].add(node2)
+
+        self.viz.add_edge(node1, node2)
 
 
     def set_complete_network(self):
@@ -164,6 +172,23 @@ class Network:
         """
         return self.total_power / float(1 - gamma)
 
+    def viz_save(self):
+        self.viz.layout()
+        self.viz.draw("Images/" + str(self.vtime) + ".png")
+        self.vtime += 1
+
+    def clear_hijack(self, node):
+        self.viz.get_node(node).attr['color'] = "#93a1a1"
+
+    def fail_hijack(self, node):
+        self.viz.get_node(node).attr['color'] = "blue"
+
+    def succeed_hijack(self, node):
+        self.viz.get_node(node).attr['color'] = "#ff9400"
+
+    def done_hijack(self, node):
+        self.viz.get_node(node).attr['color'] = "#cc2222"
+
     def generate_random_connected(self):
         """
         Adds random links on the network. The result is guaranteed to be connected.
@@ -230,7 +255,12 @@ class Network:
                 if SP[i][cur[0]][0] == -1:
                     for v in self.graph[cur[0]]:
                         fl.put((v, cur[0], cur[2]+1))
-                SP[i][cur[0]] = (cur[2], SP[i][cur[0]][1] + SP[i][cur[1]][1])
+                    if cur[0] == i:
+                        SP[i][cur[0]] = (cur[2], 0.5)
+                    else:
+                        SP[i][cur[0]] = (cur[2], 0)
+                if SP[i][cur[0]][0] == cur[2]:
+                    SP[i][cur[0]] = (cur[2], int(SP[i][cur[0]][1] + SP[i][cur[1]][1]))
     
         return SP
 
@@ -277,9 +307,11 @@ class Network:
         for g in range(self.size):
             p = 0
             for s in range(self.size):
-                for t in range(self.size):
-                    if SP[s][g][0] + SP[g][t][0] == SP[s][t][0]:
-                        p += SP[s][g][1] * SP[g][t][1] / SP[s][t][1]
+                if s != g:
+                    for t in range(self.size):
+                        if t != g:
+                            if SP[s][g][0] + SP[g][t][0] == SP[s][t][0]:
+                                p += SP[s][g][1] * SP[g][t][1] / SP[s][t][1]
             B.append(p / (self.size - 1) / (self.size - 2))
 
         return B
@@ -294,10 +326,12 @@ class Network:
         for g in range(self.size):
             p = 0
             for s in range(self.size):
-                for t in range(self.size):
-                    if SP[s][g][0] + SP[g][t][0] == SP[s][t][0]:
-                        w = I[s] / (sI - I[g])
-                        p += SP[s][g][1] * SP[g][t][1] / SP[s][t][1] * w
+                if s != g:
+                    for t in range(self.size):
+                        if t != g:
+                            if SP[s][g][0] + SP[g][t][0] == SP[s][t][0]:
+                                w = I[s] / (sI - I[g])
+                                p += SP[s][g][1] * SP[g][t][1] / SP[s][t][1] * w
             P.append(p / (self.size - 2))
 
         return P
