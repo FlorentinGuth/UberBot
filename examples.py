@@ -1,6 +1,7 @@
 from markov import QStar
 from thompson_sampling import Thompson, ModelBasedThompson, FullModelBasedThompson
 from qlearning import QLearning
+from sarsa import Sarsa
 from strategy import *
 from tests import *
 from fast import *
@@ -39,6 +40,7 @@ def botnets(network):
         QStar(network, 0.9),
 
         QLearning(full_exploration, network.graph, shape=False),
+        Sarsa(full_exploration, network.graph, shape=False),
         Thompson(thompson_standard, network.graph, nb_trials=200),
         ModelBasedThompson(thompson_standard, network.graph, nb_trials=200),
         FullModelBasedThompson(thompson_standard, network.graph, nb_trials=200),
@@ -118,4 +120,4 @@ def plot_immediate(max_size, nb_trials, difficulty):
 
 
 # plot_immediate(10, 20, 2)
-plot_learning(200, 10, n_martin)
+plot_learning(200, 10, random_network(13, 2, 0.1))

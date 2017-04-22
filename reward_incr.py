@@ -29,7 +29,6 @@ class RewardIncr(Botnet):
         :return:      a list of actions
         """
         # TODO: Find a way to make it stable, i.e. if the order of the nodes is optimal then so will be the result
-        n = self.network.size
         actions = []
 
         for node in nodes:
@@ -49,7 +48,6 @@ class RewardIncr(Botnet):
             actions.insert(best_pos, node)
 
         return actions
-
 
     def compute_policy(self):
         """
