@@ -23,22 +23,22 @@ class LearningBotnet:
         :param nb_trials:     total number of trials (goal: this parameter is None)
 
         """
-        self.graph = graph
-        self.size = len(graph)
+        self.graph = graph              # Graph of the network
+        self.size = len(graph)          # Total number of nodes
         self.state = State(self.size, initial_nodes)
-        self.initial_nodes = initial_nodes
-
+        self.initial_nodes = initial_nodes  # List of initial nodes
+        print(initial_nodes)
         self.gamma = gamma
         self.reward = 0
         self.time = 0
-        self.time_factor = 1          # Holds gamma ** T
+        self.time_factor = 1            # Holds gamma ** T
 
-        self.completed_trials = 0     # Number of already completed trials
-        self.nb_trials = nb_trials    # Number of total trials (can be None)
+        self.completed_trials = 0       # Number of already completed trials
+        self.nb_trials = nb_trials      # Number of total trials (can be None)
 
         self.strategy = strategy
 
-        self.type = "LearningBotnet"  # A string containing the name of the botnet
+        self.type = "LearningBotnet"    # A string containing the name of the botnet
 
     def available_actions(self, state=None):
         """
@@ -121,10 +121,10 @@ class LearningBotnet:
         :return: a sequence of actions, which is the order of attacks on the nodes
         """
         temp = self.state              # We do not want to modify this state after the call
-        self.state = State(self.size)
+        self.state = State(self.size, self.initial_nodes)
         actions = []
 
-        for _ in range(self.size):
+        while not self.state.is_full():
             action = self.exploitation()
             actions.append(action)
             self.state = self.state.add(action)

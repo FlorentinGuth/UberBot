@@ -29,6 +29,7 @@ class Policy:
         :return
         """
         # TODO: Change when it will change in network (--> network?)
+        # TODO: imperatively check evrything with initial_power, initial_state_power
         # Initialization to last reward (accounting for infinite horizon)
         power = self.network.initial_power + sum(self.network.get_proselytism(action) for action in self.actions)
         reward = power / (1. - gamma)

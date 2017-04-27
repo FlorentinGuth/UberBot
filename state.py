@@ -6,7 +6,7 @@ class State:
     The State class is actually a set of integers, represented by an integer.
     This class is immutable, so it can be used as dictionary keys.
     """
-
+    # TODO Eventually try with Python frozen sets
     def __init__(self, size, nodes=None):
         self.content = 0
         self.size = size    # Keeps track of the size of the network, useful

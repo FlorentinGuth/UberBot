@@ -8,17 +8,15 @@ class QLearning(LearningBotnet):
     """
     # TODO Understand initialization of the Q values
     # TODO Detect and eliminate blockades (decrease in reward during learning)
-    # TODO Sparse sampling algorithm? / fixed-depth exploration variant?
 
-    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None, alpha=0.01, shape=False, potential=None, initial_nodes=None):
+    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None, alpha=0.01, potential=None, initial_nodes=None):
         """
         Initializes the Q-learning botnet.
         :param strategy:  defining how to resolve exploration vs. exploitation conflict
         :param graph:     the graph of the network
-        :param gamma:    
+        :param gamma:     time discount factor
         :param alpha:     learning rate
-        :param shape:     whether to use reward shaping
-        :param potential: apply the given potential for shaping
+        :param potential: apply the given potential for shaping, None if no such shaping
         """
         LearningBotnet.__init__(self, strategy, graph, gamma, nb_trials, initial_nodes)
 
@@ -27,7 +25,7 @@ class QLearning(LearningBotnet):
         self.path = []                            # Sequence of actions the botnet achieved, for back-propagation
 
         self.alpha = alpha
-        self.shape = shape
+        self.shape = (potential is not None)
         self.potential = potential
 
         self.type = "QLearning"
@@ -108,20 +106,18 @@ class QLearning(LearningBotnet):
         :param reward:  immediate reward for doing action in self.state 
         :return:        None
         """
-        # TODO: Account for shaping if needed
-        # if self.shape:
-        #     if self.potential is None:
-        #         if success:
-        #             reward =  self.gamma / (1. - self.gamma) * self.network.get_proselytism(action) - self.network.get_cost(action)
-        #         else:
-        #             reward -self.network.get_cost(action)
-        #     else:
-        #         if success:
-        #             next_state = self.state.add(action)
-        #         else:
-        #             next_state = self.state
-        #
-        #         reward = self.network.immediate_reward(self.state, action) + self.gamma * self.potential(next_state) - self.potential(self.state)
+        if self.shape:
+            if success:
+                next_state = self.state.add(action)
+            else:
+                next_state = self.state
+            reward += self.gamma * self.potential(next_state) - self.potential(self.state)
+
+        # TODO Famous reward shaping ?
+        # if success:
+        #     reward = self.gamma / (1. - self.gamma) * self.network.get_proselytism(action) - self.network.get_cost(action)
+        # else:
+        #     reward -self.network.get_cost(action)
 
         # # TODO: Back-propagation
         # if success:

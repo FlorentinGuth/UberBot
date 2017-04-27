@@ -120,7 +120,7 @@ def test_botnet(botnet, network, nb_trials, window_size=1, real_rewards=False, i
         plot_with_legend(list(range(nb_trials)), soften(expected, window_size), legend=botnet.type+" induced")
     if policy_rewards:
         plot_with_legend(list(range(nb_trials)), soften(policy,   window_size), legend=botnet.type+" policy")
-
+    print(botnet.compute_policy())
     print(botnet.type, Policy(network, botnet.compute_policy()).expected_reward(botnet.gamma), sep='\t')
     if show:
         show_with_legend()
