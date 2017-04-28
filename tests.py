@@ -181,3 +181,23 @@ def plot_perf(points, window_size=1, name=None):
     """
     soft_points = soften(points, window_size)
     plot(range(len(points)), soft_points, label=name)
+
+
+def sample_optimal(botnet, network):
+    """
+    """
+    policy = botnet.compute_policy()
+    actions = []
+    for action in policy:
+        success = False
+        while not success:
+            success = network.attempt_hijacking(botnet.state, action)
+            actions.append((action, success))
+
+        immediate_reward = network.immediate_reward(botnet.state, action)
+        if success and botnet.state.add(action).is_full():  # TODO: include all this in network somehow
+            immediate_reward += botnet.gamma * network.final_reward(botnet.gamma)
+        botnet.receive_reward(action, success, immediate_reward)
+
+    return actions
+
