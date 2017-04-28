@@ -37,7 +37,7 @@ def invade(botnet, network, printing=False):
     Let the botnet invade once the network.
     :param botnet:   a (learning) botnet, set up on this network, and which must have been cleared beforehand
     :param network:  the network to invade
-    ;param printing: if True, prints all the details about the invasions
+    :param printing: if True, prints all the details about the invasions
     :return:         a list of all (action, result), the total reward received, and the expected reward of the induced 
                      policy (which is constructed by taking the successful actions)
     """
@@ -64,7 +64,7 @@ def invade(botnet, network, printing=False):
                 print("Failure\n")
 
         immediate_reward = network.immediate_reward(botnet.state, action)
-        if success and botnet.state.add(action).is_full():  # TODO: include all this in network somehow
+        if success and botnet.state.add(action).is_full():
             immediate_reward += botnet.gamma * network.final_reward(botnet.gamma)
         reward += botnet.time_factor * immediate_reward
         botnet.receive_reward(action, success, immediate_reward)
@@ -120,7 +120,7 @@ def test_botnet(botnet, network, nb_trials, window_size=1, real_rewards=False, i
         plot_with_legend(list(range(nb_trials)), soften(expected, window_size), legend=botnet.type+" induced")
     if policy_rewards:
         plot_with_legend(list(range(nb_trials)), soften(policy,   window_size), legend=botnet.type+" policy")
-
+    print(botnet.compute_policy())
     print(botnet.type, Policy(network, botnet.compute_policy()).expected_reward(botnet.gamma), sep='\t')
     if show:
         show_with_legend()

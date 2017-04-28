@@ -1,5 +1,4 @@
-from botnet import *
-import random
+from network import Network
 
 
 class Policy:
@@ -28,10 +27,9 @@ class Policy:
         :param gamma
         :return
         """
-        # TODO: Change when it will change in network (--> network?)
         # Initialization to last reward (accounting for infinite horizon)
-        power = self.network.initial_power + sum(self.network.get_proselytism(action) for action in self.actions)
-        reward = power / (1. - gamma)
+        reward = self.network.final_reward(gamma)
+        power = self.network.total_power
 
         # Backward computation, from end to start
         for action in reversed(self.actions):

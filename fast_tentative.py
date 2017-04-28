@@ -54,7 +54,6 @@ class FastTentative(Botnet):
         :param power: to avoid re-computation
         :return: 
         """
-        # TODO: Can be O(1) if computed during compute_min_time
         best = None
         best_time = float("inf")
         for action in range(self.network.size):

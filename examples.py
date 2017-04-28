@@ -5,79 +5,77 @@ from sarsa import Sarsa
 from strategy import *
 from tests import *
 from fast import *
-from fast_incr import *
 from fast_tentative import *
-from reward_incr import *
 from math import *
 from network import *
 from matplotlib.font_manager import FontProperties
+from shaping import immediate_shaping_potential
 
 fontP = FontProperties()
-fontP.set_size('small')
+fontP.set_size('medium')
 
 # Martin's pet network (that's cute)
 size = 13
-delta = 2
+delta = 2.
 
 n_martin = Network(1)
 for i in range(size):
     n_martin.add_node(i ** delta + 1, i + 1, i ** delta)
 n_martin.set_complete_network()
+n_martin.add_initial_node(12)
 
 
-def botnets(network):
+def botnets(network, gamma):
     """
     :param network:
     :return: The list of all botnets parametrized with the given network
     """
-    # TODO: would be more practical if we had a class of list: [Fast, Fast_incr, QLearning...] (no need to give the botnet)
+    potential = immediate_shaping_potential(network, gamma)
     qs = [
-        Fast(network),
-        FastIncr(network),
-        FastTentative(network),
+        # Fast(network),
+        # FastTentative(network),
 
-        RewardIncr(network),
-        QStar(network, 0.9),
+        # QStar(network, gamma),
 
-        QLearning(full_exploration, network.graph, shape=False),
-        Sarsa(full_exploration, network.graph, shape=False),
-        Thompson(thompson_standard, network.graph, nb_trials=200),
-        ModelBasedThompson(thompson_standard, network.graph, nb_trials=200),
-        FullModelBasedThompson(thompson_standard, network.graph, nb_trials=200),
+        QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
+        QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes, potential=potential),
+        Thompson(thompson_standard, network.graph, gamma=gamma, nb_trials=200, initial_nodes=network.initial_nodes),
+        ModelBasedThompson(thompson_standard, network.graph, gamma=gamma, nb_trials=200, initial_nodes=network.initial_nodes),
+        FullModelBasedThompson(thompson_standard, network.graph, gamma=gamma, nb_trials=200, initial_nodes=network.initial_nodes, alpha_p=0.05),
     ]
     return qs
-botnet_names = [q.type for q in botnets(Network(0))]
+botnet_names = [q.type for q in botnets(Network(0), 0.9)]
 
 
-def learning_botnets(network):
-    return filter(lambda q: not isinstance(q, Botnet), botnets(network))
+def learning_botnets(network, gamma=0.9):
+    return filter(lambda q: not isinstance(q, Botnet), botnets(network, gamma))
 
-learning_botnet_names = [q.type for q in learning_botnets(Network(0))]
-
-
-def non_learning_botnets(network):
-    return filter(lambda q: isinstance(q, Botnet), botnets(network))
-
-non_learning_botnet_names = [q.type for q in non_learning_botnets(Network(0))]
+learning_botnet_names = [q.type for q in learning_botnets(Network(0), 0.9)]
 
 
-def plot_learning(nb_trials, window, network):
+def non_learning_botnets(network, gamma=0.9):
+    return filter(lambda q: isinstance(q, Botnet), botnets(network, gamma))
+
+non_learning_botnet_names = [q.type for q in non_learning_botnets(Network(0), 0.9)]
+
+
+def plot_learning(nb_trials, window, network, gamma=0.9):
     """
     Plots the performance of the qs, with respect to the trainings.
     Be aware that the results that counts are the final ones, which are the printed ones.
     :return: None
     """
 
-    qs = botnets(network)
+    qs = botnets(network, gamma)
 
     for q in qs:
 
         test_botnet(q, network, nb_trials, window)
 
-        # if isinstance(q, FullModelBasedThompson):
-        #     # Plots the internal estimates of this botnet
-        #     estimates = [x[1] for x in q.history]
-        #     plot_perf(estimates, window, "Estimates of FullModelBasedThompson")
+        if isinstance(q, FullModelBasedThompson):
+            # Plots the internal estimates of this botnet
+            estimates = [x[1] for x in q.history]
+            plot_perf(estimates, window, "Estimates of FullModelBasedThompson")
 
     show_with_legend()
 
@@ -103,7 +101,7 @@ def plot_immediate(max_size, nb_trials, difficulty):
 
             perf = []
             for q in non_learning_botnets(network):
-                perf.append(q.compute_policy().expected_reward(q.gamma))
+                perf.append(Policy(network, q.compute_policy()).expected_reward(q.gamma))
 
             trials.append(perf)
 
@@ -120,4 +118,7 @@ def plot_immediate(max_size, nb_trials, difficulty):
 
 
 # plot_immediate(10, 20, 2)
-plot_learning(200, 10, random_network(13, 2, 0.1))
+size = 100
+difficulty = 1
+network = random_network(size, difficulty, big_nodes=log(size) / float(size), complete=False)
+plot_learning(200, 10, network)
