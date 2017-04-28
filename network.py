@@ -25,6 +25,9 @@ class Network:
         self.action_cost = []
         self.graph = []                     # List of set of neighbors.
 
+        self.viz = pgv.AGraph()
+        self.vtime = 0
+
     def add_initial_node(self, node):
         """
         Adds the given node to initial state, and increases initial_power with its proselytism.
@@ -34,9 +37,6 @@ class Network:
 
     def get_initial_state(self):
         return State(self.size, self.initial_nodes)
-
-        self.viz = pgv.AGraph()
-        self.vtime = 0
 
     def add_node(self, resistance, proselytism, cost):
         """
