@@ -8,9 +8,10 @@ from fast_tentative import *
 from math import *
 from network import *
 from matplotlib.font_manager import FontProperties
+from shaping import immediate_shaping_potential
 
 fontP = FontProperties()
-fontP.set_size('small')
+fontP.set_size('medium')
 
 # Martin's pet network (that's cute)
 size = 13
@@ -28,13 +29,15 @@ def botnets(network, gamma):
     :param network:
     :return: The list of all botnets parametrized with the given network
     """
+    potential = immediate_shaping_potential(network, gamma)
     qs = [
-        Fast(network),
-        FastTentative(network),
+        # Fast(network),
+        # FastTentative(network),
 
-        QStar(network, gamma),
+        # QStar(network, gamma),
 
         QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
+        QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes, potential=potential),
         Thompson(thompson_standard, network.graph, gamma=gamma, nb_trials=200, initial_nodes=network.initial_nodes),
         ModelBasedThompson(thompson_standard, network.graph, gamma=gamma, nb_trials=200, initial_nodes=network.initial_nodes),
         FullModelBasedThompson(thompson_standard, network.graph, gamma=gamma, nb_trials=200, initial_nodes=network.initial_nodes, alpha_p=0.05),
@@ -97,7 +100,7 @@ def plot_immediate(max_size, nb_trials, difficulty):
 
             perf = []
             for q in non_learning_botnets(network):
-                perf.append(q.compute_policy().expected_reward(q.gamma))
+                perf.append(Policy(network, q.compute_policy()).expected_reward(q.gamma))
 
             trials.append(perf)
 
@@ -114,5 +117,7 @@ def plot_immediate(max_size, nb_trials, difficulty):
 
 
 # plot_immediate(10, 20, 2)
-
-plot_learning(200, 10, n_martin)
+size = 100
+difficulty = 1
+network = random_network(size, difficulty, big_nodes=log(size) / float(size), complete=False)
+plot_learning(200, 10, network)

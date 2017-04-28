@@ -64,7 +64,7 @@ def invade(botnet, network, printing=False):
                 print("Failure\n")
 
         immediate_reward = network.immediate_reward(botnet.state, action)
-        if success and botnet.state.add(action).is_full():  # TODO: include all this in network somehow
+        if success and botnet.state.add(action).is_full():
             immediate_reward += botnet.gamma * network.final_reward(botnet.gamma)
         reward += botnet.time_factor * immediate_reward
         botnet.receive_reward(action, success, immediate_reward)

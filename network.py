@@ -51,14 +51,12 @@ class Network:
 
     def add_link(self, node1, node2):
         """
-        Adds the edge 'node1 --> node2' to the graph of the network.
+        Adds the edge 'node1 <--> node2' to the graph of the network.
         :param node1:
         :param node2:
         :return:
         """
-        # TODO: Un attribut accessibles (ensemble des noeuds accesibles depuis l'etat courant)
-        # TODO: Does it make any sense for the graph to be directed ? If not, uncomment following line ! and modify desc
-        # self.graph[node2].add(node1)
+        self.graph[node2].add(node1)
         self.graph[node1].add(node2)
 
     def set_complete_network(self):
@@ -164,10 +162,6 @@ class Network:
         :param action: 
         :return: 
         """
-        # TODO: Change cost?
-        # TODO: Make it depend on the success?
-        # TODO: Discrepancy between the final reward and this function when the state is full (except if action is None)
-
         # TODO Change Probabilities !
         # The current reward is the total power the botnet isn't using while performing current action.
         return max(-self.get_cost(action) + power, 0)
@@ -198,7 +192,6 @@ class Network:
             B = find(b)
             rep[B] = A
             self.add_link(a, b)
-            self.add_link(b, a)
             return A != B
 
         n = self.size

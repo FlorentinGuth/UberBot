@@ -7,7 +7,6 @@ class QLearning(LearningBotnet):
     This class computes an approximation of the exact Q*, by learning it incrementally.
     """
     # TODO Understand initialization of the Q values
-    # TODO Detect and eliminate blockades (decrease in reward during learning)
 
     def __init__(self, strategy, graph, gamma=0.9, nb_trials=None, alpha=0.01, potential=None, initial_nodes=None):
         """
@@ -28,7 +27,10 @@ class QLearning(LearningBotnet):
         self.shape = (potential is not None)
         self.potential = potential
 
-        self.type = "QLearning"
+        if not self.shape:
+            self.type = "QLearning"
+        else:
+            self.type = "QLearning - Potential"
 
     def set_q_value(self, state, action, value):
         """
@@ -86,7 +88,6 @@ class QLearning(LearningBotnet):
         Tries to learn the network, given the current state.
         :return: an action
         """
-        # TODO: find something more interesting?
         return LearningBotnet.exploration(self)  # Random action
 
     def exploitation(self):
@@ -95,7 +96,6 @@ class QLearning(LearningBotnet):
         :return: an action
         """
         q_value, actions = self.get_best_actions(self.state)
-        # print("Exploitation: %d actions with %f value" % (len(actions), q_value))
         return random.choice(list(actions))
 
     def receive_reward(self, action, success, reward):
@@ -112,12 +112,6 @@ class QLearning(LearningBotnet):
             else:
                 next_state = self.state
             reward += self.gamma * self.potential(next_state) - self.potential(self.state)
-
-        # TODO Famous reward shaping ?
-        # if success:
-        #     reward = self.gamma / (1. - self.gamma) * self.network.get_proselytism(action) - self.network.get_cost(action)
-        # else:
-        #     reward -self.network.get_cost(action)
 
         # # TODO: Back-propagation
         # if success:

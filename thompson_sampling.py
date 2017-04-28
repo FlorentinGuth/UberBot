@@ -5,7 +5,6 @@ from state import State
 from learning_botnet import *
 
 # TODO Ajouter de l'auto-évaluation des stratégies adoptées, s'en servir pour les retenir, et détecter des blocages.
-# TODO: Initialization of successes/failures
 
 
 class Thompson(QLearning):
@@ -117,7 +116,6 @@ class Thompson(QLearning):
 
         if len(possible_actions) == 0:
             # No positive simulated action.
-            # return self.policy(state) TODO
             return self.exploration()  # Random action
 
         best_q = -float("inf")
