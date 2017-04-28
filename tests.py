@@ -37,7 +37,7 @@ def invade(botnet, network, printing=False):
     Let the botnet invade once the network.
     :param botnet:   a (learning) botnet, set up on this network, and which must have been cleared beforehand
     :param network:  the network to invade
-    ;param printing: if True, prints all the details about the invasions
+    :param printing: if True, prints all the details about the invasions
     :return:         a list of all (action, result), the total reward received, and the expected reward of the induced 
                      policy (which is constructed by taking the successful actions)
     """

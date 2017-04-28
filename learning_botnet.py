@@ -27,7 +27,7 @@ class LearningBotnet:
         self.size = len(graph)          # Total number of nodes
         self.state = State(self.size, initial_nodes)
         self.initial_nodes = initial_nodes  # List of initial nodes
-        print(initial_nodes)
+
         self.gamma = gamma
         self.reward = 0
         self.time = 0

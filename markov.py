@@ -1,5 +1,6 @@
 from policy import *
-
+from botnet import Botnet
+from state import State
 
 class QStar(Botnet):
     """

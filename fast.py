@@ -51,7 +51,6 @@ class Fast(Botnet):
         Returns the action minimizing the expected time of capture.
         :return: 
         """
-        # TODO: can be O(1) if computed during compute_min_time
         best = None
         best_time = float("inf")
         for action in range(self.network.size):

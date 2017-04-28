@@ -88,9 +88,9 @@ class Thompson(QLearning):
         """
         return [i for i in self.available_actions() if random.random() < self.get_p(self.state, i)]
 
-    def be_curious(self):  # TODO: merge with exploration? And check if this is realy what we want?
+    def be_curious(self):  # TODO: merge with exploration?
         """
-        Chooses the action with the smallest probability.
+        Chooses the least visited action.
         :return: 
         """
         min_cur = float("inf")
@@ -98,7 +98,7 @@ class Thompson(QLearning):
 
         for action in self.available_actions():
             if action not in self.state:
-                x = self.get_p(self.state, action)
+                x = self.get_trials(self.state, action)
                 if x < min_cur:
                     min_cur = x
                     best_actions = [action]
@@ -132,13 +132,6 @@ class Thompson(QLearning):
             max_line = self.get_best_actions(self.state.add(action))[0]
             q_value = self.get_q_value(self.state, action)
 
-            # TODO Really guys ? 0 * -inf = 0 really here ?
-            # if self.beta == 1:
-            #     new_q = q_value
-            # elif self.beta == 0:
-            #     new_q = max_line
-            # else:
-            #     new_q = self.beta * q_value + (1 - self.beta) * max_line
             new_q = self.beta * q_value + (1 - self.beta) * max_line
 
             if new_q >= best_q:
