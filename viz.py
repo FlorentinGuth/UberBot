@@ -1,21 +1,26 @@
 
+from math import log
 import tkinter as tk
 import matplotlib.pyplot as plt
 import tests
 import network
 import strategy
 import thompson_sampling as thom
+from qlearning import QLearning
 
-n = 20
+n = 16
+difficulty = 2
+#
+#net = network.Network(1)
+#
+#for i in range(n):
+#    net.add_node(i**1.5, i, i)
+#
+#net.generate_random_connected()
+net = network.random_network(n, difficulty, big_nodes=log(n)/float(n), complete=False)
 
-net = network.Network(1)
-
-for i in range(n):
-    net.add_node(i**1.5, i, i)
-
-net.generate_random_connected()
-
-q = thom.Thompson(strategy.thompson_standard, net.graph, 0.9, 0.01)
+#q = thom.Thompson(strategy.thompson_standard, net.graph, 0.9, 0.01)
+q = QLearning(strategy.full_exploration, net.graph, nb_trials=200)
 
 tests.train(q, net, 100)
 q.clear()
@@ -53,7 +58,15 @@ class GraphGUI(tk.Frame):
             for j in net.graph[i]:
                 if j > i:
                     edges.append(self.graph.create_line(X[i], Y[i], X[j], Y[j]))
-            self.nodes.append(self.graph.create_oval(X[i]-20, Y[i]-20, X[i]+20, Y[i]+20, fill="#93a1a1"))
+            if net.resistance[i] >= 10*1000:
+                self.nodes.append(self.graph.create_oval(X[i]-40, Y[i]-40, X[i]+40, Y[i]+40, fill="#93a1a1"))
+            elif net.resistance[i] >= 1000:
+                self.nodes.append(self.graph.create_oval(X[i]-35, Y[i]-35, X[i]+35, Y[i]+35, fill="#93a1a1"))
+            elif net.resistance[i] >= 100:
+                self.nodes.append(self.graph.create_oval(X[i]-30, Y[i]-30, X[i]+30, Y[i]+30, fill="#93a1a1"))
+            else:
+                self.nodes.append(self.graph.create_oval(X[i]-20, Y[i]-20, X[i]+20, Y[i]+20, fill="#93a1a1"))
+            self.graph.create_text(X[i], Y[i], text=str(int(net.resistance[i]))+"/"+str(int(net.proselytism[i])))
 
         self.graph.pack()
 
