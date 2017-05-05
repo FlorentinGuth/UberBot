@@ -2,13 +2,16 @@ from network import Network
 import queue
 
 
-# TODO Make all the following stuff (except last function) clear, and move it to a brand new file for percolation !
 class PercolationStuff(Network):
     def __init__(self, base_power=0):
         Network.__init__(self, base_power)
 
     def floyd_warshall(self):
-        fw = [[1000 * self.size] * self.size for _ in range(self.size)]
+        """
+        Computes the lengths of shortest paths between all pair of nodes
+        :return: a two dimentionnal array containing these lengths
+        """
+        fw = [[1000 * self.size] * self.size for _ in range(self.size)] # the graph isn't weighted so 1000 * self.size is the same as infinity
         for i in range(self.size):
             for v in self.graph[i]:
                 fw[i][v] = 1
@@ -21,6 +24,11 @@ class PercolationStuff(Network):
         return fw
 
     def count_paths(self):
+        """
+        Computes the amount of paths of lengths equal to the shortest path
+        length between all pair of nodes
+        :return: an array containing these amounts
+        """
         nbP = [[[0] * self.size for _ in range(self.size)] for _ in range(self.size + 1)]
         for i in range(self.size):
             for v in self.graph[i]:
@@ -35,6 +43,11 @@ class PercolationStuff(Network):
         return nbP
 
     def shortest_paths(self):
+        """
+        Computes the lengths and amount of shortest paths between all pair of
+        nodes using a BFS for each node
+        :return: a two dimentionnal array containing these lengths
+        """
         SP = [[(-1, 0)] * self.size for _ in range(self.size)]
 
         for i in range(self.size):
@@ -85,6 +98,10 @@ class PercolationStuff(Network):
         return perc
 
     def compute_percolation_betweenness(self):
+        """
+        Computes the percolation betweenness of the network
+        :return: the percolation betweenness
+        """
         SP = self.shortest_paths()
 
         B = []
@@ -100,6 +117,11 @@ class PercolationStuff(Network):
         return B
 
     def compute_percolation_centrality(self, I):
+        """
+        Computes the percolation centrality of the network given the current
+        state
+        :return: the percolation centrality
+        """
         SP = self.shortest_paths()
 
         P = []
