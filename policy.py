@@ -16,7 +16,7 @@ class Policy:
         power = self.network.initial_power
 
         for node in self.actions:
-            t += 1. / self.network.success_probability_power(node, power)
+            t += 1. / self.network.success_probability_power(power, node)
             power += self.network.get_proselytism(node)
 
         return t
@@ -34,7 +34,7 @@ class Policy:
         # Backward computation, from end to start
         for action in reversed(self.actions):
             power -= self.network.get_proselytism(action)
-            p = self.network.success_probability_power(action, power)
+            p = self.network.success_probability_power(power, action)
             reward = float(self.network.immediate_reward_power(power, action) + gamma * p * reward) / (1 - gamma * (1 - p))
 
         return reward

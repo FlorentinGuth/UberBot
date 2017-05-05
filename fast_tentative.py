@@ -27,7 +27,7 @@ class FastTentative(Botnet):
         if power >= self.total_power:
             res = 0  # We consider we have hijacked the whole network here
         else:
-            res = 1. / self.network.success_probability_power(action, power) + \
+            res = 1. / self.network.success_probability_power(power, action) + \
                   self.compute_min_time(power + self.network.get_proselytism(action))
 
         self.exp_time[power, action] = res
@@ -56,8 +56,8 @@ class FastTentative(Botnet):
         """
         best = None
         best_time = float("inf")
-        for action in range(self.network.size):
-            if action not in state and self.compute_time(power, action) < best_time:
+        for action in self.available_actions(state):
+            if self.compute_time(power, action) < best_time:
                 best = action
                 best_time = self.compute_time(power, action)
         return best
