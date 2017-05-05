@@ -1,7 +1,6 @@
 import random
 
 
-# TODO: Delete this file (the smart code is in the exploration, not in the strategy)
 def strategy(botnet):
     """
     Prototype of a strategy. A strategy dictates how exploration and exploitation should be balanced during the training.
@@ -19,6 +18,7 @@ def full_exploration(botnet):
      :return:
     """
     return botnet.exploration()
+
 
 def full_exploitation(botnet):
     """
