@@ -1,0 +1,16 @@
+TODOs Overleaf:
+ - Etoffer l'intro
+ - Contributions
+ - Rajouter le fait que le temps découle de la reward
+ - Se mettre d'accord sur ce à quoi un learning botnet a accès
+ - Effet de alpha
+ - Exploration - Exploitation
+ - Ma méthode d'exploitation
+ - Reward shaping
+ - Back-propagation
+ - Effet de beta (thompson)
+ - Comparer model-based et pas model-based
+ - Intro percoaltion, changer notations
+ - Effet de la percolation
+ - Effet du temps continu
+ - Effet de la densité du graphe
