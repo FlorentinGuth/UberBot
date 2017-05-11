@@ -1,0 +1,16 @@
+## {id, p, r, c};
+[NODES]
+{entry, 1, 0, 0};	## Tor exit node
+{0, 0, 5, 5};	## External FW
+{1, 10, 10, 5};	## IIS Web server
+{2, 0, 5, 5};	## Internal FW / Pivot
+{30, 2, 10, 20};	## IDS-protected Windows 7
+{31, 10, 50, 20};	## IDS-protected Linux Ubuntu Server
+
+## id1 - id2;
+[EDGES]
+entry - 0;
+0 - 1;	## Corporate website
+1 - 2;
+2 - 30;	## Internal network (IDS protected)
+3 - 31;
