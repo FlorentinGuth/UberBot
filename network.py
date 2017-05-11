@@ -290,15 +290,15 @@ def network_from_file(filename):
         graph[ind[a]].append(ind[b])
         graph[ind[b]].append(ind[a])
 
-    dejaVu = [False for _ in range(n)]
-    fl = queue.Queue()
-    fl.put("entry")
-    while not fl.empty():
-        cur = fl.get()
-        if not dejaVu[ind[cur]]:
-            dejaVu[ind[cur]] = True
-            for vois in graph[ind[cur]]:
-                fl.put(nodes[vois][0])
+    dejaVu = [True for _ in range(n)]
+    #fl = queue.Queue()
+    #fl.put("entry")
+    #while not fl.empty():
+    #    cur = fl.get()
+    #    if not dejaVu[ind[cur]]:
+    #        dejaVu[ind[cur]] = True
+    #        for vois in graph[ind[cur]]:
+    #            fl.put(nodes[vois][0])
 
     # TODO give name to nodes in network for debug
 

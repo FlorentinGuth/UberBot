@@ -19,7 +19,7 @@ from qlearning import QLearning
 ##
 ##net.generate_random_connected()
 #net = network.random_network(n, difficulty, big_nodes=log(n)/float(n), complete=False)
-net, _ = network.network_from_file("./graphs/simpleatk.gr")
+net, _ = network.network_from_file("./graphs/W08atk.gr")
 
 q = thom.Thompson(strategy.thompson_standard, net.graph, 0.9, 0.01)
 #q = QLearning(strategy.full_exploration, net.graph, nb_trials=200)
