@@ -2,6 +2,7 @@ from state import State
 from network import Network
 from qlearning import QLearning
 from policy import Policy
+from math import log
 
 # import sys
 from matplotlib.pyplot import *
@@ -126,7 +127,7 @@ def test_botnet(botnet, network, nb_trials, window_size=1, real_rewards=False, i
         show_with_legend()
 
 
-def hyper_parameter_influence(botnet, network, nb_trials, hyper_param, values):
+def hyper_parameter_influence(botnet, network, nb_trials, hyper_param, values, redundancy=1, is_log=True):
     """
     Plots expected time and reward of the given botnet with respect to the hyper parameter.
     :param botnet: 
@@ -134,20 +135,29 @@ def hyper_parameter_influence(botnet, network, nb_trials, hyper_param, values):
     :param nb_trials: 
     :param hyper_param: the name of the hyper parameter
     :param values:      the set of values to test
+    :param redundancy: number of tests for each values
+    :param log: print with log(hyper_param) on x axis
     :return: 
     """
     times = []
     rewards = []
-
+    print(botnet.type)
     for value in values:
+        print("Parameter ", hyper_param, value)
+        time = 0
+        reward = 0
         botnet.__setattr__(hyper_param, value)
-        _ = train(botnet, network, nb_trials)
-        policy = botnet.compute_policy()
-        botnet.clear(all=True)
-
-        times.append(policy.expected_time())
-        rewards.append(policy.expected_reward(botnet.gamma))
-
+        for _ in range(redundancy):
+            _ = train(botnet, network, nb_trials)
+            policy = Policy(network, botnet.compute_policy())
+            print(policy.actions)
+            time += policy.expected_time()
+            reward = policy.expected_reward(botnet.gamma)
+            botnet.clear(all=True)
+        times.append(time)
+        rewards.append(reward)
+    if is_log:
+        values = [log(v, 10) for v in values]
     plot_with_legend(values, times, "Time")
     plot_with_legend(values, rewards, "Reward")
     show_with_legend()

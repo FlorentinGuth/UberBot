@@ -33,11 +33,11 @@ def botnets(network, gamma):
     potential = immediate_shaping_potential(network, gamma)
     qs = [
         # Fast(network),
-        FastTentative(network),
+        # FastTentative(network),
 
         # QStar(network, gamma),
         Sarsa(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
-        RewardTentative(network, gamma),
+        # RewardTentative(network, gamma),
 
         QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
         QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes, potential=potential),
@@ -123,4 +123,4 @@ def plot_immediate(max_size, nb_trials, difficulty):
 size = 20
 difficulty = 2
 network = random_network(size, difficulty, big_nodes=log(size) / float(size), complete=False)
-plot_learning(200, 10, network)
+# plot_learning(200, 10, network)
