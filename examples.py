@@ -36,7 +36,7 @@ def botnets(network, gamma):
         # FastTentative(network),
 
         # QStar(network, gamma),
-
+        Sarsa(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
         QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
         QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes, potential=potential),
         Thompson(thompson_standard, network.graph, gamma=gamma, nb_trials=200, initial_nodes=network.initial_nodes),

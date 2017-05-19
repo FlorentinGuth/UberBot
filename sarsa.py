@@ -2,7 +2,7 @@ from qlearning import *
 
 
 class Sarsa(QLearning):
-    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None, alpha=0.01, shape=False, potential=None):
+    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None, alpha=0.01, potential=None, initial_nodes=None):
         """
         Initializes the Q-learning botnet.
         :param strategy:  defining how to resolve exploration vs. exploitation conflict
@@ -12,7 +12,7 @@ class Sarsa(QLearning):
         :param shape:     whether to use reward shaping
         :param potential: apply the given potential for shaping
         """
-        QLearning.__init__(self, strategy, graph, gamma, nb_trials, alpha, shape, potential)
+        QLearning.__init__(self, strategy, graph, gamma, nb_trials, alpha, potential, initial_nodes)
 
         self.type = "Sarsa"
 
