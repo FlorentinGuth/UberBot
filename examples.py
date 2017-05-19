@@ -4,8 +4,8 @@ from qlearning import QLearning
 from sarsa import Sarsa
 from strategy import *
 from tests import *
-from fast import *
 from fast_tentative import *
+from reward_tentative import *
 from math import *
 from network import *
 from matplotlib.font_manager import FontProperties
@@ -33,10 +33,12 @@ def botnets(network, gamma):
     potential = immediate_shaping_potential(network, gamma)
     qs = [
         # Fast(network),
-        # FastTentative(network),
+        FastTentative(network),
 
         # QStar(network, gamma),
         Sarsa(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
+        RewardTentative(network, gamma),
+
         QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
         QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes, potential=potential),
         Thompson(thompson_standard, network.graph, gamma=gamma, nb_trials=200, initial_nodes=network.initial_nodes),
@@ -118,7 +120,7 @@ def plot_immediate(max_size, nb_trials, difficulty):
 
 
 # plot_immediate(10, 20, 2)
-size = 100
-difficulty = 1
+size = 20
+difficulty = 2
 network = random_network(size, difficulty, big_nodes=log(size) / float(size), complete=False)
 plot_learning(200, 10, network)

@@ -117,7 +117,7 @@ class Network:
         """
         return self.resistance[node]
 
-    def success_probability_power(self, action, power):
+    def success_probability_power(self, power, action):
         """
         Returns the probability of success
         :param action: the node to hijack
@@ -137,7 +137,7 @@ class Network:
         :param action: the node to hijack
         :return:       the probability of success
         """
-        return self.success_probability_power(action, self.current_power(state))
+        return self.success_probability_power(self.current_power(state), action)
 
     def attempt_hijacking(self, state, action):
         """
