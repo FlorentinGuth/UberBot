@@ -8,6 +8,7 @@ from math import log
 from matplotlib.pyplot import *
 from matplotlib.font_manager import FontProperties
 import random
+import pickle
 
 
 def plot_with_legend(x_axis, y_axis, legend):
@@ -211,3 +212,16 @@ def sample_optimal(botnet, network):
 
     return actions
 
+
+def dump_actions(test_name, network_name, botnet_name, actions):
+    """
+    Dump the sequence of actions in a file
+    :param test_name:    The name of the test, e.g. alpha_influence
+    :param network_name: "iotatk", "simpleatk", "W08atk"...
+    :param botnet_name:  Botnet.type
+    :param actions:      A list of trials, which are the list of (action, success)
+    :return: 
+    """
+    filename = "results/" + test_name + "_" + network_name + "_" + botnet_name + ".out"
+    with open(filename, 'w') as f:
+        pickle.dump(actions, f)
