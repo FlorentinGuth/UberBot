@@ -229,6 +229,7 @@ class Network:
                 n -= 1
 
 
+
 def random_network(size, difficulty, big_nodes, complete=True):
     """
     Generates a random network.
@@ -266,3 +267,54 @@ def random_network(size, difficulty, big_nodes, complete=True):
     else:
         network.generate_random_connected()
     return network
+
+def network_from_file(filename):
+    """
+    Generates a network from file <filename>
+    """
+    network = Network(1)
+    file = open(filename, "r") 
+    lines = file.readlines()
+
+    n, m = map(int, lines[0].split())
+
+    ind = {}
+    nodes = []
+    for line in lines[1:n+1]:
+        nodes.append(line.split())
+        ind[nodes[-1][0]] = len(nodes) - 1
+
+    graph = [[] for _ in range(n)]
+    for line in lines[n+1:n+m+1]:
+        a, b = line.split()
+        graph[ind[a]].append(ind[b])
+        graph[ind[b]].append(ind[a])
+
+    dejaVu = [True for _ in range(n)]
+    #fl = queue.Queue()
+    #fl.put("entry")
+    #while not fl.empty():
+    #    cur = fl.get()
+    #    if not dejaVu[ind[cur]]:
+    #        dejaVu[ind[cur]] = True
+    #        for vois in graph[ind[cur]]:
+    #            fl.put(nodes[vois][0])
+
+    # TODO give name to nodes in network for debug
+
+    ind = {}
+    for i in range(n):
+        if dejaVu[i]:
+            name, p, r, c = nodes[i]
+            ind[name] = network.size
+            network.add_node(int(r), int(p), int(c))
+
+    for i in range(n):
+        if dejaVu[i]:
+            for j in graph[i]:
+                if j > i and dejaVu[j]:
+                    network.add_link(ind[nodes[i][0]], ind[nodes[j][0]])
+
+    network.add_initial_node(ind["entry"])
+
+    return network, ind

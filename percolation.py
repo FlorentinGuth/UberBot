@@ -2,13 +2,16 @@ from network import Network
 import queue
 
 
-# TODO Make all the following stuff (except last function) clear, and move it to a brand new file for percolation !
 class PercolationStuff(Network):
     def __init__(self, base_power=0):
         Network.__init__(self, base_power)
 
     def floyd_warshall(self):
-        fw = [[1000 * self.size] * self.size for _ in range(self.size)]
+        """
+        Computes the lengths of shortest paths between all pair of nodes
+        :return: a two dimentionnal array containing these lengths
+        """
+        fw = [[1000 * self.size] * self.size for _ in range(self.size)] # the graph isn't weighted so 1000 * self.size is the same as infinity
         for i in range(self.size):
             for v in self.graph[i]:
                 fw[i][v] = 1
@@ -21,6 +24,11 @@ class PercolationStuff(Network):
         return fw
 
     def count_paths(self):
+        """
+        Computes the amount of paths of lengths equal to the shortest path
+        length between all pair of nodes
+        :return: an array containing these amounts
+        """
         nbP = [[[0] * self.size for _ in range(self.size)] for _ in range(self.size + 1)]
         for i in range(self.size):
             for v in self.graph[i]:
@@ -35,6 +43,11 @@ class PercolationStuff(Network):
         return nbP
 
     def shortest_paths(self):
+        """
+        Computes the lengths and amount of shortest paths between all pair of
+        nodes using a BFS for each node
+        :return: a two dimentionnal array containing these lengths
+        """
         SP = [[(-1, 0)] * self.size for _ in range(self.size)]
 
         for i in range(self.size):
@@ -85,69 +98,79 @@ class PercolationStuff(Network):
         return perc
 
     def compute_percolation_betweenness(self):
+        """
+        Computes the percolation betweenness of the network
+        :return: the percolation betweenness
+        """
         SP = self.shortest_paths()
 
         B = []
 
-        for g in range(self.size):
+        for n in range(self.size):
             p = 0
-            for s in range(self.size):
-                for t in range(self.size):
-                    if SP[s][g][0] + SP[g][t][0] == SP[s][t][0]:
-                        p += SP[s][g][1] * SP[g][t][1] / SP[s][t][1]
+            for m in range(self.size):
+                for o in range(self.size):
+                    if SP[m][n][0] + SP[n][o][0] == SP[m][o][0]:
+                        p += SP[m][n][1] * SP[n][o][1] / SP[m][o][1]
             B.append(p / (self.size - 1) / (self.size - 2))
 
         return B
 
     def compute_percolation_centrality(self, I):
+        """
+        Computes the percolation centrality of the network given the current
+        state
+        :return: the percolation centrality
+        """
         SP = self.shortest_paths()
 
         P = []
 
         sI = sum(I)
 
-        for g in range(self.size):
+        for n in range(self.size):
             p = 0
-            for s in range(self.size):
-                for t in range(self.size):
-                    if SP[s][g][0] + SP[g][t][0] == SP[s][t][0]:
-                        w = I[s] / (sI - I[g])
-                        p += SP[s][g][1] * SP[g][t][1] / SP[s][t][1] * w
+            for m in range(self.size):
+                for o in range(self.size):
+                    if SP[m][n][0] + SP[n][o][0] == SP[m][o][0]:
+                        w = I[m] / (sI - I[n])
+                        p += SP[m][n][1] * SP[n][o][1] / SP[m][o][1] * w
             P.append(p / (self.size - 2))
 
         return P
 
-    def compute_percolation_betweenness_slow(self):
-        fw = self.floyd_warshall()
-        nbP = self.count_paths()
+    # Legacy
+    #def compute_percolation_betweenness_slow(self):
+    #    fw = self.floyd_warshall()
+    #    nbP = self.count_paths()
 
-        B = []
+    #    B = []
 
-        for g in range(self.size):
-            p = 0
-            for s in range(self.size):
-                for t in range(self.size):
-                    if fw[s][g] + fw[g][t] == fw[s][t]:
-                        p += nbP[fw[s][g]][s][g] * nbP[fw[g][t]][g][t] / nbP[fw[s][t]][s][t]
-            B.append(p / (self.size - 1) / (self.size - 2))
+    #    for g in range(self.size):
+    #        p = 0
+    #        for s in range(self.size):
+    #            for t in range(self.size):
+    #                if fw[s][g] + fw[g][t] == fw[s][t]:
+    #                    p += nbP[fw[s][g]][s][g] * nbP[fw[g][t]][g][t] / nbP[fw[s][t]][s][t]
+    #        B.append(p / (self.size - 1) / (self.size - 2))
 
-        return B
+    #    return B
 
-    def compute_percolation_centrality_slow(self, I):
-        fw = self.floyd_warshall()
-        nbP = self.count_paths()
+    #def compute_percolation_centrality_slow(self, I):
+    #    fw = self.floyd_warshall()
+    #    nbP = self.count_paths()
 
-        P = []
+    #    P = []
 
-        sI = sum(I)
+    #    sI = sum(I)
 
-        for g in range(self.size):
-            p = 0
-            for s in range(self.size):
-                for t in range(self.size):
-                    if fw[s][g] + fw[g][t] == fw[s][t]:
-                        w = I[s] / (sI - I[g])
-                        p += nbP[fw[s][g]][s][g] * nbP[fw[g][t]][g][t] / nbP[fw[s][t]][s][t] * w
-            P.append(p / (self.size - 2))
+    #    for g in range(self.size):
+    #        p = 0
+    #        for s in range(self.size):
+    #            for t in range(self.size):
+    #                if fw[s][g] + fw[g][t] == fw[s][t]:
+    #                    w = I[s] / (sI - I[g])
+    #                    p += nbP[fw[s][g]][s][g] * nbP[fw[g][t]][g][t] / nbP[fw[s][t]][s][t] * w
+    #        P.append(p / (self.size - 2))
 
-        return P
+    #    return P
