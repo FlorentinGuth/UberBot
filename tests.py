@@ -160,8 +160,8 @@ def hyper_parameter_influence(botnet, network, nb_trials, hyper_param, values, r
             time += policy.expected_time()
             reward = policy.expected_reward(botnet.gamma)
             botnet.clear(all=True)
-        times.append(time)
-        rewards.append(reward)
+        times.append(time / redundancy)
+        rewards.append(reward / redundancy)
     dump_actions(hyper_param, str(network.size), botnet.type, [actions, times, rewards, values])
     if is_log:
         values = [log(v, 10) for v in values]

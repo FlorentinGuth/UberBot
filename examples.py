@@ -33,17 +33,17 @@ def botnets(network, gamma, nb_trials=200):
     potential = immediate_shaping_potential(network, gamma)
     qs = [
         # Fast(network),
-        FastTentative(network),
+        # FastTentative(network),
 
         # QStar(network, gamma),
         Sarsa(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
-        RewardTentative(network, gamma),
+        # RewardTentative(network, gamma),
 
-        QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
-        QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes, potential=potential),
-        Thompson(thompson_standard, network.graph, gamma=gamma, nb_trials=nb_trials, initial_nodes=network.initial_nodes),
-        ModelBasedThompson(thompson_standard, network.graph, gamma=gamma, nb_trials=nb_trials, initial_nodes=network.initial_nodes),
-        FullModelBasedThompson(thompson_standard, network.graph, gamma=gamma, nb_trials=nb_trials, initial_nodes=network.initial_nodes, alpha_p=0.05),
+        # QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
+        # QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes, potential=potential),
+        # Thompson(thompson_standard, network.graph, gamma=gamma, nb_trials=nb_trials, initial_nodes=network.initial_nodes),
+        # ModelBasedThompson(thompson_standard, network.graph, gamma=gamma, nb_trials=nb_trials, initial_nodes=network.initial_nodes),
+        # FullModelBasedThompson(thompson_standard, network.graph, gamma=gamma, nb_trials=nb_trials, initial_nodes=network.initial_nodes, alpha_p=0.05),
     ]
     return qs
 botnet_names = [q.type for q in botnets(Network(0), 0.9)]
