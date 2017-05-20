@@ -1,6 +1,7 @@
 from markov import QStar
 from thompson_sampling import Thompson, ModelBasedThompson, FullModelBasedThompson
 from qlearning import QLearning
+from oriented_exploration import OrientedExploration
 from sarsa import Sarsa
 from strategy import *
 from tests import *
@@ -40,6 +41,7 @@ def botnets(network, gamma):
         RewardTentative(network, gamma),
 
         QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
+        OrientedExploration(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
         QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes, potential=potential),
         Thompson(thompson_standard, network.graph, gamma=gamma, nb_trials=200, initial_nodes=network.initial_nodes),
         ModelBasedThompson(thompson_standard, network.graph, gamma=gamma, nb_trials=200, initial_nodes=network.initial_nodes),
@@ -120,7 +122,5 @@ def plot_immediate(max_size, nb_trials, difficulty):
 
 
 # plot_immediate(10, 20, 2)
-size = 20
-difficulty = 2
-network = random_network(size, difficulty, big_nodes=log(size) / float(size), complete=False)
+network = network_from_file("graphs/W08atk.gr")[0]
 plot_learning(200, 10, network)

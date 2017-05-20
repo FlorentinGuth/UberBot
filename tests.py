@@ -215,3 +215,16 @@ def dump_actions(test_name, network_name, botnet_name, actions):
     filename = "results/" + test_name + "_" + network_name + "_" + botnet_name + ".out"
     with open(filename, 'w') as f:
         pickle.dump(actions, f)
+
+def retrieve_actions(test_name, network_name, botnet_name):
+    """
+    Retrieves the history of actions from a result file
+    :param test_name: 
+    :param network_name: 
+    :param botnet_name: 
+    :return: what was dumped in the file
+    """
+    filename = "results/" + test_name + "_" + network_name + "_" + botnet_name + ".out"
+    with open(filename, 'r') as f:
+        actions = pickle.load(f)
+    return actions
