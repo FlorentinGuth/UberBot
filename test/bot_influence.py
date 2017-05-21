@@ -4,6 +4,9 @@ import tests
 import numpy as np
 from policy import Policy
 from matplotlib.pyplot import *
+import os
+os.chdir("..")
+
 networks = ["W08atk.gr"]
 redundancy = 20
 nb_trials = 200
@@ -34,7 +37,7 @@ def launch_tests():
                 time.append(p.expected_time())
                 b.clear(all=True)
             results.append((b.type, real, exp, policy, action, perf, time))
-        tests.dump_actions("botnet_Compare", name, "all_%d" % nb_trials, results)
+        tests.dump_actions("botnet_Compare_time_null", name, "all", results, nb_trials)
 
 
 def show_results(nb):
@@ -64,17 +67,17 @@ def show_results(nb):
         f = figure(1)
         for (name, perf) in real_res:
             tests.plot_perf(perf, window_size, name)
-        print("Real rewards of each botnet")
+        ylabel("Real rewards")
         tests.show_with_legend(f)
         f = figure(2)
         for (name, perf) in exp_res:
             tests.plot_perf(perf, window_size, name)
-        print("Expected rewards of each step")
+        ylabel("Expected rewards")
         tests.show_with_legend(f)
         f = figure(3)
         for (name, perf) in pol_res:
             tests.plot_perf(perf, window_size, name)
-        print("Expected rewards of the policy at each step")
+        ylabel("Policy rewards")
         tests.show_with_legend(f)
 
         for (b_name, mean_p, max_p, mean_t, min_t) in final_perf:
@@ -82,17 +85,14 @@ def show_results(nb):
         x = input("Enter something to exit :")
 
 """
-Generates file :
-botnet_Compare_nameNetwork_all, Saved object list :
-For each botnet, (botnet.type, real_rewards, expected_rewards, policy_rewards, action, perf)
-Each list contains redundancy trials.
-[...] = load_file("results/botnet_Compare_nameNetwork_all")
-
-We have chosen gamma = 0.9, nb_trials = 100, redundancy = 50;
-               gamma = 0.9, nb_trials = 200, redundancy = 20;
-               gamma = 0.9, nb_trials = 500, redundancy = 5 ;
+We have chosen  gamma = 0.9, nb_trials =  50, redundancy = 100;
+                gamma = 0.9, nb_trials = 100, redundancy = 50;
+                gamma = 0.9, nb_trials = 200, redundancy = 20;
+                gamma = 0.9, nb_trials = 500, redundancy =  5;
 """
+
 # launch_tests()
+# show_results(50)
 # show_results(100)
 # show_results(200)
 # show_results(500)

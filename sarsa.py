@@ -47,13 +47,13 @@ class Sarsa(QLearning):
             if success:
                 self.state = self.state.add(action)
                 next_action = self.choose_action()
-                self.state.remove(action)
+                next_q_value = self.get_q_value(self.state, next_action)
+                self.state = self.state.remove(action)
             else:
                 next_action = self.choose_action()
-            next_q_value = self.get_q_value(self.state, next_action)
+                next_q_value = self.get_q_value(self.state, next_action)
         except IndexError:  # No next action
             next_q_value = self.get_best_actions(self.state)[0]
-
 
         new_q_value = reward + self.gamma * next_q_value
         old_q_value = self.get_q_value(self.state, action)

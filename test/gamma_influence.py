@@ -2,8 +2,10 @@ import tests
 import examples
 from network import network_from_file
 import numpy as np
+import os
+os.chdir("..")
+
 networks = ["W08atk.gr"]
-import math
 
 hyper_parameter = "gamma"
 values = np.linspace(0., 0.999, 21)
@@ -26,15 +28,9 @@ def show_results():
         print(name)
         for b in botnets_names:
             print(b)
-            [actions, times, rewards, values] = tests.load_file("results/gamma_%d_%s.out"%(network.size, b))
+            [actions, times, rewards, values] = tests.load_file("results/gamma_%d_%s_%d.out"%(network.size, b, nb_trials))
             tests.plot_with_legend(values, times, b)
         tests.show_with_legend()
 
-"""
-Generates files :
-gamma_*_*, Saved object [actions, times, rewards, gamma_values]
-action is size len(gamma_values) * redundancy
-[actions, times, rewards, alpha_values] = load_file("results/gamma_network_nameBotnet")
-"""
 # launch_tests()
 show_results()

@@ -158,11 +158,11 @@ def hyper_parameter_influence(botnet, network, nb_trials, hyper_param, values, r
             print(policy.actions)
             actions.append(policy.actions)
             time += policy.expected_time()
-            reward = policy.expected_reward(botnet.gamma)
+            reward += policy.expected_reward(botnet.gamma)
             botnet.clear(all=True)
         times.append(time / redundancy)
         rewards.append(reward / redundancy)
-    dump_actions(hyper_param, str(network.size), botnet.type, [actions, times, rewards, values])
+    dump_actions(hyper_param, str(network.size), botnet.type, [actions, times, rewards, values], nb_trials)
     if is_log:
         values = [log(v, 10) for v in values]
 
@@ -220,16 +220,17 @@ def sample_optimal(botnet, network):
     return actions
 
 
-def dump_actions(test_name, network_name, botnet_name, actions):
+def dump_actions(test_name, network_name, botnet_name, actions, nb_trials):
     """
     Dump the sequence of actions in a file
     :param test_name:    The name of the test, e.g. alpha_influence
     :param network_name: "iotatk", "simpleatk", "W08atk"...
     :param botnet_name:  Botnet.type
     :param actions:      A list of trials, which are the list of (action, success)
+    :param nb_trials:    Number of trials
     :return: 
     """
-    filename = "results/" + test_name + "_" + network_name + "_" + botnet_name + ".out"
+    filename = "results/" + test_name + "_" + network_name + "_" + botnet_name + "_" + str(nb_trials) + ".out"
     with open(filename, 'wb') as f:
         p = pickle.Pickler(f)
         p.dump(actions)
