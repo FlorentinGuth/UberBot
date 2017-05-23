@@ -2,6 +2,7 @@ from state import State
 from network import Network
 from qlearning import QLearning
 from policy import Policy
+from math import log
 
 # import sys
 from matplotlib.pyplot import *
@@ -21,7 +22,7 @@ def plot_with_legend(x_axis, y_axis, legend):
     plot(x_axis, y_axis, label=legend)
 
 
-def show_with_legend():
+def show_with_legend(figure=None):
     """
     Shows the current plot, along with its legend
     :return: 
@@ -30,7 +31,10 @@ def show_with_legend():
     font_p.set_size('small')
 
     legend(loc='lower right', bbox_to_anchor=(1, 0.5), prop=font_p).draggable()
-    show()
+    if figure is None:
+        show()
+    else:
+        figure.show()
 
 
 def invade(botnet, network, printing=False):
@@ -127,7 +131,7 @@ def test_botnet(botnet, network, nb_trials, window_size=1, real_rewards=False, i
         show_with_legend()
 
 
-def hyper_parameter_influence(botnet, network, nb_trials, hyper_param, values):
+def hyper_parameter_influence(botnet, network, nb_trials, hyper_param, values, redundancy=1, is_log=False):
     """
     Plots expected time and reward of the given botnet with respect to the hyper parameter.
     :param botnet: 
@@ -135,23 +139,36 @@ def hyper_parameter_influence(botnet, network, nb_trials, hyper_param, values):
     :param nb_trials: 
     :param hyper_param: the name of the hyper parameter
     :param values:      the set of values to test
+    :param redundancy: number of tests for each values
+    :param log: print with log(hyper_param) on x axis
     :return: 
     """
     times = []
     rewards = []
-
+    print(botnet.type)
+    actions = []
     for value in values:
+        print("Parameter ", hyper_param, value)
+        time = 0
+        reward = 0
         botnet.__setattr__(hyper_param, value)
-        _ = train(botnet, network, nb_trials)
-        policy = botnet.compute_policy()
-        botnet.clear(all=True)
+        for _ in range(redundancy):
+            _ = train(botnet, network, nb_trials)
+            policy = Policy(network, botnet.compute_policy())
+            print(policy.actions)
+            actions.append(policy.actions)
+            time += policy.expected_time()
+            reward += policy.expected_reward(botnet.gamma)
+            botnet.clear(all=True)
+        times.append(time / redundancy)
+        rewards.append(reward / redundancy)
+    dump_actions(hyper_param, str(network.size), botnet.type, [actions, times, rewards, values], nb_trials)
+    if is_log:
+        values = [log(v, 10) for v in values]
 
-        times.append(policy.expected_time())
-        rewards.append(policy.expected_reward(botnet.gamma))
-
-    plot_with_legend(values, times, "Time")
-    plot_with_legend(values, rewards, "Reward")
-    show_with_legend()
+    # plot_with_legend(values, times, "Time")
+    # plot_with_legend(values, rewards, "Reward")
+    # show_with_legend()
 
 
 def soften(points, window_size):
@@ -203,28 +220,24 @@ def sample_optimal(botnet, network):
     return actions
 
 
-def dump_actions(test_name, network_name, botnet_name, actions):
+def dump_actions(test_name, network_name, botnet_name, actions, nb_trials):
     """
     Dump the sequence of actions in a file
     :param test_name:    The name of the test, e.g. alpha_influence
     :param network_name: "iotatk", "simpleatk", "W08atk"...
     :param botnet_name:  Botnet.type
     :param actions:      A list of trials, which are the list of (action, success)
+    :param nb_trials:    Number of trials
     :return: 
     """
-    filename = "results/" + test_name + "_" + network_name + "_" + botnet_name + ".out"
-    with open(filename, 'w') as f:
-        pickle.dump(actions, f)
+    filename = "results/" + test_name + "_" + network_name + "_" + botnet_name + "_" + str(nb_trials) + ".out"
+    with open(filename, 'wb') as f:
+        p = pickle.Pickler(f)
+        p.dump(actions)
 
-def retrieve_actions(test_name, network_name, botnet_name):
-    """
-    Retrieves the history of actions from a result file
-    :param test_name: 
-    :param network_name: 
-    :param botnet_name: 
-    :return: what was dumped in the file
-    """
-    filename = "results/" + test_name + "_" + network_name + "_" + botnet_name + ".out"
-    with open(filename, 'r') as f:
-        actions = pickle.load(f)
-    return actions
+
+def load_file(filename):
+    with open(filename, 'rb') as f:
+        p = pickle.Unpickler(f)
+        res = p.load()
+    return res

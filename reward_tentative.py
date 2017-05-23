@@ -82,5 +82,5 @@ class RewardTentative(Botnet):
 
         if all:
             self.q_tilde = dict()
-            self.v_tilde= dict()
-            self.total_power = self.network.total_power()
+            self.v_tilde = dict()
+            self.total_power = self.network.total_power

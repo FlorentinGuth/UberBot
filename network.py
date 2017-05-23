@@ -68,7 +68,6 @@ class Network:
 
         self.viz.add_edge(node1, node2)
 
-
     def set_complete_network(self):
         """
         Sets the network to be the complete graph.
@@ -229,7 +228,6 @@ class Network:
                 n -= 1
 
 
-
 def random_network(size, difficulty, big_nodes, complete=True):
     """
     Generates a random network.
@@ -267,6 +265,7 @@ def random_network(size, difficulty, big_nodes, complete=True):
     else:
         network.generate_random_connected()
     return network
+
 
 def network_from_file(filename):
     """

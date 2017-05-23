@@ -26,7 +26,7 @@ n_martin.set_complete_network()
 n_martin.add_initial_node(12)
 
 
-def botnets(network, gamma):
+def botnets(network, gamma, nb_trials=200):
     """
     :param network:
     :return: The list of all botnets parametrized with the given network
@@ -43,9 +43,9 @@ def botnets(network, gamma):
         QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
         OrientedExploration(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
         QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes, potential=potential),
-        Thompson(thompson_standard, network.graph, gamma=gamma, nb_trials=200, initial_nodes=network.initial_nodes),
-        ModelBasedThompson(thompson_standard, network.graph, gamma=gamma, nb_trials=200, initial_nodes=network.initial_nodes),
-        FullModelBasedThompson(thompson_standard, network.graph, gamma=gamma, nb_trials=200, initial_nodes=network.initial_nodes, alpha_p=0.05),
+        Thompson(thompson_standard, network.graph, gamma=gamma, nb_trials=nb_trials, initial_nodes=network.initial_nodes),
+        ModelBasedThompson(thompson_standard, network.graph, gamma=gamma, nb_trials=nb_trials, initial_nodes=network.initial_nodes),
+        FullModelBasedThompson(thompson_standard, network.graph, gamma=gamma, nb_trials=nb_trials, initial_nodes=network.initial_nodes, alpha_p=0.05),
     ]
     return qs
 botnet_names = [q.type for q in botnets(Network(0), 0.9)]
@@ -124,3 +124,7 @@ def plot_immediate(max_size, nb_trials, difficulty):
 # plot_immediate(10, 20, 2)
 network = network_from_file("graphs/W08atk.gr")[0]
 plot_learning(200, 10, network)
+# size = 20
+# difficulty = 2
+# network = random_network(size, difficulty, big_nodes=log(size) / float(size), complete=False)
+# plot_learning(200, 10, network)
