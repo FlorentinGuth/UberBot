@@ -5,7 +5,7 @@ from oriented_exploration import OrientedExploration
 from sarsa import Sarsa
 from strategy import *
 from tests import *
-from fast_tentative import *
+from greedy_fast import *
 from reward_tentative import *
 from math import *
 from network import *
@@ -34,7 +34,7 @@ def botnets(network, gamma, nb_trials=200):
     potential = immediate_shaping_potential(network, gamma)
     qs = [
         # Fast(network),
-        FastTentative(network),
+        GreedyFast(network),
 
         # QStar(network, gamma),
         # Sarsa(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),

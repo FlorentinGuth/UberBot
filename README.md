@@ -2,7 +2,7 @@ Recent changes:
  - Addition of learning_botnet.py, common interface for all botnets. The inheritance tree is as follows:
    LearningBotnet --> Botnet --> QStar
                    |          |
-                   |          |-> Fast, FastIncr, FastTentative, RewardIncr
+                   |          |-> Fast, FastIncr, GreedyFast, RewardIncr
                    |
                    -> QLearning --> Thompson --> ModelBased --> FullModelBased
  - Update of all the botnets to match the interface, along with tests and examples.
