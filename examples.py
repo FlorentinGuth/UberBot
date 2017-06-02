@@ -122,8 +122,8 @@ def plot_immediate(max_size, nb_trials, difficulty):
 
 
 # plot_immediate(10, 20, 2)
-network = network_from_file("graphs/W08atk.gr")[0]
-plot_learning(200, 10, network)
+# network = network_from_file("graphs/W08atk.gr")[0]
+# plot_learning(200, 10, network)
 # size = 20
 # difficulty = 2
 # network = random_network(size, difficulty, big_nodes=log(size) / float(size), complete=False)
