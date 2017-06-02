@@ -24,24 +24,6 @@ class Sarsa(QLearning):
         :param reward:  immediate reward for doing action in self.state 
         :return:        None
         """
-        # TODO: Account for shaping if needed
-        # if self.shape:
-        #     if self.potential is None:
-        #         if success:
-        #             reward =  self.gamma / (1. - self.gamma) * self.network.get_proselytism(action) - self.network.get_cost(action)
-        #         else:
-        #             reward -self.network.get_cost(action)
-        #     else:
-        #         if success:
-        #             next_state = self.state.add(action)
-        #         else:
-        #             next_state = self.state
-        #
-        #         reward = self.network.immediate_reward(self.state, action) + self.gamma * self.potential(next_state) - self.potential(self.state)
-
-        # # TODO: Back-propagation
-        # if success:
-        #     self.path.append(action)
 
         try:
             if success:

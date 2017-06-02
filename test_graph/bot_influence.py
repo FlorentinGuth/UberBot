@@ -64,17 +64,19 @@ def show_results(nb):
             pol_res.append((b, policy_rewards))
             final_perf.append((b, np.mean(perf), np.max(perf), np.mean(time), np.min(time), actions))
 
-        f = figure(1)
+        subplot(2,2,1)
         for (name, perf) in real_res:
             tests.plot_perf(perf, window_size, name)
         ylabel("Real rewards")
-        tests.show_with_legend(f)
-        f = figure(2)
+        #f = figure(2)
+        axis(sharex=True)
+        subplot(2,2,3)
         for (name, perf) in exp_res:
             tests.plot_perf(perf, window_size, name)
         ylabel("Expected rewards")
-        tests.show_with_legend(f)
-        f = figure(3)
+        #f = figure(3)
+        axis(sharex=True)
+        subplot(1,2,2)
         for (name, perf) in pol_res:
             tests.plot_perf(perf, window_size, name)
         ylabel("Policy rewards")
@@ -95,4 +97,4 @@ We have chosen  gamma = 0.9, nb_trials =  50, redundancy = 100;
 # show_results(50)
 # show_results(100)
 # show_results(200)
-# show_results(500)
+show_results(500)

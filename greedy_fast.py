@@ -2,7 +2,7 @@ from botnet import *
 from policy import *
 
 
-class FastTentative(Botnet):
+class GreedyFast(Botnet):
     """
     Botnet trying to minimize the average time needed to hijack the whole network (suboptimal, O(n^2)).
     """
@@ -15,7 +15,7 @@ class FastTentative(Botnet):
 
         self.total_power = network.total_power
 
-        self.type = "FastTentative"
+        self.type = "Greedy Fast"
 
     def compute_time(self, power, action):
         """

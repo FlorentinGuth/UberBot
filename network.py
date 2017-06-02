@@ -3,6 +3,7 @@ import queue
 import pygraphviz as pgv
 from state import *
 
+import os
 
 class Network:
     """
@@ -272,6 +273,7 @@ def network_from_file(filename):
     Generates a network from file <filename>
     """
     network = Network(1)
+    print(os.getcwd())
     file = open(filename, "r") 
     lines = file.readlines()
 
