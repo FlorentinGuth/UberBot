@@ -1,5 +1,5 @@
 from markov import QStar
-from thompson_sampling import Thompson, ModelBasedThompson, FullModelBasedThompson
+from thompson_sampling import Thompson, ModelBasedThompson, FullModelBasedThompson, ModelBasedExploration
 from qlearning import QLearning
 from oriented_exploration import OrientedExploration
 from sarsa import Sarsa
@@ -37,15 +37,16 @@ def botnets(network, gamma, nb_trials=200):
         FastTentative(network),
 
         # QStar(network, gamma),
-        Sarsa(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
-        RewardTentative(network, gamma),
+        # Sarsa(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
+        # RewardTentative(network, gamma),
 
-        QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
-        OrientedExploration(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
-        QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes, potential=potential),
+        # QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
+        # OrientedExploration(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes),
+        # QLearning(full_exploration, network.graph, gamma=gamma, initial_nodes=network.initial_nodes, potential=potential),
         Thompson(thompson_standard, network.graph, gamma=gamma, nb_trials=nb_trials, initial_nodes=network.initial_nodes),
-        ModelBasedThompson(thompson_standard, network.graph, gamma=gamma, nb_trials=nb_trials, initial_nodes=network.initial_nodes),
-        FullModelBasedThompson(thompson_standard, network.graph, gamma=gamma, nb_trials=nb_trials, initial_nodes=network.initial_nodes, alpha_p=0.05),
+        ModelBasedThompson(thompson_standard, network.graph, gamma=gamma, nb_trials=nb_trials, initial_nodes=network.initial_nodes, potential=potential),
+        FullModelBasedThompson(thompson_standard, network.graph, gamma=gamma, nb_trials=nb_trials, initial_nodes=network.initial_nodes, alpha_p=0.05, potential=potential),
+        ModelBasedExploration(thompson_standard, network.graph, gamma=gamma, nb_trials=nb_trials, initial_nodes=network.initial_nodes, potential=potential),
     ]
     return qs
 botnet_names = [q.type for q in botnets(Network(0), 0.9)]
@@ -122,8 +123,8 @@ def plot_immediate(max_size, nb_trials, difficulty):
 
 
 # plot_immediate(10, 20, 2)
-network = network_from_file("graphs/W08atk.gr")[0]
-plot_learning(200, 10, network)
+# network = network_from_file("graphs/W08atk.gr")[0]
+# plot_learning(200, 10, network)
 # size = 20
 # difficulty = 2
 # network = random_network(size, difficulty, big_nodes=log(size) / float(size), complete=False)

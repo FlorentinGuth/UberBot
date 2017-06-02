@@ -190,6 +190,8 @@ class ModelBasedThompson(Thompson):
         self.history = []  # TODO: add doc
 
         self.type = "ModelBasedThompson"
+        if self.shape:
+            self.type += " - Potential"
 
     def receive_reward(self, action, success, reward):
         """
@@ -279,6 +281,8 @@ class FullModelBasedThompson(ModelBasedThompson):
         ModelBasedThompson.__init__(self, strategy, graph, gamma, nb_trials, alpha, beta, potential, initial_nodes)
         self.alpha_p = alpha_p      # Probability learning rate
         self.type = "FullModelBasedThompson"
+        if self.shape:
+            self.type += " - Potential"
 
     def update_p(self, state, action, result):
         """
@@ -321,3 +325,67 @@ class FullModelBasedThompson(ModelBasedThompson):
 
         except KeyError:
             return 0
+
+
+class ModelBasedExploration(ModelBasedThompson):
+
+    def __init__(self, strategy, graph, gamma=0.9, nb_trials=None, alpha=0.01, beta=1, potential=None, initial_nodes=None):
+        """
+        Initializes the Thompson sampling botnet.
+        :param strategy:  defining how to resolve exploration vs. exploitation conflict
+        :param graph:     the graph of the network
+        :param gamma:     
+        :param alpha:     learning rate
+        :param beta:      a number between 0 and 1:
+                          if 0, only look at the successive simulated trials ;
+                          if 1, act as if the simulation was real
+        :param shape:     whether to use reward shaping
+        :param potential: user-specified potential for reward shaping
+        """
+        ModelBasedThompson.__init__(self, strategy, graph, gamma, nb_trials, alpha, beta, potential, initial_nodes)
+        self.type = "Model Based Exploration"
+        if self.shape:
+            self.type += " - Potential"
+
+        def get_history(self, state, action):
+            """
+            Returns the number of successes and total trials
+            :param state: 
+            :param action: 
+            :return: 
+            """
+            try:
+                return self.p[state, action]
+            except KeyError:
+                return 0, 0
+
+        def get_stats(self, state, action):
+            """
+            Returns the expected probability and variance of success given the history, assuming the probability follows a uniform law
+            :param state: 
+            :param action: 
+            :return: 
+            """
+            k, n = self.get_history(state, action)
+            exp = (k + 1) / float(n + 2)
+            var = exp * (1 - exp) / float(n + 3)
+            return exp, var
+
+        def exploration(self):
+            """
+            This function selects the available action whose Q-value has the highest standard deviation, assuming the
+            probability follows a uniform law.
+            :return: 
+            """
+            best_std = 0
+            best_actions = []
+            for action in self.available_actions():
+                std = self.get_stats(self.state, action)[1] * \
+                      (
+                      self.get_best_actions(self.state)[0] ** 2 + self.get_best_actions(self.state.add(action))[0] ** 2)
+                if std > best_std:
+                    best_actions = [action]
+                    best_std = std
+                elif std == best_std:
+                    best_actions.append(action)
+            return random.choice(best_actions)
