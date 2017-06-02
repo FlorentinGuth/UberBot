@@ -8,7 +8,7 @@ import os
 os.chdir("..")
 
 networks = ["W08atk.gr"]
-redundancy = 20
+redundancy = 1
 nb_trials = 200
 
 
@@ -37,7 +37,7 @@ def launch_tests():
                 time.append(p.expected_time())
                 b.clear(all=True)
             results.append((b.type, real, exp, policy, action, perf, time))
-        tests.dump_actions("botnet_Compare_time_null", name, "all", results, nb_trials)
+        tests.dump_actions("botnet_Compare", name, "all", results, nb_trials)
 
 
 def show_results(nb):
@@ -62,7 +62,7 @@ def show_results(nb):
             real_res.append((b, real_rewards))
             exp_res.append((b, expected_rewards))
             pol_res.append((b, policy_rewards))
-            final_perf.append((b, np.mean(perf), np.max(perf), np.mean(time), np.min(time)))
+            final_perf.append((b, np.mean(perf), np.max(perf), np.mean(time), np.min(time), actions))
 
         f = figure(1)
         for (name, perf) in real_res:
@@ -80,8 +80,8 @@ def show_results(nb):
         ylabel("Policy rewards")
         tests.show_with_legend(f)
 
-        for (b_name, mean_p, max_p, mean_t, min_t) in final_perf:
-            print(b_name, "Mean perf:", mean_p, "Max perf:", max_p, "Mean time:", mean_t, "Min time:", min_t, sep='\t')
+        for (b_name, mean_p, max_p, mean_t, min_t, actions) in final_perf:
+            print(b_name, "Mean perf:", mean_p, "Max perf:", max_p, "Mean time:", mean_t, "Min time:", min_t, "Actions:", actions, sep='\t')
         x = input("Enter something to exit :")
 
 """
