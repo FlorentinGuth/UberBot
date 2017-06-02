@@ -8,8 +8,8 @@ import os
 os.chdir("..")
 
 networks = ["W08atk.gr"]
-redundancy = 20
-nb_trials = 200
+redundancy = 10
+nb_trials = 60
 
 
 def launch_tests():
@@ -37,7 +37,7 @@ def launch_tests():
                 time.append(p.expected_time())
                 b.clear(all=True)
             results.append((b.type, real, exp, policy, action, perf, time))
-        tests.dump_actions("botnet_Compare_time_null", name, "all", results, nb_trials)
+        tests.dump_actions("botnet_Compare", name, "all", results, nb_trials)
 
 
 def show_results(nb):
@@ -91,8 +91,9 @@ We have chosen  gamma = 0.9, nb_trials =  50, redundancy = 100;
                 gamma = 0.9, nb_trials = 500, redundancy =  5;
 """
 
-# launch_tests()
+launch_tests()
 # show_results(50)
 # show_results(100)
 # show_results(200)
 # show_results(500)
+show_results(nb_trials)
